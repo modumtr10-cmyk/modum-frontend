@@ -301,7 +301,7 @@ margin-top: 0 !important;
           trail[i].x * gridSize,
           trail[i].y * gridSize,
           gridSize - 2,
-          gridSize - 2
+          gridSize - 2,
         );
 
         // Kendine çarpma (Ölme)
@@ -331,7 +331,7 @@ margin-top: 0 !important;
         apple.y * gridSize + gridSize / 2,
         gridSize / 2.5,
         0,
-        Math.PI * 2
+        Math.PI * 2,
       );
       ctx.fill();
       ctx.shadowBlur = 10;
@@ -2626,7 +2626,7 @@ margin-bottom: 20px;
               applyThemeEngine(res.settings.active_theme);
               localStorage.setItem(
                 "mdm_active_theme",
-                res.settings.active_theme
+                res.settings.active_theme,
               );
             }
           }
@@ -2634,7 +2634,7 @@ margin-bottom: 20px;
           // 3. EKRANI ANINDA GÜNCELLE (Profil açıksa yeni limitleri görsün)
           if (APP_STATE.activeTab === "profile") {
             var profileContainer = document.getElementById(
-              "mdm-profile-container"
+              "mdm-profile-container",
             );
             if (profileContainer) {
               profileContainer.innerHTML = renderProfileTab(APP_STATE.user);
@@ -2672,7 +2672,7 @@ margin-bottom: 20px;
           // Cache'i Güncelle
           localStorage.setItem(
             "mdm_user_cache",
-            JSON.stringify(APP_STATE.user)
+            JSON.stringify(APP_STATE.user),
           );
 
           // EKRANDAKİ ÇUBUKLARI BOYA
@@ -2682,7 +2682,7 @@ margin-bottom: 20px;
           }
           if (APP_STATE.activeTab === "profile") {
             var profileContainer = document.getElementById(
-              "mdm-profile-container"
+              "mdm-profile-container",
             );
             // renderProfileTab fonksiyonunun varlığını kontrol et ve çalıştır
             if (profileContainer && typeof renderProfileTab === "function") {
@@ -2729,7 +2729,7 @@ margin-bottom: 20px;
           // Sadece ilk 6 taneyi render et
           cGrid.innerHTML = renderRaffles(
             APP_STATE.completedRaffles.slice(0, 6),
-            false
+            false,
           );
 
           // Eğer liste 6'dan uzunsa butonu göster
@@ -2974,7 +2974,7 @@ ${rowsHtml}
             JSON.stringify({
               timestamp: new Date().getTime(),
               data: data,
-            })
+            }),
           );
         } catch (storageError) {
           // Kota dolduysa sessizce geç, sistemi bozma
@@ -3026,7 +3026,7 @@ ${rowsHtml}
           cachedUser.email +
           " -> " +
           foundEmail +
-          ")"
+          ")",
       );
       localStorage.removeItem("mdm_user_cache"); // Eski veriyi sil
       cachedUser = null; // Cache'i boşalt
@@ -3323,7 +3323,7 @@ ${rowsHtml}
     // 1. BUGÜNÜN TARİHİ (GARANTİLİ TÜRKİYE SAATİ)
     // Tarayıcı saati ne olursa olsun Türkiye saatine göre YYYY-MM-DD üretir.
     var turkeyDate = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" })
+      new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }),
     );
     var yyyy = turkeyDate.getFullYear();
     var mm = String(turkeyDate.getMonth() + 1).padStart(2, "0");
@@ -3404,9 +3404,19 @@ ${rowsHtml}
   </div>
   </div>
 
+
 <div class="mdm-content-wrapper">
 <div id="mdm-welcome-area" style="margin-bottom: 10px;"></div>
 <div id="tab-home" class="mdm-tab-content active">
+<div id="mdm-stylist-area" style="margin-bottom:20px;">
+    <button onclick="ModumApp.openFashionSurvey()" class="mdm-btn-lucky" style="background:linear-gradient(135deg, #ec4899, #8b5cf6); width:100%; border:none; padding:15px; border-radius:12px; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 15px rgba(236, 72, 153, 0.4); animation: pulse 2s infinite;">
+        <span style="font-size:20px;">👗</span> 
+        <div>
+            <div>STİL ANKETİNİ DOLDUR</div>
+            <div style="font-size:10px; opacity:0.9; font-weight:normal;">Sana özel öneriler + 500 XP Kazan!</div>
+        </div>
+    </button>
+</div>
 
 <div id="mdm-leaderboard-area" style="min-height: 100px; margin-bottom: 20px;">
 <div style="text-align:center; color:#94a3b8; font-size:12px; padding:20px;">
@@ -3419,14 +3429,14 @@ ${rowsHtml}
   </h3>
 <div id="mdm-active-grid" class="mdm-grid">${renderRaffles(
       APP_STATE.activeRaffles,
-      true
+      true,
     )}</div>
 
 <h3 style="color:#94a3b8; font-size:16px; margin:30px 0 15px; display:flex; align-items:center; gap:8px;"><i class="fas fa-flag-checkered"></i> Sonuçlananlar</h3>
 
 <div id="mdm-completed-grid" class="mdm-grid">${renderRaffles(
       (APP_STATE.completedRaffles || []).slice(0, 6),
-      false
+      false,
     )}</div>
 
 <div id="mdm-load-more-box" style="margin-top:20px;">
@@ -3630,7 +3640,7 @@ ${
         // --- BUTONLAR VE İÇERİK ---
         var cleanName = (r.ad || "").toLowerCase().trim();
         var isJoined = APP_STATE.myRaffles.some(
-          (myRef) => (myRef || "").toLowerCase().trim() === cleanName
+          (myRef) => (myRef || "").toLowerCase().trim() === cleanName,
         );
 
         var mainBtn = "";
@@ -3648,7 +3658,7 @@ ${
               r.id
             }', '${r.ad.replace(
               /'/g,
-              "\\'"
+              "\\'",
             )}')">${btnText} <i class="fas fa-ticket-alt"></i></button>`;
           }
 
@@ -3819,7 +3829,7 @@ ${actionGrid}
       var prevLimit = level === "Usta" ? 2500 : level === "Şampiyon" ? 7500 : 0;
       progressPercent = Math.min(
         Math.max(((xp - prevLimit) / (goal - prevLimit)) * 100, 0),
-        100
+        100,
       );
       nextLevelText = `${currentRank.nextName} için ${goal - xp} XP`;
     }
@@ -3965,7 +3975,7 @@ ${actionGrid}
     // --- 🔥 YENİ EKLENEN: SÜPER PROFİL PANELE (BUTONLAR & LİDERLİK) ---
     // 1. Günlük Hak Tarih Hesabı
     var turkeyDate = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" })
+      new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }),
     );
     var todayStr =
       turkeyDate.getFullYear() +
@@ -4028,7 +4038,7 @@ ${actionGrid}
     var refLink = window.location.origin + "/kullanici-giris?ref=" + refCode;
     // QR rengini temaya göre ayarlamak istersen color parametresini değiştirebilirsin, şimdilik beyaz kalsın.
     var qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-      refLink
+      refLink,
     )}&color=000000&bgcolor=transparent`;
 
     // --- HTML ÇIKTISI (DÜZELTİLMİŞ) ---
@@ -4282,8 +4292,8 @@ ${gridHtml}
           idx < currentLevelIndex
             ? "completed"
             : idx === currentLevelIndex
-            ? "active"
-            : "";
+              ? "active"
+              : "";
         var icon = idx === 3 ? "👑" : idx + 1;
         if (status === "completed") icon = "✓";
         return `<div class="mdm-step ${status}"><div class="mdm-step-circle">${icon}</div><div class="mdm-step-label">${lvl.name}</div></div>`;
@@ -4311,7 +4321,7 @@ ${gridHtml}
     let purchasedItems = [];
     if (resHist && resHist.success && resHist.list) {
       purchasedItems = resHist.list.map((h) =>
-        (h.action || h.islem || "").toLowerCase()
+        (h.action || h.islem || "").toLowerCase(),
       );
     }
 
@@ -4391,7 +4401,7 @@ style="flex:1; padding:12px; border:1px solid transparent; border-radius:8px; cu
           // Matematiksel Hesap
           const d = Math.floor(diff / (1000 * 60 * 60 * 24));
           const h = Math.floor(
-            (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
           );
           const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const s = Math.floor((diff % (1000 * 60)) / 1000);
@@ -4435,7 +4445,7 @@ style="flex:1; padding:12px; border:1px solid transparent; border-radius:8px; cu
       } else {
         // Eğer element gelmediyse (kodla çağrıldıysa) data-id ile bul
         var autoEl = document.querySelector(
-          `.mdm-dock-link[data-id="${tabId}"]`
+          `.mdm-dock-link[data-id="${tabId}"]`,
         );
         if (autoEl) autoEl.classList.add("active");
       }
@@ -4533,7 +4543,7 @@ ${userName}
   </div>
   </div>
 <div class="mdm-lb-xp" style="background:rgba(0,0,0,0.3); color:#fff;">${parseInt(
-                  u.points
+                  u.points,
                 ).toLocaleString()} XP</div>
   </div>`;
               }
@@ -4607,7 +4617,7 @@ ${userName}
           if (APP_STATE.storeContext && APP_STATE.storeContext.items) {
             // Ürünü mağaza listesinden bul
             var foundItem = APP_STATE.storeContext.items.find(
-              (x) => x.id == id || x.title === title
+              (x) => x.id == id || x.title === title,
             );
 
             if (foundItem && foundItem.type === "animated_avatar") {
@@ -4629,7 +4639,7 @@ ${userName}
               // Tarayıcı hafızasına yaz (Sayfa yenilenirse gitmesin diye)
               localStorage.setItem(
                 "mdm_user_cache",
-                JSON.stringify(APP_STATE.user)
+                JSON.stringify(APP_STATE.user),
               );
 
               // Mağaza butonunu anında "SAHİPSİN" yapmak için mağazayı yenile
@@ -4687,7 +4697,7 @@ ${userName}
             }, 1000);
             ModumApp.showToast(
               "Çerçeve satın alındı! Profilinde hemen dene.",
-              "success"
+              "success",
             );
           }
 
@@ -4713,7 +4723,7 @@ ${userName}
             });
             ModumApp.showToast(
               "Hareketli avatar eklendi! Profilini süsledi. ✨",
-              "success"
+              "success",
             );
           }
           // Sandık kontrolü (Kazı Kazan Aç)
@@ -4894,7 +4904,7 @@ HARİKA! KAPAT
           scratch(p.x, p.y);
           e.preventDefault();
         },
-        { passive: false }
+        { passive: false },
       );
       canvas.addEventListener(
         "touchmove",
@@ -4905,7 +4915,7 @@ HARİKA! KAPAT
             e.preventDefault();
           }
         },
-        { passive: false }
+        { passive: false },
       );
       canvas.addEventListener("touchend", function () {
         isDrawing = false;
@@ -4995,7 +5005,7 @@ HARİKA! KAPAT
               ) {
                 // 2. Yasaklı kelime kontrolü
                 var isBanned = forbiddenWords.some((word) =>
-                  lowerTitle.includes(word)
+                  lowerTitle.includes(word),
                 );
                 if (isBanned) return;
 
@@ -5085,7 +5095,7 @@ ${copyBtn}
             listContainer.innerHTML =
               '<div style="text-align:center; padding:40px; color:#64748b;">Geçmiş bulunamadı.</div>';
           }
-        }
+        },
       );
     },
     // --- 🎉 HOŞGELDİN KUTLAMASI ---
@@ -5196,7 +5206,7 @@ OKUDUM, ONAYLIYORUM ✅
           APP_STATE.user.privacyApproved = true;
           localStorage.setItem(
             "mdm_user_cache",
-            JSON.stringify(APP_STATE.user)
+            JSON.stringify(APP_STATE.user),
           );
 
           // Kutuyu kapat
@@ -5223,7 +5233,7 @@ OKUDUM, ONAYLIYORUM ✅
 
       // WhatsApp Mesajı
       var waText = encodeURIComponent(
-        `Selam! ModumNet'te harika bir çekiliş var: "${raffleTitle}". Bu linkten üye olursan ikimiz de kazanırız! 🚀\n\nLink: ${refLink}`
+        `Selam! ModumNet'te harika bir çekiliş var: "${raffleTitle}". Bu linkten üye olursan ikimiz de kazanırız! 🚀\n\nLink: ${refLink}`,
       );
       var waLink = `https://wa.me/?text=${waText}`;
 
@@ -5292,7 +5302,7 @@ PAYLAŞMADAN DEVAM ET & KATIL ✅
             localStorage.removeItem("mdm_cache_get_showcase_data");
             if (APP_STATE.user && APP_STATE.user.email) {
               localStorage.removeItem(
-                "mdm_cache_get_user_tickets_" + APP_STATE.user.email
+                "mdm_cache_get_user_tickets_" + APP_STATE.user.email,
               );
             }
             // -------------------------------------------------------------
@@ -5399,7 +5409,7 @@ PAYLAŞMADAN DEVAM ET & KATIL ✅
                 (t) =>
                   t.status === "Cevaplandı" ||
                   t.status === "answered" ||
-                  (t.adminReply && t.adminReply.length > 1)
+                  (t.adminReply && t.adminReply.length > 1),
               );
               if (answeredTicket) {
                 latestReplyId = answeredTicket.ticketId; // Örn: #TLP-1234
@@ -5475,7 +5485,7 @@ ${replyHtml}
                 '<div style="padding:20px; text-align:center; color:#64748b;">Henüz destek talebiniz yok.</div>';
             }
           }
-        }
+        },
       );
     },
     // --- GÖREV FONKSİYONLARI ---
@@ -5490,7 +5500,7 @@ ${replyHtml}
       var streakContainer = document.getElementById("mdm-streak-container");
       if (streakContainer && APP_STATE.user) {
         streakContainer.innerHTML = renderStreakBars(
-          APP_STATE.user.gunlukSeri || 0
+          APP_STATE.user.gunlukSeri || 0,
         );
       }
     },
@@ -5775,7 +5785,7 @@ ${replyHtml}
             // 2. Hafızayı Güncelle (Sayfa yenilenirse gitmesin)
             localStorage.setItem(
               "mdm_user_cache",
-              JSON.stringify(APP_STATE.user)
+              JSON.stringify(APP_STATE.user),
             );
 
             // 3. Ödül Pop-up'ını Göster
@@ -5791,7 +5801,7 @@ ${replyHtml}
           } else {
             alert("⚠️ " + (res.message || "Hata oluştu."));
           }
-        }
+        },
       );
     },
 
@@ -5946,7 +5956,7 @@ HAYIR, BEKLE ✋
             var turkeyDate = new Date(
               new Date().toLocaleString("en-US", {
                 timeZone: "Europe/Istanbul",
-              })
+              }),
             );
             var mm = String(turkeyDate.getMonth() + 1).padStart(2, "0");
             var dd = String(turkeyDate.getDate()).padStart(2, "0");
@@ -5957,12 +5967,12 @@ HAYIR, BEKLE ✋
             // 3. Hafızayı Kaydet
             localStorage.setItem(
               "mdm_user_cache",
-              JSON.stringify(APP_STATE.user)
+              JSON.stringify(APP_STATE.user),
             );
 
             // 4. PROFİLİ YENİDEN ÇİZ (Buton "Bugün Alındı" olsun diye)
             var profileContainer = document.getElementById(
-              "mdm-profile-container"
+              "mdm-profile-container",
             );
             if (profileContainer) {
               profileContainer.innerHTML = renderProfileTab(APP_STATE.user);
@@ -5986,7 +5996,7 @@ HAYIR, BEKLE ✋
               btn.disabled = false;
             }
           }
-        }
+        },
       );
     },
     // 3. Görev Başlatıcı
@@ -5996,7 +6006,7 @@ HAYIR, BEKLE ✋
       if (type === "secret_code") {
         // Şifre Görevi
         var code = prompt(
-          "🔑 Günün Şifresini Giriniz (Instagram Hikayemize Bak!):"
+          "🔑 Günün Şifresini Giriniz (Instagram Hikayemize Bak!):",
         );
         if (code) {
           fetchApi("redeem_promo_code", {
@@ -6011,7 +6021,7 @@ HAYIR, BEKLE ✋
       } else if (type === "golden_product") {
         // Altın Ürün Görevi (Geliştirilecek)
         alert(
-          "🕵️ Bu özellik yakında aktif! Sitedeki gizli ürünü bulup kodunu buraya yazacaksın."
+          "🕵️ Bu özellik yakında aktif! Sitedeki gizli ürünü bulup kodunu buraya yazacaksın.",
         );
       } else {
         // Link Görevi (Instagram Takip vb.)
@@ -6052,7 +6062,7 @@ HAYIR, BEKLE ✋
           // Listeyi yenile ki yeşil tik olsun
           loadTasksData();
           updateDataInBackground(
-            document.getElementById("modum-firebase-test-root")
+            document.getElementById("modum-firebase-test-root"),
           );
         } else {
           alert("⚠️ " + res.message);
@@ -6072,7 +6082,7 @@ HAYIR, BEKLE ✋
         alert(
           res.success
             ? "✅ Bildirimler açıldı! Fırsatları kaçırmayacaksın."
-            : res.message
+            : res.message,
         );
       });
     },
@@ -6186,7 +6196,7 @@ HAYIR, BEKLE ✋
 
           // 3. 🔥 PROFİLİ DE YENİLE (İşte 265'i 285 yapan satır bu!)
           var profileContainer = document.getElementById(
-            "mdm-profile-container"
+            "mdm-profile-container",
           );
           if (profileContainer) {
             profileContainer.innerHTML = renderProfileTab(APP_STATE.user);
@@ -6195,7 +6205,7 @@ HAYIR, BEKLE ✋
           // 4. Hafızayı Güncelle
           localStorage.setItem(
             "mdm_user_cache",
-            JSON.stringify(APP_STATE.user)
+            JSON.stringify(APP_STATE.user),
           );
           // -----------------------------------
 
@@ -6256,7 +6266,7 @@ HAYIR, BEKLE ✋
             listContainer.innerHTML =
               '<div style="text-align:center; padding:30px; color:#94a3b8;">Geçmiş yok.</div>';
           }
-        }
+        },
       );
     },
 
@@ -6329,7 +6339,7 @@ ${emailShow}
       img,
       reward,
       endDate,
-      participantCount
+      participantCount,
     ) {
       ModumApp.logAction("Çekiliş İnceledi", title);
 
@@ -6444,13 +6454,13 @@ Veriler Analiz Ediliyor...
           if (APP_STATE.user && APP_STATE.user.email) {
             var myEmail = APP_STATE.user.email.toLowerCase();
             var myCount = filtered.filter(
-              (p) => (p.email || "").toLowerCase() === myEmail
+              (p) => (p.email || "").toLowerCase() === myEmail,
             ).length;
 
             // Eğer hala 0 ise ve kişi "Katıldım" diyorsa, APP_STATE.myRaffles'a da bak
             if (myCount === 0 && APP_STATE.myRaffles) {
               var joinedBefore = APP_STATE.myRaffles.some(
-                (rName) => rName.toLowerCase().trim() === cleanTitle
+                (rName) => rName.toLowerCase().trim() === cleanTitle,
               );
               if (joinedBefore) myCount = 1; // En azından 1 göster
             }
@@ -6529,7 +6539,7 @@ Veriler Analiz Ediliyor...
       fetchApi("get_winners").then((data) => {
         if (data && data.success) {
           var filtered = data.winners.filter(
-            (w) => w.raffleName === raffleName
+            (w) => w.raffleName === raffleName,
           );
           var html = filtered.length
             ? filtered
@@ -6539,7 +6549,7 @@ Veriler Analiz Ediliyor...
                       i + 1
                     }. ${w.userName} <span style="color:#fbbf24;">(${
                       w.prize
-                    })</span></div>`
+                    })</span></div>`,
                 )
                 .join("")
             : '<div style="padding:20px; text-align:center;">Henüz açıklanmadı.</div>';
@@ -6553,7 +6563,7 @@ Veriler Analiz Ediliyor...
       // 1. Giriş Kontrolü
       if (!APP_STATE.user || !APP_STATE.user.email) {
         alert(
-          "Referans linkinizi görmek için lütfen giriş yapın veya kayıt olun."
+          "Referans linkinizi görmek için lütfen giriş yapın veya kayıt olun.",
         );
         return;
       }
@@ -6564,7 +6574,7 @@ Veriler Analiz Ediliyor...
       // Eğer kod henüz gelmediyse (internet yavaşsa), kullanıcıyı uyar
       if (!userCode || userCode === "undefined") {
         alert(
-          "Referans kodunuz oluşturuluyor, lütfen sayfayı yenileyip tekrar deneyin."
+          "Referans kodunuz oluşturuluyor, lütfen sayfayı yenileyip tekrar deneyin.",
         );
         return;
       }
@@ -6600,14 +6610,14 @@ Bu linki arkadaşlarına gönder:
 
 <div style="display:flex; gap:10px;">
 <button onclick="window.open('https://api.whatsapp.com/send?text=${encodeURIComponent(
-        "Sana harika bir hediye linki bıraktım! Üye ol, kazan: " + link
+        "Sana harika bir hediye linki bıraktım! Üye ol, kazan: " + link,
       )}', '_blank')" style="flex:1; background:#25D366; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; font-weight:bold;">
 <i class="fab fa-whatsapp"></i> WhatsApp
   </button>
 <button onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(
-        link
+        link,
       )}&text=${encodeURIComponent(
-        "ModumNet fırsatlarına katıl!"
+        "ModumNet fırsatlarına katıl!",
       )}', '_blank')" style="flex:1; background:#0088cc; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; font-weight:bold;">
 <i class="fab fa-telegram"></i> Telegram
   </button>
@@ -6651,7 +6661,7 @@ Bu linki arkadaşlarına gönder:
         "ModumNet'e bu linkten üye ol, harika ödüller kazan! Link: " + link;
       window.open(
         "https://api.whatsapp.com/send?text=" + encodeURIComponent(text),
-        "_blank"
+        "_blank",
       );
     },
 
@@ -6664,7 +6674,7 @@ Bu linki arkadaşlarına gönder:
           encodeURIComponent(link) +
           "&text=" +
           encodeURIComponent(text),
-        "_blank"
+        "_blank",
       );
     },
     // 14. 🔥 AKILLI LOGLAMA (SİSTEM LOGLARINA VERİ GÖNDERİR)
@@ -6761,10 +6771,10 @@ ${btnHtml}
           APP_STATE.user.selectedAvatar = badgeId;
           localStorage.setItem(
             "mdm_user_cache",
-            JSON.stringify(APP_STATE.user)
+            JSON.stringify(APP_STATE.user),
           );
           var profileContainer = document.getElementById(
-            "mdm-profile-container"
+            "mdm-profile-container",
           );
           if (profileContainer)
             profileContainer.innerHTML = renderProfileTab(APP_STATE.user);
@@ -6976,7 +6986,7 @@ Instagram'ı Aç 🚀
 
       if (userBadges.length === 0) {
         alert(
-          "⚠️ Henüz kazanılmış bir rozetin yok. Görevleri tamamlayarak rozet kazan, sonra paylaş!"
+          "⚠️ Henüz kazanılmış bir rozetin yok. Görevleri tamamlayarak rozet kazan, sonra paylaş!",
         );
         return;
       }
@@ -7680,7 +7690,7 @@ ${listHtml}
               btn.style.background = "#10b981";
             }
             var outerBtn = document.querySelector(
-              "#task-card-" + taskId + " .mdm-btn-toggle"
+              "#task-card-" + taskId + " .mdm-btn-toggle",
             );
             if (outerBtn) {
               outerBtn.innerText = "Tamamlandı ✅";
@@ -7738,7 +7748,7 @@ ${listHtml}
           if (res && res.success) {
             ModumApp.showToast(
               "🎉 Profil Mimarı görevi tamamlandı! +250 XP",
-              "success"
+              "success",
             );
 
             // Butonu Yeşil Yap
@@ -7753,7 +7763,7 @@ ${listHtml}
           } else {
             ModumApp.showToast(
               "⚠️ " + (res ? res.message : "Hata oluştu."),
-              "error"
+              "error",
             );
             if (btn) {
               btn.innerHTML = "Tekrar Dene";
@@ -7765,7 +7775,7 @@ ${listHtml}
         // --- B. ÇERÇEVE YOKSA: MAĞAZAYA YÖNLENDİR ---
         if (
           confirm(
-            "Henüz koleksiyonunda hiç çerçeve yok. 🛍️\n\nBu görevi tamamlamak için Mağazadan bir çerçeve satın almalısın. Mağazaya gidilsin mi?"
+            "Henüz koleksiyonunda hiç çerçeve yok. 🛍️\n\nBu görevi tamamlamak için Mağazadan bir çerçeve satın almalısın. Mağazaya gidilsin mi?",
           )
         ) {
           ModumApp.switchTab("store");
@@ -7996,7 +8006,7 @@ ${opt}
           finalHtml += ModumApp.renderStoreGrid(
             specialItems,
             purchased,
-            "🔥 ÖZEL FIRSATLAR"
+            "🔥 ÖZEL FIRSATLAR",
           );
         }
 
@@ -8008,7 +8018,7 @@ ${opt}
           finalHtml += ModumApp.renderStoreGrid(
             couponItems,
             purchased,
-            "🎫 İNDİRİM KUPONLARI"
+            "🎫 İNDİRİM KUPONLARI",
           );
         }
 
@@ -8024,7 +8034,7 @@ ${opt}
         const frameItems = items.filter(
           (i) =>
             i.title.toLowerCase().includes("çerçeve") ||
-            i.type === "avatar_frame"
+            i.type === "avatar_frame",
         );
 
         if (frameItems.length > 0) {
@@ -8291,8 +8301,8 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
         type === "success"
           ? '<i class="fas fa-check"></i>'
           : type === "error"
-          ? '<i class="fas fa-times"></i>'
-          : '<i class="fas fa-info"></i>';
+            ? '<i class="fas fa-times"></i>'
+            : '<i class="fas fa-info"></i>';
 
       var t = document.createElement("div");
       t.className = `mdm-toast ${type}`;
@@ -8331,13 +8341,425 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
         .replace(/-|:|\.\d\d\d/g, ""); // 1 saat sonrası
 
       var calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        title + " - Son Şans!"
+        title + " - Son Şans!",
       )}&dates=${start}/${end}&details=${encodeURIComponent(
-        "ModumNet çekilişi sona eriyor! Hemen katıl: " + window.location.href
+        "ModumNet çekilişi sona eriyor! Hemen katıl: " + window.location.href,
       )}&sf=true&output=xml`;
 
       window.open(calendarUrl, "_blank");
     }, // <-- Buraya virgül koymayı unutma, eğer devamında kod varsa. Yoksa gerek yok.
+    // --- 👗 MODUM STİLİSTİ (MODA DANIŞMANI) ---
+
+    // 1. Anketi Aç
+    openFashionSurvey: function () {
+      if (!APP_STATE.user || !APP_STATE.user.email)
+        return ModumApp.showGuestPopup("daily");
+
+      // Eğer zaten çözdüyse direkt Story moduna geç
+      if (APP_STATE.user.isStyleProfileComplete) {
+        ModumApp.openDailyStories();
+        return;
+      }
+
+      var html = `
+        <div id="mdm-survey-modal" class="mdm-modal active" style="z-index:999999; align-items:flex-start; overflow-y:auto; padding-top:50px;">
+            <div class="mdm-modal-content" style="background:#1e293b; border:1px solid #334155; width:95%; max-width:500px; padding:25px; border-radius:16px; position:relative;">
+                
+                <div onclick="document.getElementById('mdm-survey-modal').remove()" style="position:absolute; top:15px; right:15px; font-size:24px; color:#64748b; cursor:pointer;">×</div>
+
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:40px;">👗</div>
+                    <h3 style="color:#fff; margin:5px 0;">Stilini Tanıyalım</h3>
+                    <p style="color:#94a3b8; font-size:12px; line-height:1.5;">
+                        Size en uygun ayakkabı ve kıyafetleri önerebilmemiz için beden bilgilerinize ihtiyacımız var. 
+                        <br><span style="color:#f472b6;">Bu bilgiler sadece size özel öneriler sunmak için kullanılır.</span>
+                    </p>
+                </div>
+
+                <form id="mdm-style-form">
+                    <div class="mdm-form-group">
+                        <label style="color:#fff; font-size:13px; font-weight:bold; display:block; margin-bottom:8px;">👠 Ayakkabı Numaranız (Min 1)</label>
+                        <div class="mdm-check-grid">
+                            ${[35, 36, 37, 38, 39, 40, 41]
+                              .map(
+                                (n) => `
+                                <label class="mdm-check-box">
+                                    <input type="checkbox" name="shoe" value="${n}">
+                                    <span>${n}</span>
+                                </label>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+
+                    <div class="mdm-form-group" style="margin-top:20px;">
+                        <label style="color:#fff; font-size:13px; font-weight:bold; display:block; margin-bottom:8px;">👗 Elbise Bedeniniz (Min 1)</label>
+                        <div class="mdm-check-grid">
+                            ${["XS", "S", "M", "L", "XL", "XXL"]
+                              .map(
+                                (n) => `
+                                <label class="mdm-check-box">
+                                    <input type="checkbox" name="dress" value="${n}">
+                                    <span>${n}</span>
+                                </label>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+
+                    <div class="mdm-form-group" style="margin-top:20px;">
+                        <label style="color:#fff; font-size:13px; font-weight:bold; display:block; margin-bottom:8px;">👕 Tişört Bedeniniz (Min 1)</label>
+                        <div class="mdm-check-grid">
+                            ${["XS", "S", "M", "L", "XL", "XXL"]
+                              .map(
+                                (n) => `
+                                <label class="mdm-check-box">
+                                    <input type="checkbox" name="tshirt" value="${n}">
+                                    <span>${n}</span>
+                                </label>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+
+                    <div class="mdm-form-group" style="margin-top:20px;">
+                        <label style="color:#fff; font-size:13px; font-weight:bold; display:block; margin-bottom:8px;">🧥 Sweatshirt Bedeniniz (Min 1)</label>
+                        <div class="mdm-check-grid">
+                            ${["XS", "S", "M", "L", "XL", "XXL"]
+                              .map(
+                                (n) => `
+                                <label class="mdm-check-box">
+                                    <input type="checkbox" name="sweat" value="${n}">
+                                    <span>${n}</span>
+                                </label>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+
+                    <div class="mdm-form-group" style="margin-top:20px;">
+                        <label style="color:#fff; font-size:13px; font-weight:bold; display:block; margin-bottom:8px;">🎨 Sevdiğiniz Renkler (Min 3 Seçin)</label>
+                        <div class="mdm-check-grid colors">
+                            ${[
+                              "Siyah",
+                              "Beyaz",
+                              "Kırmızı",
+                              "Mavi",
+                              "Yeşil",
+                              "Sarı",
+                              "Pembe",
+                              "Mor",
+                              "Turuncu",
+                              "Gri",
+                              "Bej",
+                              "Kahve",
+                            ]
+                              .map(
+                                (n) => `
+                                <label class="mdm-check-box color-box">
+                                    <input type="checkbox" name="color" value="${n}">
+                                    <span>${n}</span>
+                                </label>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+
+                    <div id="mdm-secure-badge" style="margin-top:25px; background:rgba(16, 185, 129, 0.1); border:1px solid #10b981; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; font-size:11px; color:#6ee7b7; display:none;">
+                        <i class="fas fa-shield-alt" style="font-size:16px;"></i>
+                        <div>Bilgileriniz 256-bit SSL ile şifrelenerek güvenli sunucularımıza iletiliyor.</div>
+                    </div>
+
+                    <button type="button" onclick="ModumApp.submitFashionSurvey()" class="mdm-btn-lucky" style="width:100%; margin-top:20px; justify-content:center;">
+                        KAYDET VE 500 XP KAZAN ✅
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <style>
+            .mdm-check-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+            .mdm-check-box input { display:none; }
+            .mdm-check-box span { 
+                display:block; padding:8px; background:rgba(255,255,255,0.05); color:#cbd5e1; 
+                border:1px solid #334155; border-radius:6px; text-align:center; font-size:12px; cursor:pointer; transition:0.2s;
+            }
+            .mdm-check-box input:checked + span {
+                background: #8b5cf6; color: white; border-color: #8b5cf6; font-weight:bold; box-shadow:0 0 10px rgba(139, 92, 246, 0.4);
+            }
+        </style>
+        `;
+
+      var d = document.createElement("div");
+      d.innerHTML = html;
+      document.body.appendChild(d);
+    },
+
+    // 2. Anketi Kontrol Et ve Gönder
+    submitFashionSurvey: function () {
+      var form = document.getElementById("mdm-style-form");
+      var shoes = Array.from(
+        form.querySelectorAll('input[name="shoe"]:checked'),
+      ).map((cb) => cb.value);
+      var dresses = Array.from(
+        form.querySelectorAll('input[name="dress"]:checked'),
+      ).map((cb) => cb.value);
+      var tshirts = Array.from(
+        form.querySelectorAll('input[name="tshirt"]:checked'),
+      ).map((cb) => cb.value);
+      var sweats = Array.from(
+        form.querySelectorAll('input[name="sweat"]:checked'),
+      ).map((cb) => cb.value);
+      var colors = Array.from(
+        form.querySelectorAll('input[name="color"]:checked'),
+      ).map((cb) => cb.value);
+
+      // KONTROLLER
+      if (shoes.length < 1)
+        return alert("Lütfen en az 1 ayakkabı numarası seçin.");
+      if (dresses.length < 1)
+        return alert("Lütfen en az 1 elbise bedeni seçin.");
+      if (tshirts.length < 1)
+        return alert("Lütfen en az 1 tişört bedeni seçin.");
+      if (sweats.length < 1)
+        return alert("Lütfen en az 1 sweatshirt bedeni seçin.");
+      if (colors.length < 3) return alert("Lütfen en az 3 renk seçin.");
+
+      // Güvenlik Animasyonu
+      var badge = document.getElementById("mdm-secure-badge");
+      var btn = form.querySelector("button");
+
+      badge.style.display = "flex";
+      btn.innerHTML =
+        '<i class="fas fa-circle-notch fa-spin"></i> Güvenli Gönderim...';
+      btn.disabled = true;
+
+      // Backend'e Gönder
+      setTimeout(function () {
+        var payload = {
+          email: APP_STATE.user.email,
+          preferences: {
+            shoeSize: shoes.join(","),
+            dressSize: dresses.join(","),
+            tshirtSize: tshirts.join(","),
+            sweatSize: sweats.join(","),
+            colors: colors,
+          },
+        };
+
+        fetchApi("submit_fashion_preferences", payload).then((res) => {
+          if (res.success) {
+            alert(res.message);
+            document.getElementById("mdm-survey-modal").remove();
+
+            // Kullanıcı bilgisini güncelle
+            APP_STATE.user.isStyleProfileComplete = true;
+            localStorage.setItem(
+              "mdm_user_cache",
+              JSON.stringify(APP_STATE.user),
+            );
+            updateDataInBackground();
+
+            // 🔥 STORY MODUNU AÇ
+            setTimeout(() => {
+              ModumApp.openDailyStories();
+            }, 1000);
+          } else {
+            alert("Hata: " + res.message);
+            btn.disabled = false;
+            btn.innerHTML = "TEKRAR DENE";
+          }
+        });
+      }, 1500); // Biraz beklet ki animasyon görünsün
+    },
+
+    // 3. GÜNLÜK STORY (ÖNERİ) SİSTEMİ
+    openDailyStories: function () {
+      // Rastgele 5 Ürün Seç (Simülasyon - Gerçekte API'den gelebilir)
+      var stories = [
+        {
+          id: 1,
+          title: "Sneaker Şıklığı",
+          img: "https://www.modum.tr/i/l/001/0012769_hawer-bej-cilt-bagcikli-spor-ayakkabi.jpeg",
+          price: "750 TL",
+          link: "/kadin-sneaker",
+          pool: "Sneaker",
+        },
+        {
+          id: 2,
+          title: "Topuklu Zarafeti",
+          img: "https://www.modum.tr/i/l/001/0012660_icar-bej-cilt-babet-ayakkabi.jpeg",
+          price: "989 TL",
+          link: "/kadin-topuklu",
+          pool: "Topuklu",
+        },
+        {
+          id: 3,
+          title: "Günlük Rahatlık",
+          img: "https://www.modum.tr/i/l/000/0008841_hawer-bej-cilt-bagcikli-spor-ayakkabi.jpeg",
+          price: "600 TL",
+          link: "/kadin-gunluk",
+          pool: "Gunluk",
+        },
+        {
+          id: 4,
+          title: "Kış Modası",
+          img: "https://www.modum.tr/i/l/001/0012659_icar-bej-cilt-babet-ayakkabi.png",
+          price: "1200 TL",
+          link: "/kadin-bot",
+          pool: "Bot",
+        },
+        {
+          id: 5,
+          title: "Renkli Dünyan",
+          img: "https://www.modum.tr/i/m/001/0016133.jpeg",
+          price: "850 TL",
+          link: "/yeni-gelenler",
+          pool: "Yeni",
+        },
+      ];
+
+      // Story Bar HTML (Vitrin Üstüne Eklenir)
+      var storyHtml = `
+        <div id="mdm-stories-bar" style="margin-bottom:20px; overflow-x:auto; white-space:nowrap; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <div style="font-size:12px; color:#fbbf24; font-weight:bold; margin-bottom:10px; margin-left:5px;">SANA ÖZEL SEÇİMLER 🔥</div>
+            <div style="display:flex; gap:15px; padding:0 5px;">
+                ${stories
+                  .map(
+                    (s, i) => `
+                    <div onclick="ModumApp.openStoryPopup(${i})" style="cursor:pointer; text-align:center; display:inline-block;">
+                        <div style="width:65px; height:65px; border-radius:50%; padding:3px; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">
+                            <img src="${s.img}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #0f172a; background:#fff;">
+                        </div>
+                        <div style="font-size:10px; color:#fff; margin-top:5px; max-width:70px; overflow:hidden; text-overflow:ellipsis;">${s.title}</div>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            </div>
+        </div>
+        `;
+
+      // Varolanı sil, yenisini ekle
+      var old = document.getElementById("mdm-stories-bar");
+      if (old) old.remove();
+
+      // Vitrindeki "Liderler" alanının üstüne ekleyelim
+      var leaderArea = document.getElementById("mdm-leaderboard-area");
+      if (leaderArea) {
+        leaderArea.insertAdjacentHTML("beforebegin", storyHtml);
+      }
+
+      // Story Verisini Hafızaya Al
+      window.MDM_STORIES = stories;
+    },
+
+    // 4. STORY POP-UP (ÜRÜN DETAYI VE AKILLI KUPON)
+    openStoryPopup: function (index) {
+      var story = window.MDM_STORIES[index];
+      if (!story) return;
+
+      // --- AKILLI KUPON MANTIĞI (LEVEL BAZLI) ---
+      var userLvl = APP_STATE.user.seviye || "Çaylak";
+      var couponDiscount = "50 TL";
+      var couponCost = 500;
+      var couponColor = "#10b981"; // Yeşil
+
+      if (userLvl === "Usta") {
+        couponDiscount = "%15";
+        couponCost = 1500;
+        couponColor = "#8b5cf6"; // Mor
+      } else if (userLvl === "Şampiyon") {
+        couponDiscount = "%20";
+        couponCost = 2500;
+        couponColor = "#f59e0b"; // Sarı
+      } else if (userLvl === "Efsane") {
+        couponDiscount = "%30";
+        couponCost = 4000;
+        couponColor = "#ef4444"; // Kırmızı
+      }
+
+      var html = `
+        <div id="mdm-story-modal" class="mdm-modal active" style="z-index:9999999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.95);">
+            <div class="mdm-modal-content" style="width:100%; height:100%; max-width:450px; background:#000; position:relative; display:flex; flex-direction:column; border:none; border-radius:0;">
+                
+                <div style="position:absolute; top:10px; left:10px; right:10px; display:flex; gap:5px; z-index:10;">
+                    ${window.MDM_STORIES.map(
+                      (s, i) => `
+                        <div style="flex:1; height:3px; background:rgba(255,255,255,0.3); border-radius:3px;">
+                            <div style="width:${i <= index ? "100%" : "0%"}; height:100%; background:#fff; border-radius:3px;"></div>
+                        </div>
+                    `,
+                    ).join("")}
+                </div>
+
+                <div onclick="document.getElementById('mdm-story-modal').remove()" style="position:absolute; top:20px; right:20px; font-size:24px; color:#fff; cursor:pointer; z-index:10;">×</div>
+
+                <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative;">
+                    <img src="${story.img}" style="width:100%; max-height:60vh; object-fit:contain;">
+                    
+                    <div style="position:absolute; bottom:20px; left:20px; right:20px; text-align:center;">
+                        <h2 style="color:#fff; text-shadow:0 2px 10px rgba(0,0,0,0.8); margin-bottom:5px;">${story.title}</h2>
+                        <p style="color:#e2e8f0; text-shadow:0 1px 5px rgba(0,0,0,0.8); font-size:14px;">Sizin stilinize özel seçildi.</p>
+                    </div>
+                </div>
+
+                <div style="padding:20px; background:linear-gradient(to top, #0f172a, transparent); display:flex; flex-direction:column; gap:10px;">
+                    
+                    <button onclick="window.location.href='${story.link}'" style="background:#fff; color:#000; border:none; padding:15px; border-radius:12px; font-weight:bold; font-size:14px; width:100%; cursor:pointer;">
+                        Ürüne Git (${story.price}) ↗
+                    </button>
+
+                    <button onclick="ModumApp.buySmartCoupon('${userLvl}', ${couponCost}, '${couponDiscount}')" 
+                            style="background:${couponColor}; color:#fff; border:none; padding:15px; border-radius:12px; font-weight:bold; font-size:14px; width:100%; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 0 20px ${couponColor}80; animation:pulse 2s infinite;">
+                        <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:10px;">${userLvl} ÖZEL</span>
+                        <span>Kupon Satın Al (${couponDiscount})</span>
+                        <span style="font-size:10px; opacity:0.8;">-${couponCost} XP</span>
+                    </button>
+
+                </div>
+
+                <div onclick="ModumApp.openStoryPopup(${index - 1})" style="position:absolute; top:0; left:0; width:30%; height:70%; z-index:5;"></div>
+                <div onclick="ModumApp.openStoryPopup(${index + 1})" style="position:absolute; top:0; right:0; width:30%; height:70%; z-index:5;"></div>
+
+            </div>
+        </div>
+        `;
+
+      var div = document.createElement("div");
+      div.innerHTML = html;
+      document.body.appendChild(div);
+    },
+
+    // 5. AKILLI KUPON SATIN ALMA (YÖNLENDİRME)
+    buySmartCoupon: function (level, cost, discount) {
+      if (
+        !confirm(
+          `Bu özel kuponu almak için ${cost} XP harcanacak. Onaylıyor musun?`,
+        )
+      )
+        return;
+
+      // Puan Kontrolü
+      if ((APP_STATE.user.puan || 0) < cost) return alert("Yetersiz Puan!");
+
+      // Mağazaya Yönlendir
+      document.getElementById("mdm-story-modal").remove();
+      ModumApp.switchTab("store");
+      ModumApp.switchStoreCategory("coupons");
+
+      // Kullanıcıya bilgi ver
+      setTimeout(() => {
+        alert(
+          `💡 Harika! '${level}' seviyesine özel, puanınla alabileceğin ${discount} değerindeki indirim kuponlarını buradan seçebilirsin.`,
+        );
+      }, 500);
+    },
   }; // <--- BURASI ÇOK ÖNEMLİ: window.ModumApp BU NOKTALI VİRGÜL İLE BİTER.
 
   checkSystemLock().then((isLocked) => {
@@ -8405,7 +8827,7 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
     if (resTasks && resTasks.success) {
       var html = "";
       var activeTasks = resTasks.tasks.filter(
-        (t) => t.status === "active" || t.status === true || t.aktif === true
+        (t) => t.status === "active" || t.status === true || t.aktif === true,
       );
       // 2. 🔥 SIRALA: Günlük Görevler En Üste
       activeTasks.sort(function (a, b) {
@@ -8482,7 +8904,7 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
               (t.customId && t.customId === "gorev_profil_mimari")
             ) {
               var myFrames = (APP_STATE.user.ownedFrames || []).filter(
-                (f) => f && f !== "" && f !== "default"
+                (f) => f && f !== "" && f !== "default",
               );
               var hasFrame = myFrames.length > 0;
               var btnText = hasFrame ? "Kontrol Et & Al 🎁" : "Çerçeve Al 🛒";
@@ -8601,7 +9023,7 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
             var trDate = new Date(
               new Date().toLocaleString("en-US", {
                 timeZone: "Europe/Istanbul",
-              })
+              }),
             );
             var todayStr = trDate.toISOString().split("T")[0];
             var userLastDate =
@@ -8804,17 +9226,17 @@ ${stepsHtml}
             });
           } else {
             console.log(
-              "⚠️ Görev ID bulunamadı (Görevler sekmesini hiç açmadınız mı?)"
+              "⚠️ Görev ID bulunamadı (Görevler sekmesini hiç açmadınız mı?)",
             );
           }
         } else {
           console.log(
-            "❌ Kullanıcı hala bulunamadı. Lütfen bir kez 'Hesabım' sayfasına tıklayın."
+            "❌ Kullanıcı hala bulunamadı. Lütfen bir kez 'Hesabım' sayfasına tıklayın.",
           );
         }
       }
     },
-    true
+    true,
   );
   // --- 🕵️ AJAN: Site Açılınca Sepet Görevini Bul ---
   function findCartTaskID() {
@@ -9555,7 +9977,7 @@ style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border
         if (res && res.success) {
           // Eğer ilk kez yapıyorsa bildirim göster
           alert(
-            "🎉 TEBRİKLER! 'Profil Mimarı' görevini tamamladın ve +250 XP kazandın!"
+            "🎉 TEBRİKLER! 'Profil Mimarı' görevini tamamladın ve +250 XP kazandın!",
           );
           updateDataInBackground();
         }
@@ -9582,7 +10004,7 @@ style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border
       avatarOptionsHtml = AVATAR_LIBRARY.map(
         (url) =>
           `<img src="${url}" onclick="document.getElementById('new-avatar-input').value='${url}'; this.parentElement.querySelectorAll('img').forEach(i=>i.style.border='2px solid transparent'); this.style.border='3px solid #10b981';" 
-style="width:50px; height:50px; border-radius:50%; cursor:pointer; border:2px solid transparent;">`
+style="width:50px; height:50px; border-radius:50%; cursor:pointer; border:2px solid transparent;">`,
       ).join("");
     } else {
       avatarOptionsHtml =
@@ -9944,7 +10366,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
               console.log("🔒 Oyun Oturumu Başladı: " + res.token);
             } else {
               console.log(
-                "⚠️ Oturum hatası: " + (res ? res.message : "Bilinmiyor")
+                "⚠️ Oturum hatası: " + (res ? res.message : "Bilinmiyor"),
               );
             }
           });
@@ -10006,7 +10428,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
               var now = new Date();
               // Türkiye saatine ayarla
               var trDate = new Date(
-                now.toLocaleString("en-US", { timeZone: "Europe/Istanbul" })
+                now.toLocaleString("en-US", { timeZone: "Europe/Istanbul" }),
               );
               var yyyy = trDate.getFullYear();
               var mm = String(trDate.getMonth() + 1).padStart(2, "0");
@@ -10041,12 +10463,12 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
                 document.getElementById("mv2-stacker-daily").innerText =
                   stackDaily;
             }
-          }
+          },
         );
       },
 
       startSnake: function () {
-        this.startGameSession('snake');
+        this.startGameSession("snake");
         var cvs = document.getElementById("mv2-canvas");
         var ctx = cvs.getContext("2d");
         document.getElementById("mv2-snake-start").style.display = "none";
@@ -10112,7 +10534,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
             touchStartY = e.changedTouches[0].screenY;
             e.preventDefault(); // Sayfanın kaymasını engelle
           },
-          { passive: false }
+          { passive: false },
         );
 
         cvs.addEventListener(
@@ -10161,7 +10583,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
             }
             e.preventDefault();
           },
-          { passive: false }
+          { passive: false },
         );
 
         window.mv2Dir = function (x, y) {
@@ -10274,7 +10696,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
       },
 
       startStackerGame: function () {
-        this.startGameSession('stacker');
+        this.startGameSession("stacker");
         var v = this.stackerVars;
         v.state = "playing";
         v.score = 0;
@@ -10355,14 +10777,13 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
             v.combo = (v.combo || 0) + 1; // Kombo sayacını artır
 
             // Görsel Efekt (Basit bir parlama)
-            document.getElementById(
-              "mv2-stacker-canvas"
-            ).style.boxShadow = `0 0 ${20 + v.combo * 5}px #4ade80`;
+            document.getElementById("mv2-stacker-canvas").style.boxShadow =
+              `0 0 ${20 + v.combo * 5}px #4ade80`;
             setTimeout(
               () =>
                 (document.getElementById("mv2-stacker-canvas").style.boxShadow =
                   ""),
-              200
+              200,
             );
 
             // Ekstra Puan (Kombo başına +1)
@@ -10481,7 +10902,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
             payload.token = this.activeToken;
           } else {
             console.warn(
-              "⚠️ Uyarı: Token alınamadı, skor güvensiz gönderiliyor."
+              "⚠️ Uyarı: Token alınamadı, skor güvensiz gönderiliyor.",
             );
           }
 
@@ -10499,7 +10920,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
         // Basitlik için sadece snake geçmişini gösteriyoruz veya birleştirebiliriz.
         // Şimdilik yerel depolamadan karışık çekelim.
         var list = JSON.parse(
-          localStorage.getItem("mv2_local_history") || "[]"
+          localStorage.getItem("mv2_local_history") || "[]",
         );
         var container = document.getElementById("mv2-history-list");
         if (!container) return;
@@ -10523,7 +10944,7 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
       saveLocal: function (score, gameType) {
         if (score <= 0) return;
         var list = JSON.parse(
-          localStorage.getItem("mv2_local_history") || "[]"
+          localStorage.getItem("mv2_local_history") || "[]",
         );
         var time = new Date().toLocaleTimeString("tr-TR", {
           hour: "2-digit",
@@ -10699,7 +11120,7 @@ ${userAvatar}
           if (data && data.success && data.list.length > 0) {
             var html = "";
             data.list.sort(
-              (a, b) => (b.isWinner === true) - (a.isWinner === true)
+              (a, b) => (b.isWinner === true) - (a.isWinner === true),
             );
             data.list.forEach((t) => {
               var firstCode = t.tickets[0].code;
@@ -10720,7 +11141,7 @@ ${userAvatar}
               var storyBtn = isWin
                 ? `<button class="btn-story-share" onclick="window.ModumApp.openShareStoryModal('${rafName.replace(
                     /'/g,
-                    "\\'"
+                    "\\'",
                   )}', '${count}', '${firstCode}')"><i class="fab fa-instagram"></i> Story Paylaş (+100 XP)</button>`
                 : "";
               html += `<div class="${cardClass}"><div class="mdm-rt-left">${statusBadge}<div class="${titleStyle}" style="font-size:14px; font-weight:bold; line-height:1.3;">${rafName}</div><div style="font-size:10px; color:${dateColor}; margin-top:8px; font-weight:bold;">${dateText}</div>${storyBtn}</div><div class="mdm-rt-right"><div style="font-size:24px; font-weight:900; color:#78350f;">x${count}</div><div style="font-size:10px; color:#78350f; font-weight:bold; text-align:center;">BİLET</div><div style="margin-top:auto; font-size:9px; font-family:monospace; transform:rotate(-90deg); white-space:nowrap; width:10px;">${firstCode}...</div></div></div>`;
@@ -10737,7 +11158,7 @@ ${userAvatar}
     window.ModumApp.openShareStoryModal = function (
       raffleName,
       ticketCount,
-      ticketCode
+      ticketCode,
     ) {
       var old = document.getElementById("mdm-share-info-modal");
       if (old) old.remove();
@@ -10748,7 +11169,7 @@ ${userAvatar}
     window.ModumApp.generateTicketStory = function (
       raffleName,
       ticketCount,
-      ticketCode
+      ticketCode,
     ) {
       var btn = document.querySelector("#mdm-share-info-modal .mdm-btn-lucky");
       if (btn) {
@@ -10880,7 +11301,7 @@ ${userAvatar}
           finalHtml += ModumApp.renderStoreGrid(
             specials,
             purchased,
-            "🔥 ÖZEL FIRSATLAR"
+            "🔥 ÖZEL FIRSATLAR",
           );
         if (specials.length > 0 && coupons.length > 0)
           finalHtml += `<div style="height:1px; background:#334155; margin:30px 10px;"></div>`;
@@ -10888,7 +11309,7 @@ ${userAvatar}
           finalHtml += ModumApp.renderStoreGrid(
             coupons,
             purchased,
-            "🎫 İNDİRİM KUPONLARI"
+            "🎫 İNDİRİM KUPONLARI",
           );
 
         if (!finalHtml)
@@ -10934,7 +11355,7 @@ ${userAvatar}
         const frameItems = items.filter(
           (i) =>
             i.title.toLowerCase().includes("çerçeve") ||
-            i.type === "avatar_frame"
+            i.type === "avatar_frame",
         );
 
         if (frameItems.length > 0) {
@@ -10992,7 +11413,7 @@ ${frameDiv}
       id,
       title,
       cost,
-      frameClass
+      frameClass,
     ) {
       // Eski modal varsa temizle
       var old = document.getElementById("mdm-buy-frame-modal");
@@ -11067,7 +11488,7 @@ ${btnHtml}
       title,
       cost,
       imgLink,
-      isOwned
+      isOwned,
     ) {
       var old = document.getElementById("mdm-avatar-preview");
       if (old) old.remove();
@@ -11094,11 +11515,11 @@ ${btnHtml}
         var purchasedAvatars = user.ownedAvatars || [];
 
         var modalContent = document.querySelector(
-          "#mdm-edit-modal .mdm-modal-content"
+          "#mdm-edit-modal .mdm-modal-content",
         );
         if (modalContent) {
           var listContainer = modalContent.querySelector(
-            "div[style*='overflow-y:auto']"
+            "div[style*='overflow-y:auto']",
           );
           if (listContainer) {
             listContainer.innerHTML = ""; // İçini temizle
@@ -11856,7 +12277,7 @@ transform: scale(1.1) !important;
           // Yapılmamış ve Aktif görevleri filtrele
           incompleteTasks = resTasks.tasks.filter(
             (t) =>
-              (t.status === "active" || t.aktif === true) && !myProgMap[t.id] // Tamamlanmamış
+              (t.status === "active" || t.aktif === true) && !myProgMap[t.id], // Tamamlanmamış
           );
         }
       } catch (e) {}
@@ -11876,7 +12297,7 @@ transform: scale(1.1) !important;
       // SENARYO A: ZENGİN MÜŞTERİ (Puanı bir ürüne yetiyor) -> HARCATMA
       // Puanının yettiği en pahalı ürünü bul
       const affordableItems = storeItems.filter(
-        (i) => parseInt(i.costXP) <= userPoints && parseInt(i.costXP) > 0
+        (i) => parseInt(i.costXP) <= userPoints && parseInt(i.costXP) > 0,
       );
 
       if (dice < 0.4 && affordableItems.length > 0) {
@@ -12213,7 +12634,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
             }
           } else {
             console.log(
-              "ℹ️ Görev sonucu: " + (res.message || "Zaten yapılmış olabilir.")
+              "ℹ️ Görev sonucu: " + (res.message || "Zaten yapılmış olabilir."),
             );
           }
         });
