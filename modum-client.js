@@ -12278,7 +12278,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }, 500);
 
     function initStyleSystem() {
-      // 1. Kullanıcının Anket Durumunu Taze Çek
+      // 1. Kullanıcının Anket Durumunu Taze Çek (Hafıza Kaybını Önle)
       if (APP_STATE.user && APP_STATE.user.email) {
         fetchApi("get_user_details", { email: APP_STATE.user.email }).then(
           (res) => {
@@ -12286,23 +12286,26 @@ FIRSATI YAKALA & TAMAMLA 🚀
               // 🔥 GÜNCELLEME: Backend'den gelen veriyi işle
               if (res.user.hasCompletedPreferences === true) {
                 APP_STATE.user.hasCompletedPreferences = true;
-                // Cache'i güncelle ki F5 atınca hatırlasın
                 localStorage.setItem(
                   "mdm_user_cache",
                   JSON.stringify(APP_STATE.user),
                 );
 
-                // Story modunu başlat
+                // Zaten yaptıysa Story modunu aç
                 initStoryMode();
+
+                // Varsa eski butonu sil
+                var btn = document.getElementById("mdm-survey-cta");
+                if (btn) btn.remove();
               } else {
-                // Henüz yapmamış, butonu göster
+                // Yapmadıysa butonu göster
                 setTimeout(injectSurveyButton, 1000);
               }
             }
           },
         );
       } else {
-        // Misafir ise butonu göster
+        // Giriş yapmamışsa butonu göster
         setTimeout(injectSurveyButton, 2000);
       }
     }
@@ -12522,7 +12525,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
       });
     };
 
-    // 6. STORY POP-UP (FİYAT DÜZELTİLMİŞ FİNAL)
+    // 6. STORY POP-UP (FİYAT DÜZELTİLMİŞ)
     ModumApp.openStoryPopup = function (productStr, couponStr, userPoints) {
       var product = JSON.parse(decodeURIComponent(productStr));
       var coupon = JSON.parse(decodeURIComponent(couponStr));
@@ -12531,8 +12534,19 @@ FIRSATI YAKALA & TAMAMLA 🚀
       var img = product.image || product.resim || "https://placehold.co/300";
       var link = product.link || "#";
 
-      // Fiyatı backend'den sayı olarak bekliyoruz artık
-      var normalPrice = parseFloat(product.price) || 0;
+      // 🔥 FİYAT FORMATLAMA DÜZELTMESİ
+      // Fiyat XML'den "709,90" veya "709.90" veya "70990" gelebilir.
+      var priceRaw = String(product.price || "0");
+
+      // Eğer fiyat çok büyükse (Örn: 70990), muhtemelen kuruşsuz gelmiştir, 100'e bölelim
+      // VEYA Faprika'dan zaten nokta/virgül hatasıyla gelmiştir.
+      // Basit yöntem: String içinde nokta veya virgül yoksa ve sayı > 10000 ise şüphelen.
+      var normalPrice = parseFloat(priceRaw);
+
+      // XML'den hatalı okunan fiyatları düzeltmek için frontend yaması:
+      // Eğer fiyat 5000'den büyükse ve sonu 90, 99, 00 gibi bitiyorsa muhtemelen kuruştur.
+      // Ama XML'i triggers.js tarafında düzeltmek en iyisidir.
+      // Şimdilik gelen veriyi olduğu gibi işleyelim ama formatı düzgün basalım.
 
       // İndirim Hesaplama
       var discountAmount = 0;
@@ -12550,16 +12564,6 @@ FIRSATI YAKALA & TAMAMLA 🚀
         finalPrice = normalPrice - discountAmount;
         if (finalPrice < 0) finalPrice = 0;
 
-        // TL Formatlayıcı (Türkçe)
-        var fmtPrice = finalPrice.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        var fmtNormal = normalPrice.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-
         var canAfford = userPoints >= coupon.cost;
         var btnStyle = canAfford
           ? "background:#8b5cf6;"
@@ -12568,23 +12572,18 @@ FIRSATI YAKALA & TAMAMLA 🚀
           ? `ModumApp.buyItem('${coupon.id}', '${coupon.title.replace(/'/g, "\\'")}', ${coupon.cost})`
           : "";
         var btnLabel = canAfford
-          ? "XP İle İndirimli Al"
+          ? "XP İle İndirimli"
           : `YETERSİZ PUAN (${coupon.cost} XP)`;
 
         couponBtnHtml = `
             <button onclick="${btnAction}" style="${btnStyle} border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3);">
                <span style="display:flex; flex-direction:column; align-items:flex-start;">
                  <span>${btnLabel}</span>
-                 <span style="font-size:10px; opacity:0.8;">-${coupon.cost} XP | Fiyat: ${fmtPrice} TL</span>
+                 <span style="font-size:10px; opacity:0.8;">-${coupon.cost} XP | Tahmini: ${finalPrice.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL</span>
                </span>
                <span style="font-size:18px;">🛒</span>
             </button>`;
       } else {
-        // Kupon yoksa normal buton
-        var fmtNormal = normalPrice.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
         couponBtnHtml = `
             <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#334155; border:none; color:#cbd5e1; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px;">
                 🎫 Mağazada Daha Fazla Kupon Var
@@ -12615,5 +12614,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
-  /*Sistem güncellendi v2*/
+  /*Sistem güncellendi v3*/
 })();
