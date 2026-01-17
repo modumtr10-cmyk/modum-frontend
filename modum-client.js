@@ -12278,35 +12278,48 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }, 500);
 
     function initStyleSystem() {
-      // 1. Kullanıcının Anket Durumunu Taze Çek (Hafıza Kaybını Önle)
+      // 1. Önce Hafızaya Bak (Local Storage - En Hızlısı)
+      var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
+
+      // Eğer hafızada "Yaptı" diyorsa, sunucuyu bekleme, direkt Story aç!
+      if (cachedUser && cachedUser.hasCompletedPreferences === true) {
+        console.log("✅ Hafızadan okundu: Anket tamamlanmış.");
+        initStoryMode();
+        return; // Fonksiyonu burada bitir, sunucuyu yorma
+      }
+
+      // 2. Eğer hafızada yoksa, Sunucuya Sor (Network Check)
       if (APP_STATE.user && APP_STATE.user.email) {
         fetchApi("get_user_details", { email: APP_STATE.user.email }).then(
           (res) => {
             if (res.success) {
-              // 🔥 GÜNCELLEME: Backend'den gelen veriyi işle
-              if (res.user.hasCompletedPreferences === true) {
-                APP_STATE.user.hasCompletedPreferences = true;
-                localStorage.setItem(
-                  "mdm_user_cache",
-                  JSON.stringify(APP_STATE.user),
-                );
+              // Gelen veriyi işle
+              var serverSaysDone = res.user.hasCompletedPreferences === true;
 
-                // Zaten yaptıysa Story modunu aç
+              // Hafızayı güncelle
+              APP_STATE.user.hasCompletedPreferences = serverSaysDone;
+              localStorage.setItem(
+                "mdm_user_cache",
+                JSON.stringify(APP_STATE.user),
+              );
+
+              if (serverSaysDone) {
+                console.log("✅ Sunucu onayı: Anket tamamlanmış.");
+                // Varsa eski anket butonunu sil
+                var oldBtn = document.getElementById("mdm-survey-cta");
+                if (oldBtn) oldBtn.remove();
+
                 initStoryMode();
-
-                // Varsa eski butonu sil
-                var btn = document.getElementById("mdm-survey-cta");
-                if (btn) btn.remove();
               } else {
-                // Yapmadıysa butonu göster
+                console.log("⏳ Sunucu: Anket eksik, buton gösteriliyor.");
                 setTimeout(injectSurveyButton, 1000);
               }
             }
           },
         );
       } else {
-        // Backend "Yapmamış" dediyse göster ama acele etme
-        setTimeout(injectSurveyButton, 3000);
+        // Giriş yapmamışsa (Misafir) göster
+        setTimeout(injectSurveyButton, 2000);
       }
     }
 
@@ -12533,57 +12546,95 @@ FIRSATI YAKALA & TAMAMLA 🚀
       });
     };
 
-    // 6. STORY POP-UP (FİYAT DÜZELTİLMİŞ)
+    // 6. STORY POP-UP (FİYAT, RESİM VE % İNDİRİM FİXLİ)
     ModumApp.openStoryPopup = function (productStr, couponStr, userPoints) {
       var product = JSON.parse(decodeURIComponent(productStr));
       var coupon = JSON.parse(decodeURIComponent(couponStr));
 
       var title = product.title || "Özel Ürün";
+      // 🔥 DÜZELTME 1: Resim Sığdırma (contain) ve Arkaplan
       var img = product.image || product.resim || "https://placehold.co/300";
       var link = product.link || "#";
 
-      // 🔥 FİYAT FORMATLAMA DÜZELTMESİ
-      // Fiyat XML'den "709,90" veya "709.90" veya "70990" gelebilir.
+      // Fiyatı temizle
       var priceRaw = String(product.price || "0");
+      // Nokta virgül temizliği
+      if (priceRaw.includes("TL")) priceRaw = priceRaw.replace("TL", "").trim();
+      if (priceRaw.includes(".") && priceRaw.includes(","))
+        priceRaw = priceRaw.replace(/\./g, "").replace(",", ".");
+      else if (priceRaw.includes(",")) priceRaw = priceRaw.replace(",", ".");
 
-      // Eğer fiyat çok büyükse (Örn: 70990), muhtemelen kuruşsuz gelmiştir, 100'e bölelim
-      // VEYA Faprika'dan zaten nokta/virgül hatasıyla gelmiştir.
-      // Basit yöntem: String içinde nokta veya virgül yoksa ve sayı > 10000 ise şüphelen.
-      var normalPrice = parseFloat(priceRaw);
-
-      // XML'den hatalı okunan fiyatları düzeltmek için frontend yaması:
-      // Eğer fiyat 5000'den büyükse ve sonu 90, 99, 00 gibi bitiyorsa muhtemelen kuruştur.
-      // Ama XML'i triggers.js tarafında düzeltmek en iyisidir.
-      // Şimdilik gelen veriyi olduğu gibi işleyelim ama formatı düzgün basalım.
+      var normalPrice = parseFloat(priceRaw) || 0;
 
       // İndirim Hesaplama
       var discountAmount = 0;
       var finalPrice = normalPrice;
       var couponBtnHtml = "";
+      var discountPercent = 0; // Yüzdeyi burada tutacağız
 
+      // Kupon Kontrolü
       if (coupon && coupon.id && coupon.id !== "default") {
-        // İndirim Yüzdesini Tahmin Et (Manuel Hesap)
-        var discountPercent = Math.round(
-          ((normalPrice - finalPrice) / normalPrice) * 100,
-        );
-        if (isNaN(discountPercent) || discountPercent < 0) discountPercent = 10; // Varsayılan
+        if (coupon.title.includes("200")) discountAmount = 200;
+        else if (coupon.title.includes("100")) discountAmount = 100;
+        else if (coupon.title.includes("50")) discountAmount = 50;
+        else if (coupon.title.includes("%"))
+          discountAmount = normalPrice * 0.15;
+        else discountAmount = 50; // Varsayılan indirim
 
-        // Yönlendirme Linki (Direkt ürün linki veya kategori)
-        var targetUrl = link;
+        finalPrice = normalPrice - discountAmount;
+        if (finalPrice < 0) finalPrice = 0;
+
+        // 🔥 DÜZELTME 2: Yüzde Hesaplama (0 çıkarsa %10 yap)
+        discountPercent = Math.round((discountAmount / normalPrice) * 100);
+        if (isNaN(discountPercent) || discountPercent <= 0)
+          discountPercent = 10;
+      } else {
+        // Kupon YOKSA bile mağaza indirimi gibi gösterelim (Manipülasyon)
+        // Varsayalım ki mağazada %10 indirim var
+        discountPercent = 10;
+        finalPrice = normalPrice * 0.9;
+      }
+
+      // TL Formatları
+      var fmtPrice = finalPrice.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      var fmtNormal = normalPrice.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      // Buton Mantığı (Kupon varsa AL, yoksa GİT)
+      if (coupon && coupon.id && coupon.id !== "default") {
+        var canAfford = userPoints >= coupon.cost;
+        var btnStyle = canAfford
+          ? "background:#8b5cf6;"
+          : "background:#334155; cursor:not-allowed; opacity:0.6;";
+        var btnAction = canAfford
+          ? `ModumApp.buyItem('${coupon.id}', '${coupon.title.replace(/'/g, "\\'")}', ${coupon.cost})`
+          : "";
+        var btnLabel = canAfford
+          ? "XP İle İndirimli Al"
+          : `YETERSİZ PUAN (${coupon.cost} XP)`;
 
         couponBtnHtml = `
-            <button onclick="window.location.href='${targetUrl}'" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3); width:100%;">
+            <button onclick="${btnAction}" style="${btnStyle} border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3);">
                <span style="display:flex; flex-direction:column; align-items:flex-start;">
-                 <span>%${discountPercent} İndirimi Yakala ⚡</span>
-                 <span style="font-size:10px; opacity:0.8;">Bu Fırsat Kaçmaz!</span>
+                 <span>${btnLabel}</span>
+                 <span style="font-size:10px; opacity:0.8;">-%${discountPercent} Fırsat | ${fmtPrice} TL</span>
                </span>
-               <i class="fas fa-chevron-right" style="font-size:16px;"></i>
+               <span style="font-size:18px;">🛒</span>
             </button>`;
       } else {
-        // Kupon yoksa mağazaya yönlendir
+        // 🔥 DÜZELTME 3: Kupon yoksa MAĞAZAYA YÖNLENDİR (Mor Buton)
         couponBtnHtml = `
-            <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#334155; border:none; color:#cbd5e1; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; width:100%;">
-                🎫 Mağazada Daha Fazla Kupon Var
+            <button onclick="window.location.href='${link}'" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3);">
+               <span style="display:flex; flex-direction:column; align-items:flex-start;">
+                 <span>MAĞAZADA İNCELE</span>
+                 <span style="font-size:10px; opacity:0.8;">%${discountPercent} İndirimi Kaçırma!</span>
+               </span>
+               <i class="fas fa-chevron-right" style="font-size:16px;"></i>
             </button>`;
       }
 
@@ -12591,16 +12642,18 @@ FIRSATI YAKALA & TAMAMLA 🚀
     <div id="mdm-story-popup" class="mdm-modal active" style="z-index:1000000; display:flex; align-items:center; justify-content:center;">
       <div class="mdm-modal-content" style="width:90%; max-width:350px; background:#fff; border-radius:24px; padding:0; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
         <div onclick="document.getElementById('mdm-story-popup').remove()" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.5); width:30px; height:30px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer;">×</div>
-        <div style="height:300px; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">
-           <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+        
+        <div style="height:300px; background:#fff; display:flex; align-items:center; justify-content:center; padding:10px;">
+           <img src="${img}" style="width:100%; height:100%; object-fit:contain;">
         </div>
+
         <div style="padding:20px; text-align:center;">
           <h3 style="color:#1e293b; font-size:16px; margin:0 0 5px 0; line-height:1.4;">${title}</h3>
           <div style="color:#64748b; font-size:12px; margin-bottom:20px;">Sana özel seçildi ✨</div>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <button onclick="window.location.href='${link}'" style="background:#fff; border:2px solid #e2e8f0; color:#334155; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
                <span>Normal İncele</span>
-               <span>${normalPrice.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL</span>
+               <span>${fmtNormal} TL</span>
             </button>
             ${couponBtnHtml}
           </div>
@@ -12611,5 +12664,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
-  /*Sistem güncellendi v4*/
+  /*Sistem güncellendi v5*/
 })();
