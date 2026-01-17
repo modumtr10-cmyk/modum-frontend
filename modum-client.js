@@ -12278,41 +12278,31 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }, 500);
 
     function initStyleSystem() {
-      // 1. ÖNCE HAFIZAYI KONTROL ET (Sayfa yenilense bile hatırlar)
-      var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
-
-      // Eğer yerel hafızada yapıldı görünüyorsa DİREKT Story Modunu aç
-      if (cachedUser && cachedUser.hasCompletedPreferences === true) {
-        APP_STATE.user.hasCompletedPreferences = true;
-        initStoryMode();
-      }
-      // Yoksa Backend'i kontrol et
-      else if (APP_STATE.user && APP_STATE.user.email) {
+      // 1. Kullanıcının Anket Durumunu Taze Çek
+      if (APP_STATE.user && APP_STATE.user.email) {
         fetchApi("get_user_details", { email: APP_STATE.user.email }).then(
           (res) => {
-            if (res.success && res.user.hasCompletedPreferences) {
-              // Backend "yapmış" diyorsa hafızayı güncelle ve Story aç
-              APP_STATE.user.hasCompletedPreferences = true;
+            if (res.success) {
+              // 🔥 GÜNCELLEME: Backend'den gelen veriyi işle
+              if (res.user.hasCompletedPreferences === true) {
+                APP_STATE.user.hasCompletedPreferences = true;
+                // Cache'i güncelle ki F5 atınca hatırlasın
+                localStorage.setItem(
+                  "mdm_user_cache",
+                  JSON.stringify(APP_STATE.user),
+                );
 
-              // Mevcut cache'i bozmadan güncelle
-              var currentCache =
-                JSON.parse(localStorage.getItem("mdm_user_cache")) ||
-                APP_STATE.user;
-              currentCache.hasCompletedPreferences = true;
-              localStorage.setItem(
-                "mdm_user_cache",
-                JSON.stringify(currentCache),
-              );
-
-              initStoryMode();
-            } else {
-              // Yapmamışsa butonu göster
-              setTimeout(injectSurveyButton, 1000);
+                // Story modunu başlat
+                initStoryMode();
+              } else {
+                // Henüz yapmamış, butonu göster
+                setTimeout(injectSurveyButton, 1000);
+              }
             }
           },
         );
       } else {
-        // Giriş yapmamışsa (Misafir) direkt butonu göster
+        // Misafir ise butonu göster
         setTimeout(injectSurveyButton, 2000);
       }
     }
@@ -12532,7 +12522,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
       });
     };
 
-    // 6. STORY POP-UP (🔥 FİYAT HATASI DÜZELTİLDİ)
+    // 6. STORY POP-UP (FİYAT DÜZELTİLMİŞ FİNAL)
     ModumApp.openStoryPopup = function (productStr, couponStr, userPoints) {
       var product = JSON.parse(decodeURIComponent(productStr));
       var coupon = JSON.parse(decodeURIComponent(couponStr));
@@ -12541,29 +12531,10 @@ FIRSATI YAKALA & TAMAMLA 🚀
       var img = product.image || product.resim || "https://placehold.co/300";
       var link = product.link || "#";
 
-      // 🔥 FİYAT FORMATLAMA MOTORU (TR UYUMLU)
-      // Gelen veri: "709,90", "1.250,50" veya "709.9" olabilir.
-      var priceRaw = String(product.price || "0")
-        .replace("TL", "")
-        .trim();
-      var normalPrice = 0;
+      // Fiyatı backend'den sayı olarak bekliyoruz artık
+      var normalPrice = parseFloat(product.price) || 0;
 
-      // 1. Durum: Virgül içeriyorsa (TR Formatı: 709,90 veya 1.250,50)
-      if (priceRaw.includes(",")) {
-        // Önce binlik ayracı noktaları sil, sonra virgülü noktaya çevir
-        var clean = priceRaw.replace(/\./g, "").replace(",", ".");
-        normalPrice = parseFloat(clean);
-      }
-      // 2. Durum: Sadece Nokta varsa (1250.50 veya 1.250)
-      else {
-        // Eğer nokta var ve 3 haneden az ondalık varsa (örn 10.5) -> Normal
-        // Eğer nokta var ve tam binlikse (örn 1.200) -> Binlik ayraç olabilir mi?
-        // Veritabanında number olarak tuttuğumuz için genelde "709.9" gelir.
-        normalPrice = parseFloat(priceRaw);
-      }
-
-      if (isNaN(normalPrice)) normalPrice = 0;
-
+      // İndirim Hesaplama
       var discountAmount = 0;
       var finalPrice = normalPrice;
       var couponBtnHtml = "";
@@ -12576,8 +12547,18 @@ FIRSATI YAKALA & TAMAMLA 🚀
           discountAmount = normalPrice * 0.15;
         else discountAmount = 50;
 
-        finalPrice = (normalPrice - discountAmount).toFixed(2);
+        finalPrice = normalPrice - discountAmount;
         if (finalPrice < 0) finalPrice = 0;
+
+        // TL Formatlayıcı (Türkçe)
+        var fmtPrice = finalPrice.toLocaleString("tr-TR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        var fmtNormal = normalPrice.toLocaleString("tr-TR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
 
         var canAfford = userPoints >= coupon.cost;
         var btnStyle = canAfford
@@ -12587,21 +12568,26 @@ FIRSATI YAKALA & TAMAMLA 🚀
           ? `ModumApp.buyItem('${coupon.id}', '${coupon.title.replace(/'/g, "\\'")}', ${coupon.cost})`
           : "";
         var btnLabel = canAfford
-          ? "XP İle İndirimli"
+          ? "XP İle İndirimli Al"
           : `YETERSİZ PUAN (${coupon.cost} XP)`;
 
         couponBtnHtml = `
             <button onclick="${btnAction}" style="${btnStyle} border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3);">
                <span style="display:flex; flex-direction:column; align-items:flex-start;">
                  <span>${btnLabel}</span>
-                 <span style="font-size:9px; opacity:0.8;">-${coupon.cost} XP | Tahmini: ${finalPrice} TL</span>
+                 <span style="font-size:10px; opacity:0.8;">-${coupon.cost} XP | Fiyat: ${fmtPrice} TL</span>
                </span>
                <span style="font-size:18px;">🛒</span>
             </button>`;
       } else {
+        // Kupon yoksa normal buton
+        var fmtNormal = normalPrice.toLocaleString("tr-TR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
         couponBtnHtml = `
             <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#334155; border:none; color:#cbd5e1; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px;">
-               🎫 Mağazada Daha Fazla Kupon Var
+                🎫 Mağazada Daha Fazla Kupon Var
             </button>`;
       }
 
@@ -12629,5 +12615,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
-  /*Sistem güncellendi v1*/
+  /*Sistem güncellendi v2*/
 })();
