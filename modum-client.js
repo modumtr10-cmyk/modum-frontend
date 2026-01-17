@@ -12305,13 +12305,21 @@ FIRSATI YAKALA & TAMAMLA 🚀
           },
         );
       } else {
-        // Giriş yapmamışsa butonu göster
-        setTimeout(injectSurveyButton, 2000);
+        // Backend "Yapmamış" dediyse göster ama acele etme
+        setTimeout(injectSurveyButton, 3000);
       }
     }
 
     // A. Buton Yerleştirici (Liderlik Tablosunun Üstüne)
     function injectSurveyButton() {
+      // injectSurveyButton fonksiyonunun EN BAŞINA bunu yapıştır:
+
+      // 1. Zaten çözdüyse iptal et (Local Storage Kontrolü)
+      var cached = JSON.parse(localStorage.getItem("mdm_user_cache"));
+      if (cached && cached.hasCompletedPreferences === true) return;
+
+      // 2. Halihazırda story bar varsa iptal et
+      if (document.getElementById("mdm-story-bar")) return;
       if (window.location.href.indexOf("cekilisler") === -1) return;
 
       // Eğer zaten story bar varsa veya buton varsa çık
@@ -12406,7 +12414,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
          <div onclick="ModumApp.openStoryPopup('${safeP}', '${safeC}', ${userPoints})" style="display:inline-block; width:70px; text-align:center; cursor:pointer; vertical-align:top;">
            <div class="mdm-story-circle" style="width:65px; height:65px; border-radius:50%; padding:2px; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); position:relative; margin:0 auto;">
              <div style="width:100%; height:100%; border-radius:50%; border:2px solid #0f172a; overflow:hidden; background:#fff;">
-               <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+               <img src="${img}" style="width:100%; height:100%; object-fit:contain; padding:10px;">
              </div>
            </div>
            <div style="font-size:10px; color:#fff; margin-top:5px; overflow:hidden; text-overflow:ellipsis; width:100%; white-space:nowrap;">Fırsat #${idx + 1}</div>
@@ -12554,38 +12562,27 @@ FIRSATI YAKALA & TAMAMLA 🚀
       var couponBtnHtml = "";
 
       if (coupon && coupon.id && coupon.id !== "default") {
-        if (coupon.title.includes("200")) discountAmount = 200;
-        else if (coupon.title.includes("100")) discountAmount = 100;
-        else if (coupon.title.includes("50")) discountAmount = 50;
-        else if (coupon.title.includes("%"))
-          discountAmount = normalPrice * 0.15;
-        else discountAmount = 50;
+        // İndirim Yüzdesini Tahmin Et (Manuel Hesap)
+        var discountPercent = Math.round(
+          ((normalPrice - finalPrice) / normalPrice) * 100,
+        );
+        if (isNaN(discountPercent) || discountPercent < 0) discountPercent = 10; // Varsayılan
 
-        finalPrice = normalPrice - discountAmount;
-        if (finalPrice < 0) finalPrice = 0;
-
-        var canAfford = userPoints >= coupon.cost;
-        var btnStyle = canAfford
-          ? "background:#8b5cf6;"
-          : "background:#334155; cursor:not-allowed; opacity:0.6;";
-        var btnAction = canAfford
-          ? `ModumApp.buyItem('${coupon.id}', '${coupon.title.replace(/'/g, "\\'")}', ${coupon.cost})`
-          : "";
-        var btnLabel = canAfford
-          ? "XP İle İndirimli"
-          : `YETERSİZ PUAN (${coupon.cost} XP)`;
+        // Yönlendirme Linki (Direkt ürün linki veya kategori)
+        var targetUrl = link;
 
         couponBtnHtml = `
-            <button onclick="${btnAction}" style="${btnStyle} border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3);">
+            <button onclick="window.location.href='${targetUrl}'" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3); width:100%;">
                <span style="display:flex; flex-direction:column; align-items:flex-start;">
-                 <span>${btnLabel}</span>
-                 <span style="font-size:10px; opacity:0.8;">-${coupon.cost} XP | Tahmini: ${finalPrice.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} TL</span>
+                 <span>%${discountPercent} İndirimi Yakala ⚡</span>
+                 <span style="font-size:10px; opacity:0.8;">Bu Fırsat Kaçmaz!</span>
                </span>
-               <span style="font-size:18px;">🛒</span>
+               <i class="fas fa-chevron-right" style="font-size:16px;"></i>
             </button>`;
       } else {
+        // Kupon yoksa mağazaya yönlendir
         couponBtnHtml = `
-            <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#334155; border:none; color:#cbd5e1; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px;">
+            <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#334155; border:none; color:#cbd5e1; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; width:100%;">
                 🎫 Mağazada Daha Fazla Kupon Var
             </button>`;
       }
@@ -12614,5 +12611,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
-  /*Sistem güncellendi v3*/
+  /*Sistem güncellendi v4*/
 })();
