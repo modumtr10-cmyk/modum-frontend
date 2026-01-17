@@ -12266,7 +12266,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
   /* ======================================================
-   👗 MODUMNET STİL DANIŞMANI (ANKET & STORY - FİNAL v4.0)
+   👗 MODUMNET STİL DANIŞMANI (ANKET & STORY - FİNAL v4.1 FİYAT & HAFIZA FIX)
    ====================================================== */
   (function () {
     // Ana sistemin (ModumApp) yüklenmesini bekle
@@ -12278,50 +12278,62 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }, 500);
 
     function initStyleSystem() {
-      // 1. Kullanıcının Anket Durumunu Taze Çek (Hafıza Kaybını Önle)
-      if (APP_STATE.user && APP_STATE.user.email) {
+      // 1. ÖNCE HAFIZAYI KONTROL ET (Sayfa yenilense bile hatırlar)
+      var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
+
+      // Eğer yerel hafızada yapıldı görünüyorsa DİREKT Story Modunu aç
+      if (cachedUser && cachedUser.hasCompletedPreferences === true) {
+        APP_STATE.user.hasCompletedPreferences = true;
+        initStoryMode();
+      }
+      // Yoksa Backend'i kontrol et
+      else if (APP_STATE.user && APP_STATE.user.email) {
         fetchApi("get_user_details", { email: APP_STATE.user.email }).then(
           (res) => {
             if (res.success && res.user.hasCompletedPreferences) {
-              // Eğer veritabanında yapıldı görünüyorsa, local'i güncelle
+              // Backend "yapmış" diyorsa hafızayı güncelle ve Story aç
               APP_STATE.user.hasCompletedPreferences = true;
+
+              // Mevcut cache'i bozmadan güncelle
+              var currentCache =
+                JSON.parse(localStorage.getItem("mdm_user_cache")) ||
+                APP_STATE.user;
+              currentCache.hasCompletedPreferences = true;
               localStorage.setItem(
                 "mdm_user_cache",
-                JSON.stringify(APP_STATE.user),
+                JSON.stringify(currentCache),
               );
-              initStoryMode(); // Story modunu aç
+
+              initStoryMode();
             } else {
-              // Yapılmadıysa butonu göster
+              // Yapmamışsa butonu göster
               setTimeout(injectSurveyButton, 1000);
             }
           },
         );
       } else {
-        // Giriş yapmamışsa direkt butonu göster (Misafir)
+        // Giriş yapmamışsa (Misafir) direkt butonu göster
         setTimeout(injectSurveyButton, 2000);
       }
     }
 
     // A. Buton Yerleştirici (Liderlik Tablosunun Üstüne)
     function injectSurveyButton() {
-      // Sadece çekiliş sayfasında çalış
       if (window.location.href.indexOf("cekilisler") === -1) return;
+
+      // Eğer zaten story bar varsa veya buton varsa çık
+      if (document.getElementById("mdm-story-bar")) return;
       if (document.getElementById("mdm-survey-cta")) return;
 
-      // Eğer zaten story modu aktifse butonu koyma
-      if (document.getElementById("mdm-story-bar")) return;
-
-      var lbArea = document.getElementById("mdm-leaderboard-area");
-      if (!lbArea) return;
-
-      // Kullanıcı zaten yapmışsa dur
-      var user = JSON.parse(localStorage.getItem("mdm_user_cache"));
-      if (user && user.hasCompletedPreferences) {
+      // Son bir kontrol: Global state true ise dur
+      if (APP_STATE.user && APP_STATE.user.hasCompletedPreferences) {
         initStoryMode();
         return;
       }
 
-      // Buton HTML
+      var lbArea = document.getElementById("mdm-leaderboard-area");
+      if (!lbArea) return;
+
       var btnHtml = `
       <div id="mdm-survey-cta" style="background:linear-gradient(135deg, #ec4899, #8b5cf6); border-radius:16px; padding:20px; text-align:center; margin-bottom:20px; box-shadow:0 10px 30px rgba(236, 72, 153, 0.3); border:1px solid rgba(255,255,255,0.2); position:relative; overflow:hidden;">
         <div style="position:absolute; top:-20px; left:-20px; font-size:80px; opacity:0.1; transform:rotate(-15deg);">👗</div>
@@ -12345,9 +12357,11 @@ FIRSATI YAKALA & TAMAMLA 🚀
     window.initStoryMode = function () {
       var lbArea = document.getElementById("mdm-leaderboard-area");
       if (!lbArea) return;
+
+      // Zaten varsa çalışma
       if (document.getElementById("mdm-story-bar")) return;
 
-      // Önce butonu kaldır (Varsa)
+      // Anket butonu varsa kaldır
       var btn = document.getElementById("mdm-survey-cta");
       if (btn) btn.remove();
 
@@ -12367,7 +12381,6 @@ FIRSATI YAKALA & TAMAMLA 🚀
 
       lbArea.insertAdjacentHTML("beforebegin", storyHtml);
 
-      // Storyleri Çek
       fetchApi("get_daily_stories", { email: APP_STATE.user.email }).then(
         (res) => {
           if (res && res.success) {
@@ -12453,6 +12466,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
       return selected;
     }
 
+    // 4. ANKET GÖNDER
     ModumApp.submitPreferences = function () {
       var dress = getSelectedChips("q-dress");
       var tshirt = getSelectedChips("q-tshirt");
@@ -12475,6 +12489,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", confirmHtml);
     };
 
+    // 5. FİNAL GÖNDERİM
     ModumApp.finalSubmitPrefs = function () {
       document.getElementById("mdm-secure-confirm").remove();
       var btn = document.querySelector("#mdm-survey-modal button");
@@ -12490,17 +12505,22 @@ FIRSATI YAKALA & TAMAMLA 🚀
         if (res.success) {
           alert("🎉 " + res.message);
           document.getElementById("mdm-survey-modal").remove();
+
           var cta = document.getElementById("mdm-survey-cta");
           if (cta) cta.remove();
 
+          // 🔥 HAFIZAYA KAYDET (F5 YAPINCA HATIRLASIN)
           APP_STATE.user.hasCompletedPreferences = true;
-          localStorage.setItem(
-            "mdm_user_cache",
-            JSON.stringify(APP_STATE.user),
-          );
+
+          var currentCache =
+            JSON.parse(localStorage.getItem("mdm_user_cache")) ||
+            APP_STATE.user;
+          currentCache.hasCompletedPreferences = true;
+          localStorage.setItem("mdm_user_cache", JSON.stringify(currentCache));
 
           if (window.ModumApp.updateDataInBackground)
             window.ModumApp.updateDataInBackground();
+
           setTimeout(initStoryMode, 1000);
         } else {
           alert("Hata: " + res.message);
@@ -12512,7 +12532,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
       });
     };
 
-    // 6. STORY POP-UP (FİYAT DÜZELTİLMİŞ)
+    // 6. STORY POP-UP (🔥 FİYAT HATASI DÜZELTİLDİ)
     ModumApp.openStoryPopup = function (productStr, couponStr, userPoints) {
       var product = JSON.parse(decodeURIComponent(productStr));
       var coupon = JSON.parse(decodeURIComponent(couponStr));
@@ -12521,21 +12541,27 @@ FIRSATI YAKALA & TAMAMLA 🚀
       var img = product.image || product.resim || "https://placehold.co/300";
       var link = product.link || "#";
 
-      // 🔥 FİYAT FORMATLAMA (1.250,50 TL -> 1250.50)
-      var priceRaw = String(product.price || "0");
-      // Binlik ayracı (nokta) varsa sil, kuruş ayracı (virgül) varsa noktaya çevir
-      var priceClean = priceRaw.replace("TL", "").trim();
+      // 🔥 FİYAT FORMATLAMA MOTORU (TR UYUMLU)
+      // Gelen veri: "709,90", "1.250,50" veya "709.9" olabilir.
+      var priceRaw = String(product.price || "0")
+        .replace("TL", "")
+        .trim();
+      var normalPrice = 0;
 
-      // Eğer format "1.250,50" ise
-      if (priceClean.includes(",") && priceClean.includes(".")) {
-        priceClean = priceClean.replace(/\./g, "").replace(",", ".");
+      // 1. Durum: Virgül içeriyorsa (TR Formatı: 709,90 veya 1.250,50)
+      if (priceRaw.includes(",")) {
+        // Önce binlik ayracı noktaları sil, sonra virgülü noktaya çevir
+        var clean = priceRaw.replace(/\./g, "").replace(",", ".");
+        normalPrice = parseFloat(clean);
       }
-      // Eğer sadece virgül varsa "50,50"
-      else if (priceClean.includes(",")) {
-        priceClean = priceClean.replace(",", ".");
+      // 2. Durum: Sadece Nokta varsa (1250.50 veya 1.250)
+      else {
+        // Eğer nokta var ve 3 haneden az ondalık varsa (örn 10.5) -> Normal
+        // Eğer nokta var ve tam binlikse (örn 1.200) -> Binlik ayraç olabilir mi?
+        // Veritabanında number olarak tuttuğumuz için genelde "709.9" gelir.
+        normalPrice = parseFloat(priceRaw);
       }
 
-      var normalPrice = parseFloat(priceClean);
       if (isNaN(normalPrice)) normalPrice = 0;
 
       var discountAmount = 0;
@@ -12603,4 +12629,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
+  /*Sistem güncellendi v1*/
 })();
