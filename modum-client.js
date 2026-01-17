@@ -2554,6 +2554,7 @@ margin-bottom: 20px;
 
     if (user && user.email) {
       APP_STATE.user = user;
+      ModumApp.logAction("SİTE_GİRİŞİ", "Müşteri siteyi ziyaret etti.");
 
       // --- 🔥 YENİ: SAĞ ÜST AVATAR GÜNCELLEME ---
       var navAvatar = document.getElementById("nav-avatar");
