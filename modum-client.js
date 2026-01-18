@@ -12370,44 +12370,63 @@ FIRSATI YAKALA & TAMAMLA 🚀
       lbArea.insertAdjacentHTML("beforebegin", btnHtml);
     }
 
-    // B. Story Modunu Başlat
+    // B. Story Modunu Başlat (GÜNCELLENMİŞ VE ZORLANMIŞ VERSİYON)
     window.initStoryMode = function () {
+      // 1. Hedef Alanı Bul (Liderlik Tablosu)
       var lbArea = document.getElementById("mdm-leaderboard-area");
-      if (!lbArea) return;
 
-      // Zaten varsa çalışma
+      // Eğer liderlik tablosu henüz yüklenmediyse 500ms sonra tekrar dene (Döngü)
+      if (!lbArea) {
+        setTimeout(window.initStoryMode, 500);
+        return;
+      }
+
+      // 2. Zaten varsa tekrar ekleme
       if (document.getElementById("mdm-story-bar")) return;
 
-      // Anket butonu varsa kaldır
+      // 3. Eski anket butonu varsa temizle
       var btn = document.getElementById("mdm-survey-cta");
       if (btn) btn.remove();
 
+      // 4. HTML İskeletini Oluştur (Yükleniyor Efekti ile)
       var storyHtml = `
-      <div id="mdm-story-bar" style="margin-bottom:20px; overflow-x:auto; white-space:nowrap; padding-bottom:10px;">
-        <div style="font-size:12px; color:#cbd5e1; margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:5px;">
-           <span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">YENİ</span> GÜNÜN SANA ÖZEL FIRSATLARI
+      <div id="mdm-story-bar" style="margin-bottom:25px; padding-bottom:10px; animation: mdmFadeUp 0.6s ease-out;">
+        <div style="font-size:13px; color:#fff; margin-bottom:15px; font-weight:800; display:flex; align-items:center; gap:8px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+           <span style="background:#f43f5e; color:white; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:bold; box-shadow:0 0 10px rgba(244, 63, 94, 0.4);">YENİ</span> 
+           GÜNÜN SANA ÖZEL FIRSATLARI
         </div>
-        <div id="mdm-story-container" style="display:flex; gap:15px;">
-          <div style="display:inline-block; width:70px; text-align:center;">
-             <div style="width:65px; height:65px; border-radius:50%; background:#1e293b; display:flex; align-items:center; justify-content:center; border:2px solid #334155;">
-               <i class="fas fa-circle-notch fa-spin" style="color:#64748b;"></i>
-             </div>
-          </div>
+        
+        <div id="mdm-story-container" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:5px; scroll-behavior: smooth;">
+            ${[1, 2, 3, 4, 5]
+              .map(
+                () => `
+            <div style="display:inline-block; width:70px; text-align:center; flex-shrink:0;">
+                <div style="width:65px; height:65px; border-radius:50%; background:linear-gradient(135deg, #1e293b, #334155); margin:0 auto; border:2px solid #334155; opacity:0.5; animation:pulse 1.5s infinite;"></div>
+                <div style="width:50px; height:8px; background:#334155; margin:8px auto; border-radius:4px; opacity:0.5;"></div>
+            </div>`,
+              )
+              .join("")}
         </div>
       </div>`;
 
+      // 5. HTML'i Sayfaya Bas
       lbArea.insertAdjacentHTML("beforebegin", storyHtml);
 
-      fetchApi("get_daily_stories", { email: APP_STATE.user.email }).then(
-        (res) => {
+      // 6. Verileri Çek
+      fetchApi("get_daily_stories", { email: APP_STATE.user.email })
+        .then((res) => {
           if (res && res.success) {
             renderStories(res.stories, res.suggestedCoupon, res.userPoints);
           } else {
+            // Veri yoksa gizle
             var bar = document.getElementById("mdm-story-bar");
             if (bar) bar.style.display = "none";
+            console.log("Story verisi boş döndü.");
           }
-        },
-      );
+        })
+        .catch((e) => {
+          console.error("Story Hatası:", e);
+        });
     };
 
     function renderStories(products, coupon, userPoints) {
@@ -12416,26 +12435,46 @@ FIRSATI YAKALA & TAMAMLA 🚀
 
       if (!products || products.length === 0) {
         container.innerHTML =
-          '<div style="font-size:12px; color:#64748b;">Bugünlük sana özel önerimiz kalmadı. Yarın gel!</div>';
+          '<div style="font-size:12px; color:#64748b; padding:10px;">Bugünlük sana özel önerimiz kalmadı.</div>';
         return;
       }
 
       var html = "";
       products.forEach((p, idx) => {
+        // Resim ve Başlık Kontrolü
         var img = p.image || p.resim || "https://placehold.co/150";
+        // JSON verisini güvenli hale getir (Tırnak işaretlerini bozmadan)
         var safeP = encodeURIComponent(JSON.stringify(p));
         var safeC = encodeURIComponent(JSON.stringify(coupon));
 
+        // Renkli Çerçeve (Sırayla değişen renkler)
+        var colors = [
+          "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)", // Insta
+          "linear-gradient(45deg, #10b981, #34d399)", // Yeşil
+          "linear-gradient(45deg, #3b82f6, #60a5fa)", // Mavi
+          "linear-gradient(45deg, #f59e0b, #fbbf24)", // Sarı
+          "linear-gradient(45deg, #8b5cf6, #a78bfa)", // Mor
+        ];
+        var bgStyle = colors[idx % colors.length];
+
         html += `
-         <div onclick="ModumApp.openStoryPopup('${safeP}', '${safeC}', ${userPoints})" style="display:inline-block; width:70px; text-align:center; cursor:pointer; vertical-align:top;">
-           <div class="mdm-story-circle" style="width:65px; height:65px; border-radius:50%; padding:2px; background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); position:relative; margin:0 auto;">
-             <div style="width:100%; height:100%; border-radius:50%; border:2px solid #0f172a; overflow:hidden; background:#fff;">
-               <img src="${img}" style="width:100%; height:100%; object-fit:contain; padding:10px;">
+         <div onclick="ModumApp.openStoryPopup('${safeP}', '${safeC}', ${userPoints})" 
+              style="display:inline-block; width:75px; text-align:center; cursor:pointer; vertical-align:top; flex-shrink:0; transition:transform 0.2s;"
+              onmouseover="this.style.transform='scale(1.05)'" 
+              onmouseout="this.style.transform='scale(1)'">
+           
+           <div class="mdm-story-circle" style="width:70px; height:70px; border-radius:50%; padding:3px; background:${bgStyle}; position:relative; margin:0 auto; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+             <div style="width:100%; height:100%; border-radius:50%; border:3px solid #0f172a; overflow:hidden; background:#fff; position:relative;">
+               <img src="${img}" style="width:100%; height:100%; object-fit:contain;">
              </div>
            </div>
-           <div style="font-size:10px; color:#fff; margin-top:5px; overflow:hidden; text-overflow:ellipsis; width:100%; white-space:nowrap;">Fırsat #${idx + 1}</div>
+           
+           <div style="font-size:11px; color:#e2e8f0; margin-top:8px; overflow:hidden; text-overflow:ellipsis; width:100%; white-space:nowrap; font-weight:600;">
+             Fırsat #${idx + 1}
+           </div>
          </div>`;
       });
+
       container.innerHTML = html;
     }
 
@@ -12550,46 +12589,65 @@ FIRSATI YAKALA & TAMAMLA 🚀
       });
     };
 
-    // --- FIRSAT DETAY PENCERESİ (2 BUTONLU SİSTEM) ---
+    // --- FIRSAT DETAY PENCERESİ (2 BUTONLU SİSTEM - DÜZELTİLMİŞ) ---
     ModumApp.openStoryPopup = function (productStr, couponStr, userPoints) {
-      var product = JSON.parse(decodeURIComponent(productStr));
+      try {
+        var product = JSON.parse(decodeURIComponent(productStr));
+        var coupon =
+          couponStr && couponStr !== "undefined"
+            ? JSON.parse(decodeURIComponent(couponStr))
+            : null;
+      } catch (e) {
+        console.error("Popup verisi hatalı", e);
+        return;
+      }
 
-      var title = product.title || "Özel Ürün";
+      var title = product.title || "Özel Fırsat Ürünü";
       var img = product.image || product.resim || "https://placehold.co/300";
       var link = product.link || "#";
 
       // Fiyat Formatlama (709,90 TL -> 709.90)
       var priceRaw = String(product.price || "0");
       var cleanPrice = priceRaw.replace("TL", "").trim();
-      if (cleanPrice.includes(",")) {
-        cleanPrice = cleanPrice.replace(/\./g, "").replace(",", ".");
-      }
       var normalPrice = parseFloat(cleanPrice) || 0;
       var showPrice =
-        normalPrice.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) +
-        " TL";
+        normalPrice > 0
+          ? normalPrice.toLocaleString("tr-TR", { minimumFractionDigits: 2 }) +
+            " TL"
+          : "Fiyat Gör";
+
+      // Kupon Butonu Metni
+      var couponBtnText = "MAĞAZADAKİ KUPONLARA BAK";
+      var couponSubText = "Puanınla İndirim Kap";
+
+      if (coupon && coupon.id) {
+        couponBtnText = "BU ÜRÜNÜ DAHA UCUZA AL! 🤑";
+        couponSubText = `${coupon.cost} XP ile ${coupon.title} Kullan`;
+      }
 
       var html = `
     <div id="mdm-story-popup" class="mdm-modal active" style="z-index:1000000; display:flex; align-items:center; justify-content:center;">
       <div class="mdm-modal-content" style="width:90%; max-width:350px; background:#fff; border-radius:24px; padding:0; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-        <div onclick="document.getElementById('mdm-story-popup').remove()" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.5); width:30px; height:30px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer;">×</div>
         
-        <div style="height:300px; background:#fff; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div onclick="document.getElementById('mdm-story-popup').remove()" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.5); width:32px; height:32px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px;">×</div>
+        
+        <div style="height:280px; background:#fff; display:flex; align-items:center; justify-content:center; padding:20px; position:relative;">
            <img src="${img}" style="width:100%; height:100%; object-fit:contain;"> 
+           <div style="position:absolute; bottom:10px; right:10px; background:#0f172a; color:#fff; padding:4px 10px; border-radius:10px; font-size:12px; font-weight:bold;">${showPrice}</div>
         </div>
 
-        <div style="padding:20px; text-align:center;">
-          <h3 style="color:#1e293b; font-size:16px; margin:0 0 5px 0; line-height:1.4;">${title}</h3>
-          <div style="color:#64748b; font-size:14px; font-weight:bold; margin-bottom:20px;">${showPrice}</div>
+        <div style="padding:25px; text-align:center; background:#f8fafc; border-top:1px solid #e2e8f0;">
+          <h3 style="color:#1e293b; font-size:15px; margin:0 0 5px 0; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${title}</h3>
+          <div style="color:#64748b; font-size:11px; margin-bottom:20px;">Senin stiline uygun seçildi ✨</div>
           
           <div style="display:flex; flex-direction:column; gap:10px;">
-            <button onclick="window.location.href='${link}'" style="background:#3b82f6; border:none; color:white; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3);">
+            <button onclick="window.location.href='${link}'" style="background:#3b82f6; border:none; color:white; padding:14px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow:0 4px 10px rgba(59, 130, 246, 0.3); transition:0.2s;">
                <span>ÜRÜNÜ İNCELE</span> <i class="fas fa-chevron-right"></i>
             </button>
 
-            <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#fff; border:2px solid #10b981; color:#10b981; padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; display:flex; flex-direction:column; align-items:center; line-height:1.2;">
-                <span>BU ÜRÜNÜ DAHA UCUZA AL! 🤑</span>
-                <span style="font-size:10px; color:#64748b;">Puanınla İndirim Kuponu Kap</span>
+            <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-story-popup').remove();" style="background:#fff; border:2px solid #10b981; color:#10b981; padding:10px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; display:flex; flex-direction:column; align-items:center; line-height:1.2; transition:0.2s;">
+                <span>${couponBtnText}</span>
+                <span style="font-size:10px; color:#64748b; font-weight:normal;">${couponSubText}</span>
             </button>
           </div>
         </div>
@@ -12599,5 +12657,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       document.body.insertAdjacentHTML("beforeend", html);
     };
   })();
-  /*Sistem güncellendi v7*/
+  /*Sistem güncellendi v8*/
 })();
