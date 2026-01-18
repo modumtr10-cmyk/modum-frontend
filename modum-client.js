@@ -10020,25 +10020,30 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
   </div>
   <div id="mv2-stage-racer" style="display:none; flex-direction:column; align-items:center; width:100%; height:100vh; position:fixed; top:0; left:0; background:#000; z-index:200000;">
   
-  <div style="position:absolute; top:20px; left:20px; right:20px; display:flex; justify-content:space-between; z-index:10; pointer-events:none;">
-    <button onclick="ModumV2.closeGame()" style="background:rgba(255,0,0,0.5); border:1px solid #fff; color:#fff; padding:8px 15px; border-radius:8px; pointer-events:auto; font-weight:bold;">ÇIKIŞ</button>
+  <div style="position:absolute; top:20px; left:20px; right:20px; display:flex; justify-content:space-between; z-index:20; pointer-events:none;">
+    <button onclick="ModumV2.closeGame()" style="background:rgba(239, 68, 68, 0.8); border:2px solid #fff; color:#fff; padding:8px 20px; border-radius:8px; pointer-events:auto; font-weight:bold; cursor:pointer;">ÇIKIŞ</button>
     <div style="font-family:'Courier New', monospace; font-size:24px; color:#facc15; text-shadow:0 0 10px #facc15;">
       PUAN: <span id="mv2-racer-score">0</span>
     </div>
   </div>
 
-  <div id="mdm-rotate-warning" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
-    <div style="font-size:50px; animation:spin 2s infinite;">🔄</div>
-    <div style="color:#fff; font-size:18px; margin-top:20px;">Lütfen Telefonu Yan Çevirin</div>
+  <div id="mdm-rotate-warning" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:30; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+    <div style="font-size:60px; animation:spin 2s infinite;">🔄</div>
+    <div style="color:#fff; font-size:20px; margin-top:20px; font-weight:bold;">Lütfen Telefonu Yan Çevirin</div>
   </div>
 
   <canvas id="mv2-racer-canvas" style="width:100%; height:100%; display:block;"></canvas>
 
-  <div id="mv2-racer-start" onclick="ModumV2.startRacer()" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(0,0,0,0.8); padding:30px; border-radius:15px; border:2px solid #6366f1; text-align:center; cursor:pointer; z-index:15;">
-    <div style="font-size:60px; margin-bottom:10px;">🏎️</div>
-    <h2 style="color:#fff; margin:0;">NEON RACER</h2>
-    <p style="color:#a5b4fc; font-size:12px;">Engellere Çarpma!<br>Ekranın Sol/Sağ tarafına dokun.</p>
-    <div style="margin-top:20px; background:#6366f1; color:white; padding:10px 30px; border-radius:50px; font-weight:bold;">BAŞLAT</div>
+  <div id="mv2-racer-start" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:15;">
+    <div style="text-align:center; animation:pulse 2s infinite;">
+      <div style="font-size:80px; margin-bottom:10px;">🏎️</div>
+      <h1 style="color:#fff; margin:0; font-size:40px; text-transform:uppercase; letter-spacing:5px; text-shadow:0 0 20px #6366f1;">NEON RACER</h1>
+      <p style="color:#a5b4fc; font-size:14px; margin-top:10px;">Engellere Çarpma! <br> [W,A,S,D] veya [OK TUŞLARI] ile Sür.</p>
+    </div>
+    
+    <button onclick="ModumV2.startRacer()" style="margin-top:40px; background:linear-gradient(135deg, #6366f1, #4f46e5); color:white; border:none; padding:15px 50px; border-radius:50px; font-weight:900; font-size:20px; cursor:pointer; box-shadow:0 0 30px rgba(99, 102, 241, 0.6); transition:transform 0.2s;">
+      BAŞLAT
+    </button>
   </div>
 
 </div>`;
@@ -10596,62 +10601,6 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
           ctx.strokeRect(b.x, b.y, b.w, b.h);
         }
       },
-      // --- 🏎️ NEON RACER MOTORU ---
-      racerVars: {},
-      racerAnim: null,
-
-      initRacer: function () {
-        const cvs = document.getElementById("mv2-racer-canvas");
-        // Tam ekran ayarı
-        cvs.width = window.innerWidth;
-        cvs.height = window.innerHeight;
-
-        this.racerVars = {
-          ctx: cvs.getContext("2d"),
-          width: cvs.width,
-          height: cvs.height,
-          roadW: 2000, // Yol genişliği
-          segL: 200, // Segment uzunluğu
-          camD: 0.84, // Kamera derinliği
-          speed: 0,
-          maxSpeed: 80, // Maksimum hız
-          playerX: 0,
-          pos: 0, // Yol pozisyonu
-          score: 0,
-          segments: [],
-          cars: [], // Düşman araçlar
-          state: "start",
-        };
-
-        // Yol Oluşturma
-        for (let i = 0; i < 500; i++) {
-          this.racerVars.segments.push({
-            y: i * 200,
-            curve: Math.sin(i / 50) * 2, // Virajlar
-            color: Math.floor(i / 3) % 2 ? "#1e1b4b" : "#312e81", // Zemin rengi
-          });
-        }
-      },
-
-      startRacer: function () {
-        // 1. Ekranı tam ekran yap ve yan çevir uyarısı
-        if (document.documentElement.requestFullscreen)
-          document.documentElement.requestFullscreen();
-        this.checkOrientation();
-
-        // 2. Müzik
-        window.ModumAudio.playBGM();
-
-        this.startGameSession("racer");
-        document.getElementById("mv2-racer-start").style.display = "none";
-        this.initRacer();
-        this.racerVars.state = "playing";
-        this.racerLoop();
-
-        // Pencere boyutu değişirse canvas'ı güncelle
-        window.addEventListener("resize", this.resizeRacer);
-      },
-
       resizeRacer: function () {
         const cvs = document.getElementById("mv2-racer-canvas");
         if (cvs) {
@@ -10673,6 +10622,91 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
         }
       },
 
+      // --- 🏎️ NEON RACER MOTORU (FIXED v2) ---
+      racerVars: {},
+      racerAnim: null,
+
+      initRacer: function () {
+        const cvs = document.getElementById("mv2-racer-canvas");
+        // Tam ekran boyutunu al
+        cvs.width = window.innerWidth;
+        cvs.height = window.innerHeight;
+
+        this.racerVars = {
+          ctx: cvs.getContext("2d"),
+          width: cvs.width,
+          height: cvs.height,
+          roadW: 2000,
+          segL: 200,
+          camD: 0.84,
+          speed: 0,
+          maxSpeed: 120, // Hız artırıldı
+          playerX: 0,
+          pos: 0,
+          score: 0,
+          segments: [],
+          cars: [],
+          state: "start",
+        };
+
+        // Yol Oluşturma (Daha uzun ve virajlı)
+        for (let i = 0; i < 1000; i++) {
+          this.racerVars.segments.push({
+            y: i * 200,
+            curve: Math.sin(i / 30) * 3, // Viraj sertliği
+            color: Math.floor(i / 5) % 2 ? "#0f172a" : "#1e293b", // Zemin rengi (Koyu/Açık)
+          });
+        }
+      },
+
+      startRacer: function () {
+        // 1. Ekranı tam ekran yap
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch((e) => {});
+        }
+        this.checkOrientation();
+
+        // 2. Müzik Başlat
+        if (window.ModumAudio) window.ModumAudio.playBGM();
+
+        // 3. Oyunu Başlat
+        this.startGameSession("racer");
+        document.getElementById("mv2-racer-start").style.display = "none";
+
+        this.initRacer();
+        this.racerVars.state = "playing";
+
+        // Döngüyü başlat
+        if (this.racerAnim) cancelAnimationFrame(this.racerAnim);
+        this.racerLoop();
+
+        // Pencere boyutu değişirse canvas'ı güncelle
+        window.addEventListener("resize", this.resizeRacer);
+      },
+
+      resizeRacer: function () {
+        const cvs = document.getElementById("mv2-racer-canvas");
+        if (cvs && ModumV2.racerVars) {
+          cvs.width = window.innerWidth;
+          cvs.height = window.innerHeight;
+          ModumV2.racerVars.width = cvs.width;
+          ModumV2.racerVars.height = cvs.height;
+        }
+      },
+
+      checkOrientation: function () {
+        const warning = document.getElementById("mdm-rotate-warning");
+        // Sadece mobil cihazlarda kontrol et
+        if (
+          window.innerWidth < 1024 &&
+          window.innerWidth < window.innerHeight
+        ) {
+          warning.style.display = "flex";
+        } else {
+          warning.style.display = "none";
+        }
+      },
+
       racerLoop: function () {
         if (this.activeGame !== "racer" || this.racerVars.state !== "playing")
           return;
@@ -10680,33 +10714,31 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
         const v = this.racerVars;
         const ctx = v.ctx;
 
-        // Hızlanma
-        if (v.speed < v.maxSpeed) v.speed += 0.5;
+        // Temizle
+        ctx.clearRect(0, 0, v.width, v.height);
+
+        // Fizik ve Hız
+        if (v.speed < v.maxSpeed) v.speed += 1;
         v.pos += v.speed;
         v.score += Math.floor(v.speed / 10);
         document.getElementById("mv2-racer-score").innerText = v.score;
 
-        // Çizim Başlangıcı
-        ctx.fillStyle = "#000"; // Gökyüzü (Siyah)
+        // --- ÇİZİM ---
+
+        // 1. Gökyüzü (Gece)
+        let gradient = ctx.createLinearGradient(0, 0, 0, v.height / 2);
+        gradient.addColorStop(0, "#000000");
+        gradient.addColorStop(1, "#312e81");
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, v.width, v.height);
 
-        // Güneş (Synthwave Style)
+        // 2. Güneş (Synthwave)
         ctx.fillStyle = "#facc15";
         ctx.beginPath();
-        ctx.arc(v.width / 2, v.height / 2, 100, 0, Math.PI * 2);
+        ctx.arc(v.width / 2, v.height / 2 - 50, 80, 0, Math.PI * 2);
         ctx.fill();
 
-        // Dağlar (Basit)
-        ctx.fillStyle = "#1e1b4b";
-        ctx.beginPath();
-        ctx.moveTo(0, v.height / 2);
-        for (let i = 0; i < v.width; i += 50) {
-          ctx.lineTo(i, v.height / 2 - Math.random() * 50);
-        }
-        ctx.lineTo(v.width, v.height / 2);
-        ctx.fill();
-
-        // YOL ÇİZİMİ (Pseudo-3D)
+        // 3. YOL ÇİZİMİ
         let startPos = Math.floor(v.pos / v.segL);
         let camH = 1500;
         let x = 0,
@@ -10714,20 +10746,28 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
         let maxY = v.height;
 
         for (let n = startPos; n < startPos + 300; n++) {
-          if (n >= v.segments.length) break; // Yol bitti
+          if (n >= v.segments.length) {
+            // Yol biterse başa sar (Sonsuz döngü)
+            v.pos -= v.segments.length * v.segL;
+            startPos = 0;
+            continue;
+          }
 
           let l = v.segments[n];
-          // 3D Projeksiyon
-          let z = n * v.segL - v.pos; // Z derinliği
-          if (z < 1) continue; // Arkanızda kalanları çizme
+          let z = n * v.segL - v.pos;
+          if (z < 1) continue;
 
           let projScale = v.camD / z;
           let screenY = v.height / 2 + camH * projScale;
           let screenW = v.roadW * projScale;
           let screenX = v.width / 2 - x * projScale - v.playerX * screenW * 2;
 
-          // Çizim (Sadece ekranın içindeyse)
           if (screenY < maxY) {
+            // Çimen
+            ctx.fillStyle = l.color === "#0f172a" ? "#111" : "#222";
+            ctx.fillRect(0, screenY, v.width, maxY - screenY);
+
+            // Yol
             ctx.fillStyle = l.color;
             ctx.fillRect(
               screenX - screenW,
@@ -10736,8 +10776,8 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
               maxY - screenY,
             );
 
-            // Kenar çizgileri (Neon)
-            ctx.fillStyle = "#f472b6"; // Pembe
+            // Şeritler (Neon)
+            ctx.fillStyle = "#ec4899"; // Pembe Neon
             let borderW = screenW * 0.1;
             ctx.fillRect(
               screenX - screenW - borderW,
@@ -10747,98 +10787,143 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
             );
             ctx.fillRect(screenX + screenW, screenY, borderW, maxY - screenY);
 
-            maxY = screenY; // Bir sonraki çizim bunun altına inmesin (Z-Buffer mantığı)
+            // Orta Şerit
+            if (Math.floor(n / 2) % 2) {
+              ctx.fillStyle = "#fff";
+              ctx.fillRect(
+                screenX - borderW / 4,
+                screenY,
+                borderW / 2,
+                maxY - screenY,
+              );
+            }
+
+            maxY = screenY;
           }
           x += dx;
           dx += l.curve;
         }
 
-        // ARABA ÇİZİMİ (Player)
-        // Basit bir retro araba çizimi
-        let carW = 120;
-        let carH = 60;
+        // 4. ARABA ÇİZİMİ (Player)
+        let carW = 160;
+        let carH = 80;
         let carX = v.width / 2 - carW / 2;
-        let carY = v.height - 100;
+        let carY = v.height - 120;
 
-        // Gölge
+        // Araba Gölgesi
         ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fillRect(carX + 10, carY + 50, carW - 20, 10);
+        ctx.beginPath();
+        ctx.ellipse(
+          carX + carW / 2,
+          carY + carH,
+          carW / 1.8,
+          20,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
 
-        // Gövde
-        ctx.fillStyle = "#ef4444"; // Kırmızı Ferrari
-        ctx.fillRect(carX, carY, carW, carH);
-
-        // Cam
-        ctx.fillStyle = "#60a5fa";
-        ctx.fillRect(carX + 10, carY + 5, carW - 20, 20);
-
-        // Stop Lambaları (Neon)
+        // Araba Gövdesi
         ctx.fillStyle = "#ef4444";
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = "#ef4444";
-        ctx.fillRect(carX + 10, carY + 30, 20, 10);
-        ctx.fillRect(carX + carW - 30, carY + 30, 20, 10);
+        ctx.beginPath();
+        ctx.moveTo(carX, carY + carH);
+        ctx.lineTo(carX, carY + 20);
+        ctx.quadraticCurveTo(carX + 20, carY, carX + carW / 2, carY);
+        ctx.quadraticCurveTo(carX + carW - 20, carY, carX + carW, carY + 20);
+        ctx.lineTo(carX + carW, carY + carH);
+        ctx.fill();
+
+        // Arka Işıklar (Parlayan Neon)
+        ctx.fillStyle = "#ff0000";
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = "#ff0000";
+        ctx.fillRect(carX + 10, carY + 40, 40, 15);
+        ctx.fillRect(carX + carW - 50, carY + 40, 40, 15);
         ctx.shadowBlur = 0;
 
-        // --- DÜŞMAN ARACI (Basit Engel) ---
-        // Rastgele bir engel oluştur (Simülasyon)
-        if (Math.random() < 0.02) {
+        // Plaka
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillRect(carX + carW / 2 - 20, carY + 50, 40, 15);
+        ctx.fillStyle = "#000";
+        ctx.font = "10px Arial";
+        ctx.fillText("MODUM", carX + carW / 2 - 18, carY + 62);
+
+        // --- DÜŞMAN ARACI (MANTIK) ---
+        if (Math.random() < 0.03) {
+          // Araç çıkma sıklığı artırıldı
           v.cars.push({
-            z: v.pos + 30000, // Çok uzakta doğ
-            lane: Math.random() > 0.5 ? -0.5 : 0.5, // Sol veya sağ şerit
+            z: v.pos + 30000,
+            lane: Math.random() > 0.5 ? -0.5 : 0.5,
+            passed: false,
           });
         }
 
-        // Düşmanları Çiz ve Kontrol Et
         v.cars.forEach((car, index) => {
           let carRelZ = car.z - v.pos;
-          if (carRelZ < -200) {
+          if (carRelZ < -500) {
             v.cars.splice(index, 1);
             return;
-          } // Arkada kaldı
+          }
 
-          if (carRelZ > 0 && carRelZ < 5000) {
-            // Görüş alanındaysa
+          if (carRelZ > 0 && carRelZ < 10000) {
             let projScale = v.camD / carRelZ;
             let screenY = v.height / 2 + camH * projScale;
-            let screenW = v.roadW * projScale * 0.5; // Düşman biraz daha küçük
+            let screenW = v.roadW * projScale * 0.5;
             let screenX =
               v.width / 2 +
               car.lane * v.roadW * projScale * 2.5 -
               v.playerX * v.roadW * projScale * 2;
 
-            // Çiz
-            ctx.fillStyle = "#facc15"; // Sarı Araba
+            // Düşman Arabası Çizimi
+            ctx.fillStyle = "#fbbf24"; // Sarı
             ctx.fillRect(
               screenX - screenW,
-              screenY - screenW * 0.5,
+              screenY - screenW,
               screenW * 2,
-              screenW * 0.5,
+              screenW,
             );
+            // Işık
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(screenX - screenW + 5, screenY - screenW + 5, 10, 5);
+            ctx.fillRect(screenX + screenW - 15, screenY - screenW + 5, 10, 5);
 
-            // 🔥 ÇARPIŞMA KONTROLÜ 🔥
-            if (carRelZ < 200) {
-              // Çok yakınsa
-              // Oyuncunun konumu ile arabanın şeridi çakışıyor mu?
-              let playerLane = v.playerX < 0 ? -0.5 : 0.5; // Basit şerit tahmini
-              // Hassas kontrol
-              if (Math.abs(v.playerX - car.lane) < 0.3) {
+            // Çarpışma Alanı
+            if (carRelZ < 250) {
+              if (Math.abs(v.playerX - car.lane) < 0.6) {
                 this.crashRacer();
               } else {
-                // Makas attı (Skor ver)
                 if (!car.passed) {
                   v.score += 500;
                   car.passed = true;
-                  window.ModumAudio.playSFX("pass");
-                  // Ekrana +500 yazısı efekti eklenebilir
+                  if (window.ModumAudio) window.ModumAudio.playSFX("pass");
                 }
               }
             }
           }
         });
 
-        this.checkOrientation(); // Sürekli kontrol et
+        this.checkOrientation();
         this.racerAnim = requestAnimationFrame(() => this.racerLoop());
+      },
+
+      crashRacer: function () {
+        if (window.ModumAudio) {
+          window.ModumAudio.playSFX("crash");
+          window.ModumAudio.stopBGM();
+        }
+        this.racerVars.state = "over";
+        cancelAnimationFrame(this.racerAnim);
+
+        // Ekranı sars
+        document.body.style.transform = "translate(10px, 10px)";
+        setTimeout(() => (document.body.style.transform = "none"), 100);
+
+        setTimeout(() => {
+          this.endGame("racer", this.racerVars.score);
+          if (document.exitFullscreen)
+            document.exitFullscreen().catch(() => {});
+        }, 1500);
       },
 
       crashRacer: function () {
@@ -12643,5 +12728,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendiv3*/
+  /*sistem güncellendiv4*/
 })();
