@@ -1,3 +1,57 @@
+/* ======================================================
+🚫 HASSAS SAYFA FİLTRESİ (SEPET, ÖDEME & GİRİŞ GİZLEYİCİ)
+Bu kod, belirtilen sayfalarda sistemi tamamen gizler.
+====================================================== */
+(function () {
+  var url = window.location.href.toLowerCase();
+
+  // 1. GİZLENECEK SAYFALAR LİSTESİ
+  var restrictedPages = [
+    "alisveris-sepetim",
+    "siparis/adres",
+    "siparis/odeme",
+    "/sepet",
+    "/checkout",
+    "/cart",
+    // 🔥 Giriş ve Kayıt sayfalarını da ekledik ki tasarım bozulmasın:
+    "kullanici-giris",
+    "kullanici-kayit",
+    "uye-girisi",
+    "uye-kayit",
+  ];
+
+  // 2. İSTİSNALAR (Sipariş Başarılı sayfası - Ödül vermek için görünmeli)
+  var exceptions = [
+    "siparistamamlandi",
+    "order/success",
+    "checkout/success",
+    "success",
+    "tamamlandi",
+  ];
+
+  // Kontrol: Yasaklı sayfada mıyız?
+  var isRestricted = restrictedPages.some(function (page) {
+    return url.indexOf(page) > -1;
+  });
+
+  // Kontrol: İstisna sayfasında mıyız?
+  var isException = exceptions.some(function (exc) {
+    return url.indexOf(exc) > -1;
+  });
+
+  // KARAR: Yasaklıysa VE İstisna değilse -> GİZLE
+  if (isRestricted && !isException) {
+    var css = document.createElement("style");
+
+    // Tüm sistem parçalarını (Widget, Topbar, Dock, Hedef Barı, Intro) gizle
+    css.innerHTML =
+      "#modum-firebase-test-root, .mdm-dock-nav, .mdm-topbar, #mdm-goal-bar, #mdm-intro-overlay { display: none !important; opacity: 0 !important; pointer-events: none !important; }";
+
+    document.head.appendChild(css);
+
+    console.log("🛡️ ModumNet: Hassas sayfadasınız, sistem gizlendi.");
+  }
+})();
 src =
   "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" >
   (function () {
