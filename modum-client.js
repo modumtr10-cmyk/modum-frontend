@@ -10096,6 +10096,16 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
           this.activeGame = "stacker";
           this.initStacker(); // Kuleyi hazırla
           document.getElementById("mv2-stacker-start").style.display = "flex";
+        } else if (gameType === "racer") {
+          document.getElementById("mv2-stage-racer").style.display = "flex"; // Sahneyi aç
+          this.activeGame = "racer";
+          // Başlatma ekranını göster
+          document.getElementById("mv2-racer-start").style.display = "flex";
+
+          // Scroll düzeltmesi
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 100);
         }
 
         // Scroll fix
@@ -10116,6 +10126,10 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
 
         document.getElementById("mv2-stage-snake").style.display = "none";
         document.getElementById("mv2-stage-stacker").style.display = "none";
+        document.getElementById("mv2-stage-racer").style.display = "none"; // Racer sahnesini kapat
+
+        // Ayrıca eğer müzik çalıyorsa durdurması için:
+        if (window.ModumAudio) window.ModumAudio.stopBGM();
         document.getElementById("mv2-menu").style.display = "block";
         document.body.style.overflow = "auto";
         this.updateScores();
@@ -12629,5 +12643,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendiv2*/
+  /*sistem güncellendiv3*/
 })();
