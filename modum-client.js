@@ -3629,6 +3629,9 @@ GÖNDER VE KAZAN 🚀
 
     if (APP_STATE.activeTab !== "home") ModumApp.switchTab(APP_STATE.activeTab);
     startTimer();
+    setTimeout(function () {
+      ModumApp.loadStoryBar();
+    }, 2000);
   }
 
   // --- RENDER RAFFLES (SİNEMATİK POSTER TASARIMI - FİNAL v5 SADELEŞTİRİLMİŞ) ---
@@ -8393,6 +8396,254 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
 
       window.open(calendarUrl, "_blank");
     }, // <-- Buraya virgül koymayı unutma, eğer devamında kod varsa. Yoksa gerek yok.
+    // --- 🕵️ ANA SAYFA STİL DEDEKTİFİ (Story Bar Yöneticisi) ---
+    loadStoryBar: async function () {
+      // Sadece Ana Sayfada Çalış
+      var path = window.location.pathname;
+      if (path !== "/" && path !== "/index.html" && path !== "") return;
+
+      var container = document.getElementById("mdm-story-container");
+      if (!container) return; // HTML yoksa dur
+
+      // 1. MİSAFİR MODU
+      if (!APP_STATE.user || !APP_STATE.user.email) {
+        container.innerHTML = `
+            <div class="mdm-story-item" onclick="ModumApp.showGuestPopup('style')">
+                <div class="mdm-story-ring" style="border:2px dashed #94a3b8; width:68px; height:68px;">
+                    <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#1e293b;">🔒</div>
+                </div>
+                <div class="mdm-story-name">Stilini Seç</div>
+            </div>`;
+        return;
+      }
+
+      // 2. ÜYE MODU (Durumu Kontrol Et)
+      // Backend'e soruyoruz: Bu adamın stili kayıtlı mı?
+      var res = await fetchApi("get_style_recommendations", {
+        email: APP_STATE.user.email,
+      });
+
+      // DURUM A: ANKET YOK -> Anket Butonu Göster
+      if (res.needSurvey) {
+        container.innerHTML = `
+            <div class="mdm-story-item" onclick="ModumApp.openStyleSurvey()">
+                <div class="mdm-story-ring survey-ring" style="width:68px; height:68px;">
+                    <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:30px;background:#0f172a;">👗</div>
+                </div>
+                <div class="mdm-story-name" style="color:#fbbf24; font-weight:bold;">Anketi Çöz</div>
+            </div>
+            
+            <div style="font-size:11px; color:#64748b; align-self:center; margin-left:10px;">
+                👈 Sana özel vitrin için<br>tercihlerini belirt.
+            </div>`;
+        return;
+      }
+
+      // DURUM B: ANKET VAR -> Ürünleri (Storyleri) Göster
+      if (res.success && res.list.length > 0) {
+        // Anket butonunu sildik, yerine ürünleri diziyoruz
+        var html = "";
+
+        // Başlık (Opsiyonel, şık durur)
+        html += `
+            <div class="mdm-story-item">
+                <div class="mdm-story-ring" style="background:transparent; border:2px solid #334155; width:68px; height:68px;">
+                   <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#0f172a;">💖</div>
+                </div>
+                <div class="mdm-story-name">Sana Özel</div>
+            </div>`;
+
+        // Ürünler
+        res.list.forEach((p) => {
+          html += `
+                <div class="mdm-story-item" onclick="ModumApp.openProductPopup('${p.id}', '${p.title}', '${p.price}', '${p.image}', '${p.link}')">
+                    <div class="mdm-story-ring" style="width:68px; height:68px;">
+                        <img src="${p.image}" class="mdm-story-img">
+                    </div>
+                    <div class="mdm-story-name">${p.price} TL</div>
+                </div>`;
+        });
+
+        // En sona "Ayarlar" butonu (Tercih değiştirmek isterse)
+        html += `
+            <div class="mdm-story-item" onclick="ModumApp.openStyleSurvey()">
+                <div class="mdm-story-ring" style="background:#334155; width:68px; height:68px;">
+                   <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;background:#1e293b; color:#94a3b8;"><i class="fas fa-cog"></i></div>
+                </div>
+                <div class="mdm-story-name">Düzenle</div>
+            </div>`;
+
+        container.innerHTML = html;
+      }
+    },
+
+    // --- 👗 ANKET PENCERESİ (Modal) ---
+    openStyleSurvey: function () {
+      if (!APP_STATE.user || !APP_STATE.user.email)
+        return ModumApp.showGuestPopup("style");
+
+      // Varsa eskisini sil
+      var old = document.getElementById("mdm-style-survey");
+      if (old) old.remove();
+
+      var html = `
+        <div id="mdm-style-survey" class="mdm-modal active" style="z-index:999999; display:flex; align-items:center; justify-content:center;">
+            <div class="mdm-modal-content" style="width:95%; max-width:500px; background:#1e293b; border-radius:16px; padding:0; overflow:hidden;">
+                
+                <div style="background:linear-gradient(135deg, #ec4899, #8b5cf6); padding:20px; text-align:center;">
+                    <h3 style="color:white; margin:0;">👗 Modum Stilisti</h3>
+                    <p style="color:white; opacity:0.9; font-size:12px; margin-top:5px;">Seni tanıyalım, vitrini sana göre döşeyelim. (+500 XP)</p>
+                </div>
+
+                <div style="padding:20px; max-height:60vh; overflow-y:auto;">
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                        <div>
+                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Ayakkabı</label>
+                            <select id="sty-shoe" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
+                                <option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Üst Giyim</label>
+                            <select id="sty-top" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
+                                <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Alt Giyim</label>
+                            <select id="sty-bot" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
+                                <option value="36">36</option><option value="38">38</option><option value="40">40</option><option value="42">42</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label style="color:#cbd5e1; font-size:12px; font-weight:bold; margin-bottom:10px; display:block;">Sevdiğin Renkler (En az 5 tane seç)</label>
+                    <div id="sty-colors" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+                        ${[
+                          "Siyah",
+                          "Beyaz",
+                          "Kırmızı",
+                          "Mavi",
+                          "Yeşil",
+                          "Sarı",
+                          "Pembe",
+                          "Mor",
+                          "Turuncu",
+                          "Gri",
+                          "Bej",
+                          "Lacivert",
+                          "Kahverengi",
+                          "Bordo",
+                        ]
+                          .map(
+                            (c) =>
+                              `<div onclick="this.classList.toggle('selected')" class="sty-color-opt" data-color="${c}" style="padding:6px 12px; border:1px solid #475569; border-radius:20px; color:#cbd5e1; font-size:11px; cursor:pointer; transition:0.2s;">${c}</div>`,
+                          )
+                          .join("")}
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:20px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                        <input type="checkbox" id="sty-kvkk" style="margin-top:3px;">
+                        <span style="font-size:10px; color:#94a3b8; line-height:1.4;">
+                            Beden ve renk tercihlerimin bana özel ürün önerileri sunulması amacıyla işlenmesini ve <a href="https://modum.tr/gizlilik-sozlesmesi/" target="_blank" style="color:#60a5fa; text-decoration:underline;">Gizlilik Sözleşmesi</a>'ni kabul ediyorum.
+                        </span>
+                    </div>
+
+                    <button onclick="ModumApp.saveStyleSurvey()" style="width:100%; padding:15px; background:#10b981; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:14px; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+                        KAYDET VE VİTRİNİ GÖR 👁️
+                    </button>
+
+                </div>
+                <div onclick="document.getElementById('mdm-style-survey').remove()" style="text-align:center; padding:15px; color:#64748b; cursor:pointer; font-size:12px;">Vazgeç</div>
+            </div>
+            <style>
+                .sty-color-opt.selected { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; transform: scale(1.05); box-shadow: 0 0 10px rgba(59,130,246,0.3); }
+            </style>
+        </div>`;
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
+
+    // --- ANKETİ KAYDET (VE EKRANI DEĞİŞTİR) ---
+    saveStyleSurvey: function () {
+      var kvkk = document.getElementById("sty-kvkk").checked;
+      if (!kvkk)
+        return alert("Devam etmek için gizlilik sözleşmesini onaylamalısınız.");
+
+      var colors = [];
+      document
+        .querySelectorAll(".sty-color-opt.selected")
+        .forEach((el) => colors.push(el.dataset.color));
+
+      if (colors.length < 5)
+        return alert("Lütfen en az 5 renk seçiniz. (" + colors.length + "/5)");
+
+      var prefs = {
+        shoeSize: document.getElementById("sty-shoe").value,
+        dressSize: document.getElementById("sty-top").value,
+        pantSize: document.getElementById("sty-bot").value,
+        colors: colors,
+      };
+
+      var btn = event.target;
+      btn.innerHTML = "Kaydediliyor...";
+      btn.disabled = true;
+
+      fetchApi("submit_style_survey", {
+        email: APP_STATE.user.email,
+        preferences: prefs,
+      }).then((res) => {
+        if (res.success) {
+          // 1. Modalı Kapat
+          document.getElementById("mdm-style-survey").remove();
+
+          // 2. Hafızayı Güncelle
+          localStorage.setItem("mdm_style_completed", "true");
+
+          // 3. 🔥 KRİTİK NOKTA: Story Barı HEMEN Yenile (Anket gidecek, ürünler gelecek)
+          ModumApp.loadStoryBar();
+
+          // 4. Konfeti Patlat ve Puanı Güncelle
+          ModumApp.checkWelcome(true, 500);
+          updateDataInBackground();
+        } else {
+          alert(res.message);
+          btn.disabled = false;
+          btn.innerHTML = "TEKRAR DENE";
+        }
+      });
+    },
+
+    // --- 🛍️ ÜRÜN DETAY POPUP (2 Butonlu) ---
+    openProductPopup: function (id, title, price, img, link) {
+      var old = document.getElementById("mdm-prod-popup");
+      if (old) old.remove();
+
+      var html = `
+        <div id="mdm-prod-popup" class="mdm-modal active" style="z-index:999999; display:flex; align-items:center; justify-content:center;">
+            <div class="mdm-modal-content" style="width:90%; max-width:350px; background:white; border-radius:20px; padding:25px; text-align:center; position:relative; box-shadow:0 0 50px rgba(0,0,0,0.5);">
+                <div onclick="document.getElementById('mdm-prod-popup').remove()" style="position:absolute; top:15px; right:15px; font-size:24px; cursor:pointer; color:#333;">×</div>
+                
+                <div style="width:100%; height:250px; overflow:hidden; border-radius:12px; margin-bottom:15px; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">
+                    <img src="${img}" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                
+                <h4 style="margin:0 0 5px 0; color:#333; font-size:16px; line-height:1.3;">${title}</h4>
+                <div style="font-size:20px; font-weight:900; color:#10b981; margin-bottom:20px;">${price} TL</div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <a href="${link}" class="mdm-btn-v2" style="background:#0f172a; color:white; text-decoration:none; padding:12px; border-radius:50px; justify-content:center;">
+                        ÜRÜNE GİT ↗️
+                    </a>
+                    
+                    <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-prod-popup').remove();" class="mdm-btn-v2" style="background:#fef3c7; color:#d97706; border:1px solid #fbbf24; padding:12px; border-radius:50px; justify-content:center;">
+                        % İNDİRİM KUPONU AL
+                    </button>
+                </div>
+            </div>
+        </div>`;
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
   }; // <--- BURASI ÇOK ÖNEMLİ: window.ModumApp BU NOKTALI VİRGÜL İLE BİTER.
 
   /* ======================================================
