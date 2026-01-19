@@ -3048,21 +3048,22 @@ ${rowsHtml}
     }
   }
 
-  // --- KULLANICIYI TESPİT ET (CACHE ÖNCELİKLİ - KESİN ÇÖZÜM v6.0) ---
+  // --- KULLANICIYI TESPİT ET (ULTRA GÜÇLÜ MOD v7.0 - COOKIE & HOOK DESTEKLİ) ---
   async function detectUser() {
     var foundEmail = null;
     var foundName = "Misafir";
 
-    // 1. ÖNCE CACHE'E BAK (Hız ve Süreklilik İçin)
+    // 1. ÖNCE CACHE (HAFIZA) KONTROLÜ - EN HIZLI YÖNTEM
+    // Eğer daha önce giriş yaparken yakaladıysak, sayfayı taramaya gerek yok.
     var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
-    if (cachedUser && cachedUser.email) {
-      // Cache varsa, sayfada arama yapmaya gerek yok, direkt bunu kullan.
-      // Ama arka planda doğrulama yapabiliriz.
+    if (cachedUser && cachedUser.email && cachedUser.email.includes("@")) {
+      console.log("⚡ Kullanıcı hafızadan tanındı: " + cachedUser.email);
       foundEmail = cachedUser.email;
       foundName = cachedUser.name;
     }
 
-    // 2. DOM TARAMASI (Sadece Cache Yoksa veya Teyit İçin)
+    // 2. DOM TARAMASI (Sayfadaki Gizli Inputlar)
+    // Eğer hafızada yoksa sayfayı tara
     if (!foundEmail) {
       var inputs = [
         'input[name="Email"]',
@@ -3070,44 +3071,67 @@ ${rowsHtml}
         "#MemberEmail",
         ".member-email",
         'input[type="hidden"][name="Email"]',
-        "#txtEmail",
+        "#txtEmail", // Faprika özel
         "#user_email",
+        'input[name="email"]',
       ];
 
       for (var i = 0; i < inputs.length; i++) {
         var el = document.querySelector(inputs[i]);
         if (el && el.value && el.value.includes("@")) {
           foundEmail = el.value.trim();
-          // İsmi de yakala
+
+          // İsmi de yakalamaya çalışalım
           var nameEl =
             document.querySelector('input[name="FirstName"]') ||
             document.querySelector("#FirstName");
           if (nameEl && nameEl.value) foundName = nameEl.value;
+
+          console.log("🔍 DOM Tarayıcı buldu: " + foundEmail);
           break;
         }
       }
     }
 
-    // 3. EĞER HALA YOKSA -> ÇEREZLER
+    // 3. ÇEREZ (COOKIE) TARAMASI (Faprika Yedek Planı)
+    // Faprika bazen giriş bilgisini cookie'ye yazar ama HTML'e yazmaz.
     if (!foundEmail) {
-      var cookies = document.cookie.split(";");
-      for (var i = 0; i < cookies.length; i++) {
-        var c = cookies[i].trim();
-        if (
-          c.startsWith("email=") ||
-          c.startsWith("Email=") ||
-          c.startsWith("member_email=")
-        ) {
-          var val = c.split("=")[1];
-          if (val.includes("%40")) val = decodeURIComponent(val);
-          if (val.includes("@")) foundEmail = val;
+      try {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+          var c = cookies[i].trim();
+          // Faprika'da yaygın cookie isimleri
+          if (
+            c.startsWith("email=") ||
+            c.startsWith("Email=") ||
+            c.startsWith("member_email=") ||
+            c.startsWith("MemberEmail=")
+          ) {
+            var val = c.split("=")[1];
+            if (val) {
+              // URL encode varsa çöz (%40 -> @)
+              if (val.includes("%")) val = decodeURIComponent(val);
+              if (val.includes("@")) {
+                foundEmail = val;
+                console.log("🍪 Cookie'den bulundu: " + foundEmail);
+              }
+            }
+          }
         }
+      } catch (e) {
+        console.log("Cookie hatası", e);
       }
     }
 
-    // 4. KULLANICI OBJESİ OLUŞTUR
+    // 4. SONUÇLARI BİRLEŞTİR VE OLUŞTUR
+    // Eğer yeni bir mail bulduysak ve cache ile farklıysa, cache'i güncelle.
+    if (foundEmail && (!cachedUser || cachedUser.email !== foundEmail)) {
+      localStorage.removeItem("mdm_user_cache"); // Eskiyi sil
+      cachedUser = null;
+    }
+
     var user = {
-      email: foundEmail,
+      email: foundEmail || (cachedUser ? cachedUser.email : null),
       name:
         foundName !== "Misafir"
           ? foundName
@@ -3121,9 +3145,10 @@ ${rowsHtml}
       selectedAvatar: cachedUser ? cachedUser.selectedAvatar : null,
     };
 
-    // 5. SON ÇARE & GÜNCELLEME: API'DEN TEYİT AL
+    // 5. EĞER E-POSTA VARSA API'DEN GÜNCEL VERİYİ ÇEK (Asıl Kimlik Doğrulama)
     if (user.email) {
-      // Eğer cache'deki ile bulduğumuz aynıysa bile, puan değişmiş olabilir, API'ye sor.
+      // Backend'e sor: "Bu mailin puanı ve adı ne?"
+      // Bu işlem arka planda çalışır, arayüzü dondurmaz.
       fetchApi("get_user_details", { email: user.email }).then((res) => {
         if (res && res.success) {
           user.name = res.user.adSoyad || res.user.name;
@@ -3131,17 +3156,30 @@ ${rowsHtml}
           user.seviye = res.user.seviye;
           user.badges = res.user.badges;
           user.selectedAvatar = res.user.selectedAvatar;
+          user.hak = res.user.hak;
 
-          // Hafızayı güncelle
+          // Hafızayı taze veriyle güncelle
           localStorage.setItem("mdm_user_cache", JSON.stringify(user));
 
-          // Üst barı güncelle
-          if (document.getElementById("nav-user-name"))
-            document.getElementById("nav-user-name").innerText = user.name;
+          // Sağ üstteki ismi güncelle
+          var navName = document.getElementById("nav-user-name");
+          if (navName) navName.innerText = user.name;
+
+          // Sağ üstteki avatarı güncelle
+          var navAvatar = document.getElementById("nav-avatar");
+          if (navAvatar) {
+            var initial = (user.name || "M").charAt(0).toUpperCase();
+            navAvatar.innerText = initial;
+            if (user.selectedAvatar && user.selectedAvatar.length < 5) {
+              navAvatar.innerText = user.selectedAvatar;
+              navAvatar.style.background = "transparent";
+              navAvatar.style.fontSize = "20px";
+            }
+          }
         }
       });
 
-      // Oturum tetikle
+      // Oturumu tetikle (Son görülme vs.)
       fetchApi("user_login_trigger", { email: user.email, adSoyad: user.name });
     }
 
@@ -12559,42 +12597,49 @@ FIRSATI YAKALA & TAMAMLA 🚀
     }
     // --- 🎣 LOGIN HOOK (Giriş Yaparken Maili Yakala) ---
     (function hookLoginForm() {
-      // 1. Giriş Sayfası mı?
-      if (
-        window.location.href.includes("giris") ||
-        window.location.href.includes("login")
-      ) {
-        // Giriş butonunu bul (Genelde type="submit")
-        document.addEventListener("click", function (e) {
-          var btn = e.target;
-          // Eğer submit butonuysa veya içinde "Giriş" yazıyorsa
+      // Tüm sayfalarda dinle, çünkü login popup olabilir
+      document.addEventListener("click", function (e) {
+        var btn = e.target;
+        // Eğer tıklanan şey bir buton ise ve içinde "Giriş" veya "Login" yazıyorsa (veya type submit ise)
+        var btnText = (btn.innerText || "").toLowerCase();
+
+        if (
+          btn.tagName === "BUTTON" ||
+          (btn.tagName === "INPUT" && btn.type === "submit") ||
+          btn.closest("button")
+        ) {
           if (
-            btn.type === "submit" ||
-            btn.innerText.includes("Giriş") ||
-            btn.innerText.includes("Login")
+            btnText.includes("giriş") ||
+            btnText.includes("login") ||
+            btnText.includes("üye")
           ) {
-            // Mail inputunu bul
+            // Sayfadaki e-posta inputlarını bul
             var inputs = document.querySelectorAll(
               'input[type="text"], input[type="email"]',
             );
             inputs.forEach((input) => {
               var val = input.value;
-              if (val && val.includes("@")) {
+              // Eğer inputun içinde @ varsa bu bir maildir
+              if (val && val.includes("@") && val.includes(".")) {
                 console.log("🎣 Giriş Hook: Mail yakalandı -> " + val);
-                // Maili hafızaya kaydet (Sistem bunu detectUser'da okuyacak)
-                var user = {
+
+                // Maili hafızaya kaydet
+                var tempUser = {
                   email: val.trim(),
-                  name: "Üye", // İsim sonra güncellenir
+                  name: "Üye",
                   puan: 0,
                   seviye: "Çaylak",
                 };
-                localStorage.setItem("mdm_user_cache", JSON.stringify(user));
+                localStorage.setItem(
+                  "mdm_user_cache",
+                  JSON.stringify(tempUser),
+                );
               }
             });
           }
-        });
-      }
+        }
+      });
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
