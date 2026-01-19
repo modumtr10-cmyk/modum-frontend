@@ -12340,260 +12340,118 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
     /* ======================================================
-   👗 MODUM STİL ASİSTANI (ANKET & STORY) - FİNAL V4 (SLOTLU)
+   👗 MODUM STİL ASİSTANI - DEBUG MODU (HATAYI BULMA)
    ====================================================== */
     (function () {
-      // Sayfa tamamen yüklendiğinde çalış
       window.addEventListener("load", function () {
-        // Kullanıcı verisinin oturması için kısa bir süre bekle
+        console.log("🚀 Stil Asistanı Başlatılıyor... (2.5sn bekleme)");
         setTimeout(initStyleSystem, 2500);
       });
 
       function initStyleSystem() {
-        // 1. Kullanıcı Giriş Yapmış mı?
+        console.log("🔍 Stil Asistanı: Kontrol Başladı...");
+
+        // 1. KULLANICI KONTROLÜ (LOGLU)
+        var userEmail = null;
         if (
-          !window.APP_STATE ||
-          !window.APP_STATE.user ||
-          !window.APP_STATE.user.email
+          window.APP_STATE &&
+          window.APP_STATE.user &&
+          window.APP_STATE.user.email
         ) {
-          return; // Misafir
+          userEmail = APP_STATE.user.email;
+          console.log("✅ Kullanıcı Tespit Edildi: " + userEmail);
+        } else {
+          console.warn("⚠️ UYARI: Kullanıcı Girişi Yok veya Algılanamadı!");
+          console.log("ℹ️ Mevcut State:", window.APP_STATE);
+
+          // TEST İÇİN: Eğer giriş yoksa bile çalışmasını istiyorsan bu satırı aç:
+          // userEmail = "test@modum.tr"; // <--- TEST İÇİN SAHTE MAİL
+
+          // Eğer giriş yoksa DUR:
+          if (!userEmail) {
+            console.log("⛔ Misafir olduğu için anket açılmıyor.");
+            return;
+          }
         }
 
-        // 2. Sunucuya Sor: "Bu kişi anketi doldurdu mu?"
-        // F5 atılsa bile veritabanı "Doldurdu" derse anket açılmaz, Story açılır.
-        fetchApi("get_style_recommendations", {
-          email: APP_STATE.user.email,
-        }).then((res) => {
-          if (res.needSurvey === true) {
-            // DURUM A: Anket Doldurmamış -> ANKETİ AÇ
-            openStyleSurveyModal();
-          } else if (res.success && res.list && res.list.length > 0) {
-            // DURUM B: Anket Doldurmuş -> STORY BAR'I ÇİZ
-            renderStoryBar(res.list);
-          }
-        });
+        // 2. SUNUCUYA SOR
+        console.log("📡 Sunucuya soruluyor: get_style_recommendations...");
+        fetchApi("get_style_recommendations", { email: userEmail })
+          .then((res) => {
+            console.log("📩 Sunucu Cevabı:", res);
+
+            if (res.needSurvey === true) {
+              console.log("🟢 Durum: Anket Gerekli -> Modal Açılıyor");
+              openStyleSurveyModal();
+            } else if (res.success && res.list && res.list.length > 0) {
+              console.log("🔵 Durum: Profil Dolu -> Story Bar Çiziliyor");
+              renderStoryBar(res.list);
+            } else {
+              console.error("🔴 Sunucu hatası veya liste boş:", res);
+            }
+          })
+          .catch((err) => {
+            console.error("🔥 API Hatası:", err);
+          });
       }
 
-      // --- 1. ZORUNLU ANKET MODALI ---
+      // --- 1. ZORUNLU ANKET MODALI (Z-INDEX ARTIRILDI) ---
       function openStyleSurveyModal() {
         var old = document.getElementById("mdm-style-survey-modal");
         if (old) old.remove();
 
+        // z-index: 2147483647 (Maksimum) yapıldı ki her şeyin üstüne çıksın
         var html = `
         <div id="mdm-style-survey-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.98); z-index:2147483647; display:flex; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
             <div style="background:#fff; width:100%; max-width:500px; border-radius:20px; overflow:hidden; box-shadow:0 0 50px rgba(79, 70, 229, 0.5); font-family:'Outfit', sans-serif; position:relative;">
+                
                 <div style="background:linear-gradient(135deg, #4f46e5, #9333ea); padding:30px 20px; text-align:center;">
-                    <div style="font-size:50px; margin-bottom:10px;">👗</div>
                     <h2 style="color:#fff; margin:0; font-size:24px; font-weight:800;">TARZINI SEÇ</h2>
-                    <p style="color:rgba(255,255,255,0.9); font-size:14px; margin-top:5px; line-height:1.4;">Sana en uygun ürünleri önermemiz için beden bilgilerini gir.<br><span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; font-weight:bold; font-size:12px;">+500 XP KAZAN</span></p>
+                    <p style="color:rgba(255,255,255,0.9); font-size:14px;">Beden bilgilerini gir, +500 XP kazan.</p>
                 </div>
+
                 <div style="padding:25px;">
-                    <div style="margin-bottom:20px;">
-                        <label style="font-weight:800; font-size:13px; color:#334155; display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px;">📏 Beden Bilgilerin (Zorunlu)</label>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Elbise</div><select id="s_dress" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
-                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Tişört / Üst</div><select id="s_tshirt" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
-                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Pantolon / Alt</div><select id="s_pant" class="mdm-input"><option value="">Seçiniz</option><option>34</option><option>36</option><option>38</option><option>40</option><option>42</option><option>44</option><option>46</option></select></div>
-                             <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Sweatshirt</div><select id="s_sweat" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
-                            <div style="grid-column: span 2;"><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Ayakkabı Numarası</div><select id="s_shoe" class="mdm-input"><option value="">Seçiniz</option><option>35</option><option>36</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option></select></div>
-                        </div>
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <button onclick="alert('Form Buraya Gelecek - Test Başarılı')" style="padding:10px 20px; background:#333; color:#fff;">TEST BUTONU</button>
                     </div>
-                    <div style="margin-bottom:20px;">
-                        <label style="font-weight:800; font-size:13px; color:#334155; display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">🎨 Sevdiğin Renkler (En az 5)</label>
-                        <div id="color-picker-grid" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-                        <div id="color-count" style="font-size:11px; color:#ef4444; margin-top:8px; font-weight:bold; text-align:right;">0 / 5 Seçildi</div>
-                    </div>
-                    <div style="background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:20px; display:flex; gap:10px;">
-                         <input type="checkbox" id="kvkk_approve" style="margin-top:4px; transform:scale(1.2); cursor:pointer;">
-                         <label for="kvkk_approve" style="font-size:11px; color:#64748b; line-height:1.4; cursor:pointer;">Bana özel ürün önerileri sunulması için verilerimin işlenmesini ve <a href="https://modum.tr/gizlilik-sozlesmesi/" target="_blank" style="color:#4f46e5; text-decoration:underline; font-weight:bold;">Gizlilik Sözleşmesi</a>'ni onaylıyorum.</label>
-                    </div>
-                    <button onclick="window.submitSurvey()" id="btn-submit-survey" style="width:100%; background:#334155; color:white; border:none; padding:15px; border-radius:50px; font-weight:bold; font-size:14px; cursor:not-allowed; transition:0.3s; text-transform:uppercase; letter-spacing:1px;" disabled>PROFİLİ KAYDET</button>
+                     <button onclick="window.submitSurvey()" id="btn-submit-survey" style="width:100%; background:#334155; color:white; border:none; padding:15px; border-radius:50px; font-weight:bold; font-size:14px; cursor:not-allowed; transition:0.3s; text-transform:uppercase; letter-spacing:1px;" disabled>PROFİLİ KAYDET</button>
                 </div>
             </div>
-            <style>.mdm-input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:13px; background:#fff; } .mdm-input:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79, 70, 229, 0.1); }</style>
+            <style>.mdm-input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:13px; background:#fff; }</style>
         </div>`;
+
         document.body.insertAdjacentHTML("beforeend", html);
-        renderColorPicker();
+        // Form içeriğini (renderColorPicker vs.) normalde buraya ekleriz, şimdilik popup açılıyor mu ona bakıyoruz.
+        // renderColorPicker(); <--- Test için kapattım, popup açılırsa bunu geri açarız.
+
+        console.log("✅ Anket Modalı HTML'e eklendi.");
       }
 
-      // --- RENK SEÇİCİ ---
-      var selectedColors = [];
-      function renderColorPicker() {
-        var colors = [
-          { n: "Siyah", c: "#000" },
-          { n: "Beyaz", c: "#fff", b: "#ddd" },
-          { n: "Kırmızı", c: "#ef4444" },
-          { n: "Mavi", c: "#3b82f6" },
-          { n: "Yeşil", c: "#10b981" },
-          { n: "Sarı", c: "#facc15" },
-          { n: "Pembe", c: "#f472b6" },
-          { n: "Mor", c: "#a855f7" },
-          { n: "Turuncu", c: "#f97316" },
-          { n: "Gri", c: "#9ca3af" },
-          { n: "Bej", c: "#f5f5dc", b: "#ddd" },
-          { n: "Kahve", c: "#78350f" },
-          { n: "Lacivert", c: "#1e3a8a" },
-          { n: "Bordo", c: "#7f1d1d" },
-          { n: "Lila", c: "#d8b4fe" },
-        ];
-        var container = document.getElementById("color-picker-grid");
-        if (!container) return;
-        colors.forEach((col) => {
-          var el = document.createElement("div");
-          el.style.cssText = `width:35px; height:35px; border-radius:50%; background:${col.c}; border:2px solid ${col.b || "transparent"}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; box-shadow:0 2px 5px rgba(0,0,0,0.1);`;
-          el.title = col.n;
-          el.onclick = function () {
-            toggleColor(col.n, this);
-          };
-          container.appendChild(el);
-        });
-      }
-
-      function toggleColor(colorName, el) {
-        if (selectedColors.includes(colorName)) {
-          selectedColors = selectedColors.filter((c) => c !== colorName);
-          el.innerHTML = "";
-          el.style.transform = "scale(1)";
-          el.style.borderColor =
-            el.style.background === "rgb(255, 255, 255)"
-              ? "#ddd"
-              : "transparent";
-        } else {
-          selectedColors.push(colorName);
-          el.innerHTML =
-            '<i class="fas fa-check" style="color:' +
-            (colorName === "Beyaz" ||
-            colorName === "Bej" ||
-            colorName === "Sarı"
-              ? "#000"
-              : "#fff") +
-            '"></i>';
-          el.style.transform = "scale(1.1)";
-          el.style.borderColor = "#4f46e5";
-        }
-        checkFormValidity();
-      }
-
-      function checkFormValidity() {
-        var count = selectedColors.length;
-        var btn = document.getElementById("btn-submit-survey");
-        var kvkk = document.getElementById("kvkk_approve");
-        var countLabel = document.getElementById("color-count");
-
-        if (count >= 5)
-          countLabel.innerHTML = `<span style="color:#10b981;">${count} / 5 (Tamam)</span>`;
-        else {
-          countLabel.innerHTML = `${count} / 5 Seçildi`;
-          countLabel.style.color = "#ef4444";
-        }
-
-        if (count >= 5 && kvkk.checked) {
-          btn.disabled = false;
-          btn.style.background = "linear-gradient(135deg, #4f46e5, #4338ca)";
-          btn.style.cursor = "pointer";
-          btn.style.boxShadow = "0 4px 15px rgba(79, 70, 229, 0.4)";
-          btn.innerHTML = "KAYDET VE 500 XP KAZAN 🚀";
-        } else {
-          btn.disabled = true;
-          btn.style.background = "#334155";
-          btn.style.cursor = "not-allowed";
-          btn.style.boxShadow = "none";
-          btn.innerHTML = "SEÇİMLERİ TAMAMLA";
-        }
-      }
-
-      window.submitSurvey = function () {
-        var dress = document.getElementById("s_dress").value;
-        var tshirt = document.getElementById("s_tshirt").value;
-        var pant = document.getElementById("s_pant").value;
-        var shoe = document.getElementById("s_shoe").value;
-        var sweat = document.getElementById("s_sweat").value;
-
-        if (!dress || !tshirt || !pant || !shoe || !sweat)
-          return alert("Lütfen tüm beden seçeneklerini doldurunuz.");
-
-        var btn = document.getElementById("btn-submit-survey");
-        btn.innerHTML =
-          '<i class="fas fa-circle-notch fa-spin"></i> Kaydediliyor...';
-        btn.disabled = true;
-
-        var payload = {
-          email: APP_STATE.user.email,
-          preferences: {
-            dressSize: dress,
-            tshirtSize: tshirt,
-            pantSize: pant,
-            shoeSize: shoe,
-            sweatSize: sweat,
-            colors: selectedColors,
-          },
-        };
-
-        fetchApi("submit_style_survey", payload).then((res) => {
-          if (res.success) {
-            alert("🎉 Harika! " + res.message);
-            document.getElementById("mdm-style-survey-modal").remove();
-            initStyleSystem();
-            if (window.ModumApp && window.ModumApp.updateDataInBackground)
-              window.ModumApp.updateDataInBackground();
-          } else {
-            alert("Hata: " + res.message);
-            btn.innerHTML = "TEKRAR DENE";
-            btn.disabled = false;
-          }
-        });
-      };
-
-      document.addEventListener("change", function (e) {
-        if (e.target.id === "kvkk_approve") checkFormValidity();
-      });
-
-      // --- 2. STORY BAR RENDERER (ÜRÜN ÖNERİLERİ) ---
+      // --- 2. STORY BAR RENDERER (SLOT BULAMAZSA ZORLA EKLEME) ---
       function renderStoryBar(products) {
         var old = document.getElementById("mdm-story-bar");
         if (old) old.remove();
 
         var html = `
-        <div id="mdm-story-bar" style="width:100%; padding:15px 0; background:linear-gradient(to right, #0f172a, #1e293b); overflow-x:auto; white-space:nowrap; border-bottom:1px solid #334155; -webkit-overflow-scrolling: touch; display:flex; align-items:center;">
-            <div style="display:inline-block; vertical-align:top; margin-left:15px; margin-right:5px; text-align:center;">
-                <div style="width:65px; height:65px; border-radius:50%; border:2px dashed #4ade80; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#1e293b; color:#4ade80; font-weight:800; font-size:9px; line-height:1.2; box-shadow:0 0 10px rgba(74, 222, 128, 0.2);">SANA<br>ÖZEL<br>SEÇİM</div>
-            </div>`;
+        <div id="mdm-story-bar" style="width:100%; padding:15px 0; background:linear-gradient(to right, #0f172a, #1e293b); overflow-x:auto; white-space:nowrap; border-bottom:1px solid #334155; display:flex; align-items:center; position:relative; z-index:10000;">
+            <div style="color:#fff; padding:0 20px;">Story Bar Çalışıyor (Test)</div>
+        </div>`;
 
-        products.forEach((p, idx) => {
-          var ringColor = p.score >= 30 ? "#facc15" : "#3b82f6";
-          var glow =
-            p.score >= 30
-              ? "box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);"
-              : "";
-          html += `
-            <div onclick="openProductStory(${idx})" style="display:inline-block; vertical-align:top; margin-left:10px; cursor:pointer; text-align:center;">
-                <div style="padding:3px; border-radius:50%; background:linear-gradient(45deg, ${ringColor}, #ec4899); position:relative; ${glow}">
-                    <img src="${p.image}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #0f172a; display:block; background:#fff;">
-                    <div style="position:absolute; bottom:0; right:0; background:#ef4444; color:#fff; font-size:9px; padding:1px 4px; border-radius:10px; border:1px solid #fff; font-weight:bold;">%${p.score}</div>
-                </div>
-                <div style="font-size:10px; color:#cbd5e1; margin-top:6px; max-width:65px; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${p.title.substring(0, 10)}...</div>
-            </div>`;
-        });
-        html += `</div>`;
-
-        // 🔥 YERLEŞTİRME MANTIĞI: ANA SAYFA KODUNDAKİ ÖZEL SLOTA GİT
+        // 🔥 YERLEŞTİRME MANTIĞI:
         var customSlot = document.getElementById("mdm-top-slot");
 
         if (customSlot) {
-          // Ana sayfadaysak ve slot varsa oraya göm
+          console.log("✅ 'mdm-top-slot' bulundu, içine yerleştiriliyor.");
           customSlot.innerHTML = html;
+          // Görünür olduğundan emin ol
+          customSlot.style.display = "block";
+          customSlot.style.minHeight = "100px";
+          customSlot.style.zIndex = "99999";
         } else {
-          // Diğer sayfalardaysak (Ürün detay vb.) Header'ın altına ekle
-          var myTopbar = document.querySelector(".mdm-topbar");
-          if (myTopbar) {
-            myTopbar.insertAdjacentHTML("afterend", html);
-          } else {
-            var header =
-              document.querySelector(".header") ||
-              document.querySelector("header") ||
-              document.body;
-            header.insertAdjacentHTML("afterend", html);
-          }
+          console.warn(
+            "⚠️ 'mdm-top-slot' BULUNAMADI! Body'nin en tepesine zorla ekleniyor.",
+          );
+          document.body.insertAdjacentHTML("afterbegin", html);
         }
         window.MDM_STORY_DATA = products;
       }
@@ -12632,5 +12490,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
