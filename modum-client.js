@@ -2600,6 +2600,11 @@ margin-bottom: 20px;
     setTimeout(() => {
       ModumApp.initSurpriseSystem();
     }, 2000);
+    setTimeout(function () {
+      if (window.ModumApp && window.ModumApp.loadStoryBar) {
+        window.ModumApp.loadStoryBar();
+      }
+    }, 2000);
   }
 
   // --- VERİ ÇEKME (SERİ SORUNU %100 FİXLENDİ) ---
@@ -12591,5 +12596,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
