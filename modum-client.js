@@ -3048,145 +3048,120 @@ ${rowsHtml}
     }
   }
 
-  // --- KULLANICIYI TESPİT ET (CACHE ÇAKIŞMASI FİXLENDİ v4.0) ---
+  // --- KULLANICIYI TESPİT ET (AGRESİF MOD v5.0) ---
   async function detectUser() {
-    // 1. Önce Sayfadaki GERÇEK Veriyi Tara (DOM Öncelikli)
     var foundEmail = null;
     var foundName = "Misafir";
 
+    // 1. DOM TARAMASI (Sayfadaki Gizli Inputlar - Genişletilmiş Liste)
     var inputs = [
       'input[name="Email"]',
       "#Email",
       "#MemberEmail",
       ".member-email",
       'input[type="hidden"][name="Email"]',
+      "#txtEmail",
+      "#user_email",
     ];
+
     for (var i = 0; i < inputs.length; i++) {
       var el = document.querySelector(inputs[i]);
       if (el && el.value && el.value.includes("@")) {
         foundEmail = el.value.trim();
 
-        // İsmi de bulmaya çalış
+        // İsmi de yakalamaya çalışalım
         var nameEl =
           document.querySelector('input[name="FirstName"]') ||
           document.querySelector("#FirstName");
         if (nameEl && nameEl.value) foundName = nameEl.value;
 
-        break; // Bulduysak döngüden çık
+        break;
       }
     }
 
-    // 2. Şimdi Cache'e Bak
-    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
-
-    // 3. 🔥 KRİTİK KONTROL: Cache ile Ekran Farklı mı?
-    if (foundEmail && cachedUser && cachedUser.email !== foundEmail) {
-      console.log(
-        "♻️ Kullanıcı değişmiş! Cache temizleniyor... (" +
-          cachedUser.email +
-          " -> " +
-          foundEmail +
-          ")",
-      );
-      localStorage.removeItem("mdm_user_cache"); // Eski veriyi sil
-      cachedUser = null; // Cache'i boşalt
+    // 2. ÇEREZ (COOKIE) TARAMASI (Faprika Yedek Planı)
+    if (!foundEmail) {
+      var cookies = document.cookie.split(";");
+      for (var i = 0; i < cookies.length; i++) {
+        var c = cookies[i].trim();
+        // Faprika bazen bu isimlerle çerez tutar
+        if (
+          c.startsWith("email=") ||
+          c.startsWith("Email=") ||
+          c.startsWith("member_email=")
+        ) {
+          var val = c.split("=")[1];
+          if (val.includes("%40")) val = decodeURIComponent(val); // URL encode varsa çöz (@ işareti)
+          if (val.includes("@")) foundEmail = val;
+        }
+      }
     }
 
-    // 4. Kullanıcı Objesini Oluştur
-    // Eğer sayfada bulduysak onu kullan, bulamadıysak cache'tekini kullan, o da yoksa boş aç.
+    // 3. CACHE KONTROLÜ (Tarayıcı Hafızası)
+    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
+
+    // Eğer sayfada yeni bir mail bulduysak ve cache ile farklıysa, cache'i ez (Oturum değişmiş).
+    if (foundEmail && cachedUser && cachedUser.email !== foundEmail) {
+      console.log("♻️ Kullanıcı değişti, hafıza güncelleniyor.");
+      localStorage.removeItem("mdm_user_cache");
+      cachedUser = null;
+    }
+
+    // Kullanıcı objesini oluştur (Bulunanı al, yoksa cache'den al, o da yoksa boş dön)
     var user = {
       email: foundEmail || (cachedUser ? cachedUser.email : null),
-      name: foundEmail ? foundName : cachedUser ? cachedUser.name : "Misafir",
+      name:
+        foundName !== "Misafir"
+          ? foundName
+          : cachedUser
+            ? cachedUser.name
+            : "Misafir",
       puan: cachedUser ? cachedUser.puan : 0,
       seviye: cachedUser ? cachedUser.seviye : "Çaylak",
       hak: cachedUser ? cachedUser.hak : 0,
+      badges: cachedUser ? cachedUser.badges : [],
+      selectedAvatar: cachedUser ? cachedUser.selectedAvatar : null,
     };
 
-    // 5. Eğer sayfada bulamadıysak ama "Hesabım" linki varsa, arka planda tarama yap (Dedektif Modu)
-    if (!user.email) {
-      try {
-        var targetUrls = [
-          "/hesabim/bilgilerim/",
-          "/Uye/BilgiGuncelle",
-          "/uyelik-bilgilerim",
-        ];
-        for (let url of targetUrls) {
-          if (user.email) break;
-          var response = await fetch(url);
-          if (response.ok) {
-            var text = await response.text();
-            var doc = new DOMParser().parseFromString(text, "text/html");
-            var mailInput =
-              doc.querySelector('input[name="Email"]') ||
-              doc.querySelector("#Email") ||
-              doc.querySelector("#MemberEmail");
+    // 4. SON ÇARE: EĞER MAİL VARSA DETAYLARI API'DEN ÇEK VE GÜNCELLE
+    // (Bu kısım sayfa açılışını yavaşlatmaz, arka planda çalışır)
+    if (user.email) {
+      // Backend'e sor: "Bu mailin adı, puanı, rozeti ne?"
+      fetchApi("get_user_details", { email: user.email }).then((res) => {
+        if (res && res.success) {
+          // Gelen taze verilerle objeyi güncelle
+          user.name = res.user.adSoyad || res.user.name;
+          user.puan = res.user.puan;
+          user.seviye = res.user.seviye;
+          user.badges = res.user.badges;
+          user.selectedAvatar = res.user.selectedAvatar;
+          user.hak = res.user.hak;
 
-            if (mailInput && mailInput.value && mailInput.value.includes("@")) {
-              // Eğer burada bulduğumuz mail de cache'den farklıysa yine cache'i ezmemiz lazım
-              var freshEmail = mailInput.value.trim();
-              if (cachedUser && cachedUser.email !== freshEmail) {
-                localStorage.removeItem("mdm_user_cache");
-                user.puan = 0; // Puanı sıfırla ki yanlış göstermesin
-              }
+          // Hafızaya en taze halini yaz
+          localStorage.setItem("mdm_user_cache", JSON.stringify(user));
 
-              user.email = freshEmail;
-              var nameInput =
-                doc.querySelector('input[name="FirstName"]') ||
-                doc.querySelector("#FirstName");
-              if (nameInput) user.name = nameInput.value;
+          // Arayüzü güncelle (İsim, Puan vs.)
+          if (document.getElementById("nav-user-name"))
+            document.getElementById("nav-user-name").innerText = user.name;
+
+          // Üst bardaki avatarı güncelle
+          var navAvatar = document.getElementById("nav-avatar");
+          if (navAvatar) {
+            var initial = (user.name || "M").charAt(0).toUpperCase();
+            navAvatar.innerText = initial;
+            // Eğer özel avatar varsa (emoji/resim) onu koy (Basit kontrol)
+            if (user.selectedAvatar && user.selectedAvatar.length < 5) {
+              // Emoji ise (uzunluk kısa)
+              navAvatar.innerText = user.selectedAvatar;
+              navAvatar.style.background = "transparent";
+              navAvatar.style.fontSize = "20px";
             }
           }
         }
-      } catch (e) {
-        console.log("Dedektif hatası:", e);
-      }
-    }
-
-    // 6. Sonuç: E-posta varsa API'ye bildir ve Cache'i Güncelle
-    if (user.email) {
-      // Oturum tetikle
-      fetchApi("user_login_trigger", {
-        email: user.email,
-        adSoyad: user.name,
-      }).then((loginRes) => {
-        if (loginRes && loginRes.success && loginRes.isNew) {
-          // 👇 SÜREYİ BELİRLEYEN KISIM BURASIDIR 👇
-          setTimeout(() => {
-            ModumApp.checkWelcome(true, 250);
-          }, 8000); // 12000 = 12 Saniye demektir.
-        }
       });
 
-      // Detayları çek
-      var details = await fetchApi("get_user_details", { email: user.email });
-      if (details && details.success) {
-        user.puan = details.user.puan || 0;
-        user.seviye = details.user.seviye || "Çaylak";
-        user.hak = details.user.hak || 0;
-        user.gunlukSeri = details.user.gunlukSeri || 0;
-        user.katilimSayisi =
-          details.user.katilimSayisi || details.user.toplamkatilim || 0;
-        user.toplamkatilim =
-          details.user.katilimSayisi || details.user.toplamkatilim || 0;
-
-        if (details.user.adSoyad && details.user.adSoyad !== "Misafir")
-          user.name = details.user.adSoyad;
-        if (details.user.referansKodu)
-          user.referansKodu = details.user.referansKodu;
-        user.badges = details.user.badges || [];
-        user.selectedAvatar = details.user.selectedAvatar || null;
-        user.profileTheme = details.user.profileTheme || "default";
-        user.bio = details.user.bio || "";
-
-        // Eğer profil sekmesi açıksa anlık güncelle
-        if (APP_STATE.activeTab === "profile") {
-          var pContainer = document.getElementById("mdm-profile-container");
-          if (pContainer) pContainer.innerHTML = renderProfileTab(user);
-        }
-
-        // 🔥 EN GÜNCEL HALİNİ KAYDET
-        localStorage.setItem("mdm_user_cache", JSON.stringify(user));
-      }
+      // Oturum tetikleyiciyi de çalıştır (Son görülme saatini güncellemek için)
+      fetchApi("user_login_trigger", { email: user.email, adSoyad: user.name });
     }
 
     return user;
@@ -5910,6 +5885,12 @@ ${replyHtml}
         desc = "Fırsatları ilk sen duymak istiyorsan giriş yapmalısın.";
         icon = "🔔";
         btnText = "GİRİŞ YAP";
+      } else if (type === "style") {
+        title = "STİLİNİ SEÇ";
+        desc =
+          "Sana özel ürün önerileri ve indirimler almak için giriş yapmalısın.";
+        icon = "🔒";
+        btnText = "GİRİŞ YAP VE BAŞLA";
       }
 
       var html = `
@@ -12596,5 +12577,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
