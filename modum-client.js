@@ -12591,5 +12591,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
