@@ -3048,68 +3048,66 @@ ${rowsHtml}
     }
   }
 
-  // --- KULLANICIYI TESPİT ET (AGRESİF MOD v5.0) ---
+  // --- KULLANICIYI TESPİT ET (CACHE ÖNCELİKLİ - KESİN ÇÖZÜM v6.0) ---
   async function detectUser() {
     var foundEmail = null;
     var foundName = "Misafir";
 
-    // 1. DOM TARAMASI (Sayfadaki Gizli Inputlar - Genişletilmiş Liste)
-    var inputs = [
-      'input[name="Email"]',
-      "#Email",
-      "#MemberEmail",
-      ".member-email",
-      'input[type="hidden"][name="Email"]',
-      "#txtEmail",
-      "#user_email",
-    ];
+    // 1. ÖNCE CACHE'E BAK (Hız ve Süreklilik İçin)
+    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
+    if (cachedUser && cachedUser.email) {
+      // Cache varsa, sayfada arama yapmaya gerek yok, direkt bunu kullan.
+      // Ama arka planda doğrulama yapabiliriz.
+      foundEmail = cachedUser.email;
+      foundName = cachedUser.name;
+    }
 
-    for (var i = 0; i < inputs.length; i++) {
-      var el = document.querySelector(inputs[i]);
-      if (el && el.value && el.value.includes("@")) {
-        foundEmail = el.value.trim();
+    // 2. DOM TARAMASI (Sadece Cache Yoksa veya Teyit İçin)
+    if (!foundEmail) {
+      var inputs = [
+        'input[name="Email"]',
+        "#Email",
+        "#MemberEmail",
+        ".member-email",
+        'input[type="hidden"][name="Email"]',
+        "#txtEmail",
+        "#user_email",
+      ];
 
-        // İsmi de yakalamaya çalışalım
-        var nameEl =
-          document.querySelector('input[name="FirstName"]') ||
-          document.querySelector("#FirstName");
-        if (nameEl && nameEl.value) foundName = nameEl.value;
-
-        break;
+      for (var i = 0; i < inputs.length; i++) {
+        var el = document.querySelector(inputs[i]);
+        if (el && el.value && el.value.includes("@")) {
+          foundEmail = el.value.trim();
+          // İsmi de yakala
+          var nameEl =
+            document.querySelector('input[name="FirstName"]') ||
+            document.querySelector("#FirstName");
+          if (nameEl && nameEl.value) foundName = nameEl.value;
+          break;
+        }
       }
     }
 
-    // 2. ÇEREZ (COOKIE) TARAMASI (Faprika Yedek Planı)
+    // 3. EĞER HALA YOKSA -> ÇEREZLER
     if (!foundEmail) {
       var cookies = document.cookie.split(";");
       for (var i = 0; i < cookies.length; i++) {
         var c = cookies[i].trim();
-        // Faprika bazen bu isimlerle çerez tutar
         if (
           c.startsWith("email=") ||
           c.startsWith("Email=") ||
           c.startsWith("member_email=")
         ) {
           var val = c.split("=")[1];
-          if (val.includes("%40")) val = decodeURIComponent(val); // URL encode varsa çöz (@ işareti)
+          if (val.includes("%40")) val = decodeURIComponent(val);
           if (val.includes("@")) foundEmail = val;
         }
       }
     }
 
-    // 3. CACHE KONTROLÜ (Tarayıcı Hafızası)
-    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
-
-    // Eğer sayfada yeni bir mail bulduysak ve cache ile farklıysa, cache'i ez (Oturum değişmiş).
-    if (foundEmail && cachedUser && cachedUser.email !== foundEmail) {
-      console.log("♻️ Kullanıcı değişti, hafıza güncelleniyor.");
-      localStorage.removeItem("mdm_user_cache");
-      cachedUser = null;
-    }
-
-    // Kullanıcı objesini oluştur (Bulunanı al, yoksa cache'den al, o da yoksa boş dön)
+    // 4. KULLANICI OBJESİ OLUŞTUR
     var user = {
-      email: foundEmail || (cachedUser ? cachedUser.email : null),
+      email: foundEmail,
       name:
         foundName !== "Misafir"
           ? foundName
@@ -3123,44 +3121,27 @@ ${rowsHtml}
       selectedAvatar: cachedUser ? cachedUser.selectedAvatar : null,
     };
 
-    // 4. SON ÇARE: EĞER MAİL VARSA DETAYLARI API'DEN ÇEK VE GÜNCELLE
-    // (Bu kısım sayfa açılışını yavaşlatmaz, arka planda çalışır)
+    // 5. SON ÇARE & GÜNCELLEME: API'DEN TEYİT AL
     if (user.email) {
-      // Backend'e sor: "Bu mailin adı, puanı, rozeti ne?"
+      // Eğer cache'deki ile bulduğumuz aynıysa bile, puan değişmiş olabilir, API'ye sor.
       fetchApi("get_user_details", { email: user.email }).then((res) => {
         if (res && res.success) {
-          // Gelen taze verilerle objeyi güncelle
           user.name = res.user.adSoyad || res.user.name;
           user.puan = res.user.puan;
           user.seviye = res.user.seviye;
           user.badges = res.user.badges;
           user.selectedAvatar = res.user.selectedAvatar;
-          user.hak = res.user.hak;
 
-          // Hafızaya en taze halini yaz
+          // Hafızayı güncelle
           localStorage.setItem("mdm_user_cache", JSON.stringify(user));
 
-          // Arayüzü güncelle (İsim, Puan vs.)
+          // Üst barı güncelle
           if (document.getElementById("nav-user-name"))
             document.getElementById("nav-user-name").innerText = user.name;
-
-          // Üst bardaki avatarı güncelle
-          var navAvatar = document.getElementById("nav-avatar");
-          if (navAvatar) {
-            var initial = (user.name || "M").charAt(0).toUpperCase();
-            navAvatar.innerText = initial;
-            // Eğer özel avatar varsa (emoji/resim) onu koy (Basit kontrol)
-            if (user.selectedAvatar && user.selectedAvatar.length < 5) {
-              // Emoji ise (uzunluk kısa)
-              navAvatar.innerText = user.selectedAvatar;
-              navAvatar.style.background = "transparent";
-              navAvatar.style.fontSize = "20px";
-            }
-          }
         }
       });
 
-      // Oturum tetikleyiciyi de çalıştır (Son görülme saatini güncellemek için)
+      // Oturum tetikle
       fetchApi("user_login_trigger", { email: user.email, adSoyad: user.name });
     }
 
@@ -12576,6 +12557,44 @@ FIRSATI YAKALA & TAMAMLA 🚀
           }
         });
     }
+    // --- 🎣 LOGIN HOOK (Giriş Yaparken Maili Yakala) ---
+    (function hookLoginForm() {
+      // 1. Giriş Sayfası mı?
+      if (
+        window.location.href.includes("giris") ||
+        window.location.href.includes("login")
+      ) {
+        // Giriş butonunu bul (Genelde type="submit")
+        document.addEventListener("click", function (e) {
+          var btn = e.target;
+          // Eğer submit butonuysa veya içinde "Giriş" yazıyorsa
+          if (
+            btn.type === "submit" ||
+            btn.innerText.includes("Giriş") ||
+            btn.innerText.includes("Login")
+          ) {
+            // Mail inputunu bul
+            var inputs = document.querySelectorAll(
+              'input[type="text"], input[type="email"]',
+            );
+            inputs.forEach((input) => {
+              var val = input.value;
+              if (val && val.includes("@")) {
+                console.log("🎣 Giriş Hook: Mail yakalandı -> " + val);
+                // Maili hafızaya kaydet (Sistem bunu detectUser'da okuyacak)
+                var user = {
+                  email: val.trim(),
+                  name: "Üye", // İsim sonra güncellenir
+                  puan: 0,
+                  seviye: "Çaylak",
+                };
+                localStorage.setItem("mdm_user_cache", JSON.stringify(user));
+              }
+            });
+          }
+        });
+      }
+    })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
