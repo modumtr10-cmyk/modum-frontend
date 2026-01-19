@@ -8395,32 +8395,99 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
     }, // <-- Buraya virgül koymayı unutma, eğer devamında kod varsa. Yoksa gerek yok.
   }; // <--- BURASI ÇOK ÖNEMLİ: window.ModumApp BU NOKTALI VİRGÜL İLE BİTER.
 
+  /* ======================================================
+     🚀 FİNAL BAŞLATICI (SAYFA VE KONUM KONTROLLÜ) v8.5
+     ====================================================== */
   checkSystemLock().then((isLocked) => {
-    // Eğer kilit YOKSA normal sistemi başlat
+    // Kilitli değilse işlemlere başla
     if (!isLocked) {
-      var attempts = 0;
-      var initInterval = setInterval(function () {
-        var root = document.getElementById(TARGET_ID);
+      // 1. GLOBAL ÖZELLİKLERİ HER YERDE BAŞLAT (Dedektifler)
+      // Bu özellikler ana sayfa, ürün detay vb. her yerde çalışmalı.
+      if (document.body && !window.mdmEggStarted) {
+        window.mdmEggStarted = true;
 
-        // Kutu Sistemini Başlat
-        if (document.body && !window.mdmEggStarted) {
-          window.mdmEggStarted = true;
+        // 🥚 Sürpriz Yumurta (Her yerde çalışır)
+        if (window.ModumApp && ModumApp.initSurpriseSystem) {
           ModumApp.initSurpriseSystem();
         }
 
-        attempts++;
-        if (root) {
-          clearInterval(initInterval);
-          init(root); // Widget'ı başlat
-        } else if (attempts > 20) {
-          clearInterval(initInterval);
-        }
-      }, 500);
+        // 🕵️ Altın Ürün Avı (Her yerde çalışır)
+        window.addEventListener("load", function () {
+          setTimeout(initGoldenHunt, 2000);
+        });
 
-      // Altın Ürün Avını Başlat
-      window.addEventListener("load", function () {
-        setTimeout(initGoldenHunt, 2000);
-      });
+        // 🛒 Günlük Sepet Dedektifi (Her yerde çalışır)
+        // (Zaten kendi kendine çalışan bir IIFE içinde tanımlı, ek işleme gerek yok)
+      }
+
+      // 2. ANA PANEL (DASHBOARD) SADECE "ÇEKİLİŞLER" SAYFASINDA AÇILSIN
+      var currentUrl = window.location.href.toLowerCase();
+      var isRafflePage = currentUrl.indexOf("cekilisler") > -1;
+
+      // Kök elementi bul
+      var root = document.getElementById(TARGET_ID);
+
+      if (isRafflePage) {
+        // --- SENARYO A: ÇEKİLİŞLER SAYFASINDAYIZ ---
+        console.log(
+          "🎯 ModumNet: Çekiliş Sayfası Algılandı. Panel Başlatılıyor...",
+        );
+
+        // Footer sorununu çözen CSS yamasını ekle
+        // Bu CSS, paneli sayfanın en üstüne sabitler ve tam ekran yapar.
+        var fixStyle = document.createElement("style");
+        fixStyle.innerHTML = `
+          #modum-firebase-test-root {
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
+            z-index: 999 !important;
+            width: 100% !important;
+            min-height: 100vh !important;
+            background-color: #0f172a !important; /* Arkaplan rengi */
+            margin: 0 !important;
+            padding: 0 !important;
+            top: 0 !important;
+          }
+          /* Faprika'nın varsayılan container paddinglerini ez */
+          .page-container, .container, .row {
+             max-width: 100% !important;
+             padding: 0 !important;
+             margin: 0 !important;
+          }
+        `;
+        document.head.appendChild(fixStyle);
+
+        // Widget'ı Başlat (Eğer root varsa)
+        if (root) {
+          init(root);
+        } else {
+          // Root henüz oluşmadıysa bekle ve başlat
+          var attempts = 0;
+          var initInterval = setInterval(function () {
+            root = document.getElementById(TARGET_ID);
+            attempts++;
+            if (root) {
+              clearInterval(initInterval);
+              init(root);
+            } else if (attempts > 50) {
+              // 25 saniye dene
+              clearInterval(initInterval);
+              console.error("❌ ModumNet: Root elementi bulunamadı.");
+            }
+          }, 500);
+        }
+      } else {
+        // --- SENARYO B: DİĞER SAYFALAR (ANA SAYFA, ÜRÜN VB.) ---
+        // Paneli gizle ki footer'da çirkin durmasın.
+        if (root) {
+          root.style.display = "none";
+          root.innerHTML = ""; // İçini boşalt, kaynak tüketmesin
+        }
+        console.log(
+          "🛡️ ModumNet: Diğer sayfadasınız. Panel gizlendi, ajanlar aktif.",
+        );
+      }
     }
   });
 
@@ -12273,5 +12340,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
