@@ -12340,7 +12340,7 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
     }
     /* ======================================================
-   👗 MODUM STİL ASİSTANI (ANKET & STORY) - FİNAL V3
+   👗 MODUM STİL ASİSTANI (ANKET & STORY) - FİNAL V4 (SLOTLU)
    ====================================================== */
     (function () {
       // Sayfa tamamen yüklendiğinde çalış
@@ -12356,24 +12356,19 @@ FIRSATI YAKALA & TAMAMLA 🚀
           !window.APP_STATE.user ||
           !window.APP_STATE.user.email
         ) {
-          console.log("👗 Stil Asistanı: Misafir kullanıcı, işlem yapılmadı.");
-          return;
+          return; // Misafir
         }
 
         // 2. Sunucuya Sor: "Bu kişi anketi doldurdu mu?"
-        // Bu sorgu F5 yapılsa bile veritabanından en doğru bilgiyi getirir.
+        // F5 atılsa bile veritabanı "Doldurdu" derse anket açılmaz, Story açılır.
         fetchApi("get_style_recommendations", {
           email: APP_STATE.user.email,
         }).then((res) => {
           if (res.needSurvey === true) {
             // DURUM A: Anket Doldurmamış -> ANKETİ AÇ
-            console.log("👗 Stil Asistanı: Anket gerekli, modal açılıyor...");
             openStyleSurveyModal();
           } else if (res.success && res.list && res.list.length > 0) {
             // DURUM B: Anket Doldurmuş -> STORY BAR'I ÇİZ
-            console.log(
-              "👗 Stil Asistanı: Profil hazır, öneriler listeleniyor.",
-            );
             renderStoryBar(res.list);
           }
         });
@@ -12381,79 +12376,47 @@ FIRSATI YAKALA & TAMAMLA 🚀
 
       // --- 1. ZORUNLU ANKET MODALI ---
       function openStyleSurveyModal() {
-        // Varsa eskisini sil
         var old = document.getElementById("mdm-style-survey-modal");
         if (old) old.remove();
 
         var html = `
         <div id="mdm-style-survey-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.98); z-index:2147483647; display:flex; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
             <div style="background:#fff; width:100%; max-width:500px; border-radius:20px; overflow:hidden; box-shadow:0 0 50px rgba(79, 70, 229, 0.5); font-family:'Outfit', sans-serif; position:relative;">
-                
                 <div style="background:linear-gradient(135deg, #4f46e5, #9333ea); padding:30px 20px; text-align:center;">
                     <div style="font-size:50px; margin-bottom:10px;">👗</div>
                     <h2 style="color:#fff; margin:0; font-size:24px; font-weight:800;">TARZINI SEÇ</h2>
-                    <p style="color:rgba(255,255,255,0.9); font-size:14px; margin-top:5px; line-height:1.4;">
-                        Sana en uygun ürünleri önermemiz için beden bilgilerini gir.<br>
-                        <span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; font-weight:bold; font-size:12px;">+500 XP KAZAN</span>
-                    </p>
+                    <p style="color:rgba(255,255,255,0.9); font-size:14px; margin-top:5px; line-height:1.4;">Sana en uygun ürünleri önermemiz için beden bilgilerini gir.<br><span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px; font-weight:bold; font-size:12px;">+500 XP KAZAN</span></p>
                 </div>
-
                 <div style="padding:25px;">
-                    
                     <div style="margin-bottom:20px;">
                         <label style="font-weight:800; font-size:13px; color:#334155; display:block; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px;">📏 Beden Bilgilerin (Zorunlu)</label>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                            <div>
-                                <div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Elbise</div>
-                                <select id="s_dress" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-                            </div>
-                            <div>
-                                <div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Tişört / Üst</div>
-                                <select id="s_tshirt" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-                            </div>
-                            <div>
-                                <div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Pantolon / Alt</div>
-                                <select id="s_pant" class="mdm-input"><option value="">Seçiniz</option><option>34</option><option>36</option><option>38</option><option>40</option><option>42</option><option>44</option><option>46</option></select>
-                            </div>
-                             <div>
-                                <div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Sweatshirt</div>
-                                <select id="s_sweat" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-                            </div>
-                            <div style="grid-column: span 2;">
-                                <div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Ayakkabı Numarası</div>
-                                <select id="s_shoe" class="mdm-input"><option value="">Seçiniz</option><option>35</option><option>36</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option></select>
-                            </div>
+                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Elbise</div><select id="s_dress" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Tişört / Üst</div><select id="s_tshirt" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+                            <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Pantolon / Alt</div><select id="s_pant" class="mdm-input"><option value="">Seçiniz</option><option>34</option><option>36</option><option>38</option><option>40</option><option>42</option><option>44</option><option>46</option></select></div>
+                             <div><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Sweatshirt</div><select id="s_sweat" class="mdm-input"><option value="">Seçiniz</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+                            <div style="grid-column: span 2;"><div style="font-size:11px; color:#64748b; margin-bottom:3px; font-weight:600;">Ayakkabı Numarası</div><select id="s_shoe" class="mdm-input"><option value="">Seçiniz</option><option>35</option><option>36</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option></select></div>
                         </div>
                     </div>
-
                     <div style="margin-bottom:20px;">
                         <label style="font-weight:800; font-size:13px; color:#334155; display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">🎨 Sevdiğin Renkler (En az 5)</label>
                         <div id="color-picker-grid" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
                         <div id="color-count" style="font-size:11px; color:#ef4444; margin-top:8px; font-weight:bold; text-align:right;">0 / 5 Seçildi</div>
                     </div>
-
                     <div style="background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:20px; display:flex; gap:10px;">
                          <input type="checkbox" id="kvkk_approve" style="margin-top:4px; transform:scale(1.2); cursor:pointer;">
-                         <label for="kvkk_approve" style="font-size:11px; color:#64748b; line-height:1.4; cursor:pointer;">
-                             Bana özel ürün önerileri sunulması için verilerimin işlenmesini ve <a href="https://modum.tr/gizlilik-sozlesmesi/" target="_blank" style="color:#4f46e5; text-decoration:underline; font-weight:bold;">Gizlilik Sözleşmesi</a>'ni onaylıyorum.
-                         </label>
+                         <label for="kvkk_approve" style="font-size:11px; color:#64748b; line-height:1.4; cursor:pointer;">Bana özel ürün önerileri sunulması için verilerimin işlenmesini ve <a href="https://modum.tr/gizlilik-sozlesmesi/" target="_blank" style="color:#4f46e5; text-decoration:underline; font-weight:bold;">Gizlilik Sözleşmesi</a>'ni onaylıyorum.</label>
                     </div>
-
                     <button onclick="window.submitSurvey()" id="btn-submit-survey" style="width:100%; background:#334155; color:white; border:none; padding:15px; border-radius:50px; font-weight:bold; font-size:14px; cursor:not-allowed; transition:0.3s; text-transform:uppercase; letter-spacing:1px;" disabled>PROFİLİ KAYDET</button>
-
                 </div>
             </div>
-            <style>
-                .mdm-input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:13px; background:#fff; }
-                .mdm-input:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79, 70, 229, 0.1); }
-            </style>
-        </div>
-        `;
+            <style>.mdm-input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:inherit; font-size:13px; background:#fff; } .mdm-input:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79, 70, 229, 0.1); }</style>
+        </div>`;
         document.body.insertAdjacentHTML("beforeend", html);
         renderColorPicker();
       }
 
-      // --- RENK SEÇİCİ (Yardımcı) ---
+      // --- RENK SEÇİCİ ---
       var selectedColors = [];
       function renderColorPicker() {
         var colors = [
@@ -12473,10 +12436,8 @@ FIRSATI YAKALA & TAMAMLA 🚀
           { n: "Bordo", c: "#7f1d1d" },
           { n: "Lila", c: "#d8b4fe" },
         ];
-
         var container = document.getElementById("color-picker-grid");
         if (!container) return;
-
         colors.forEach((col) => {
           var el = document.createElement("div");
           el.style.cssText = `width:35px; height:35px; border-radius:50%; background:${col.c}; border:2px solid ${col.b || "transparent"}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; box-shadow:0 2px 5px rgba(0,0,0,0.1);`;
@@ -12515,13 +12476,13 @@ FIRSATI YAKALA & TAMAMLA 🚀
 
       function checkFormValidity() {
         var count = selectedColors.length;
-        var countLabel = document.getElementById("color-count");
         var btn = document.getElementById("btn-submit-survey");
         var kvkk = document.getElementById("kvkk_approve");
+        var countLabel = document.getElementById("color-count");
 
-        if (count >= 5) {
+        if (count >= 5)
           countLabel.innerHTML = `<span style="color:#10b981;">${count} / 5 (Tamam)</span>`;
-        } else {
+        else {
           countLabel.innerHTML = `${count} / 5 Seçildi`;
           countLabel.style.color = "#ef4444";
         }
@@ -12541,7 +12502,6 @@ FIRSATI YAKALA & TAMAMLA 🚀
         }
       }
 
-      // --- ANKETİ KAYDET ---
       window.submitSurvey = function () {
         var dress = document.getElementById("s_dress").value;
         var tshirt = document.getElementById("s_tshirt").value;
@@ -12549,9 +12509,8 @@ FIRSATI YAKALA & TAMAMLA 🚀
         var shoe = document.getElementById("s_shoe").value;
         var sweat = document.getElementById("s_sweat").value;
 
-        if (!dress || !tshirt || !pant || !shoe || !sweat) {
+        if (!dress || !tshirt || !pant || !shoe || !sweat)
           return alert("Lütfen tüm beden seçeneklerini doldurunuz.");
-        }
 
         var btn = document.getElementById("btn-submit-survey");
         btn.innerHTML =
@@ -12574,12 +12533,9 @@ FIRSATI YAKALA & TAMAMLA 🚀
           if (res.success) {
             alert("🎉 Harika! " + res.message);
             document.getElementById("mdm-style-survey-modal").remove();
-
-            // Hemen sistemi yenile ve Story'leri göster
             initStyleSystem();
-            if (window.ModumApp && window.ModumApp.updateDataInBackground) {
+            if (window.ModumApp && window.ModumApp.updateDataInBackground)
               window.ModumApp.updateDataInBackground();
-            }
           } else {
             alert("Hata: " + res.message);
             btn.innerHTML = "TEKRAR DENE";
@@ -12588,36 +12544,27 @@ FIRSATI YAKALA & TAMAMLA 🚀
         });
       };
 
-      // KVKK Onay Dinleyicisi
       document.addEventListener("change", function (e) {
         if (e.target.id === "kvkk_approve") checkFormValidity();
       });
 
       // --- 2. STORY BAR RENDERER (ÜRÜN ÖNERİLERİ) ---
       function renderStoryBar(products) {
-        // Varsa eskisini sil
         var old = document.getElementById("mdm-story-bar");
         if (old) old.remove();
 
-        // Story HTML'i
         var html = `
         <div id="mdm-story-bar" style="width:100%; padding:15px 0; background:linear-gradient(to right, #0f172a, #1e293b); overflow-x:auto; white-space:nowrap; border-bottom:1px solid #334155; -webkit-overflow-scrolling: touch; display:flex; align-items:center;">
-            
             <div style="display:inline-block; vertical-align:top; margin-left:15px; margin-right:5px; text-align:center;">
-                <div style="width:65px; height:65px; border-radius:50%; border:2px dashed #4ade80; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#1e293b; color:#4ade80; font-weight:800; font-size:9px; line-height:1.2; box-shadow:0 0 10px rgba(74, 222, 128, 0.2);">
-                    SANA<br>ÖZEL<br>SEÇİM
-                </div>
-            </div>
-        `;
+                <div style="width:65px; height:65px; border-radius:50%; border:2px dashed #4ade80; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#1e293b; color:#4ade80; font-weight:800; font-size:9px; line-height:1.2; box-shadow:0 0 10px rgba(74, 222, 128, 0.2);">SANA<br>ÖZEL<br>SEÇİM</div>
+            </div>`;
 
         products.forEach((p, idx) => {
-          // Halkanın rengi puana göre değişsin
-          var ringColor = p.score >= 30 ? "#facc15" : "#3b82f6"; // Yüksekse Altın, normalse Mavi
+          var ringColor = p.score >= 30 ? "#facc15" : "#3b82f6";
           var glow =
             p.score >= 30
               ? "box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);"
               : "";
-
           html += `
             <div onclick="openProductStory(${idx})" style="display:inline-block; vertical-align:top; margin-left:10px; cursor:pointer; text-align:center;">
                 <div style="padding:3px; border-radius:50%; background:linear-gradient(45deg, ${ringColor}, #ec4899); position:relative; ${glow}">
@@ -12627,81 +12574,63 @@ FIRSATI YAKALA & TAMAMLA 🚀
                 <div style="font-size:10px; color:#cbd5e1; margin-top:6px; max-width:65px; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${p.title.substring(0, 10)}...</div>
             </div>`;
         });
-
         html += `</div>`;
 
-        // 🔥 YERLEŞTİRME MANTIĞI: ANA SAYFANIN EN TEPESİNE
-        // Faprika'da genelde 'header' class'ı veya ID'si vardır. Onun hemen altına koyalım.
-        var target =
-          document.querySelector(".header") ||
-          document.querySelector("header") ||
-          document.body;
+        // 🔥 YERLEŞTİRME MANTIĞI: ANA SAYFA KODUNDAKİ ÖZEL SLOTA GİT
+        var customSlot = document.getElementById("mdm-top-slot");
 
-        // Eğer topbar'ımız varsa, onun altına koyalım ki düzen bozulmasın
-        var myTopbar = document.querySelector(".mdm-topbar");
-        if (myTopbar) {
-          myTopbar.insertAdjacentHTML("afterend", html);
+        if (customSlot) {
+          // Ana sayfadaysak ve slot varsa oraya göm
+          customSlot.innerHTML = html;
         } else {
-          // Yoksa body'nin en başına (header olarak)
-          document.body.insertAdjacentHTML("afterbegin", html);
+          // Diğer sayfalardaysak (Ürün detay vb.) Header'ın altına ekle
+          var myTopbar = document.querySelector(".mdm-topbar");
+          if (myTopbar) {
+            myTopbar.insertAdjacentHTML("afterend", html);
+          } else {
+            var header =
+              document.querySelector(".header") ||
+              document.querySelector("header") ||
+              document.body;
+            header.insertAdjacentHTML("afterend", html);
+          }
         }
-
-        // Veriyi globale atalım ki popup açınca erişebilelim
         window.MDM_STORY_DATA = products;
       }
 
-      // --- STORY POPUP AÇICI (ÜRÜN DETAY) ---
+      // --- STORY POPUP AÇICI ---
       window.openProductStory = function (index) {
         var p = window.MDM_STORY_DATA[index];
         if (!p) return;
-
         var old = document.getElementById("mdm-story-viewer");
         if (old) old.remove();
 
         var html = `
         <div id="mdm-story-viewer" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:2147483647; display:flex; flex-direction:column; animation: fadeIn 0.3s;">
-            
             <div style="padding:10px 5px; display:flex; gap:5px; position:absolute; top:0; left:0; width:100%; z-index:10;">
                 ${window.MDM_STORY_DATA.map((_, i) => `<div style="flex:1; height:3px; background:${i === index ? "#fff" : "rgba(255,255,255,0.3)"}; border-radius:2px; box-shadow:0 1px 2px rgba(0,0,0,0.5);"></div>`).join("")}
             </div>
-
             <div style="padding:25px 15px 10px; display:flex; justify-content:space-between; align-items:center; color:#fff; z-index:10; background:linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="https://www.modum.tr/i/m/001/0013355.png" style="width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);">
-                    <div>
-                        <div style="font-size:13px; font-weight:bold;">Modum Asistan</div>
-                        <div style="font-size:11px; color:#4ade80;">• ${p.matchReason}</div>
-                    </div>
+                    <div><div style="font-size:13px; font-weight:bold;">Modum Asistan</div><div style="font-size:11px; color:#4ade80;">• ${p.matchReason}</div></div>
                 </div>
                 <div onclick="document.getElementById('mdm-story-viewer').remove()" style="font-size:28px; cursor:pointer; opacity:0.8;">&times;</div>
             </div>
-
             <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; background:#1e1e1e;">
                 <img src="${p.image}" style="width:100%; height:100%; object-fit:contain;">
-                
-                <div style="position:absolute; bottom:20%; right:20px; background:#fff; color:#000; padding:8px 20px; border-radius:30px; font-weight:900; font-size:20px; transform:rotate(-5deg); box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-                    ${p.price} TL
-                </div>
+                <div style="position:absolute; bottom:20%; right:20px; background:#fff; color:#000; padding:8px 20px; border-radius:30px; font-weight:900; font-size:20px; transform:rotate(-5deg); box-shadow:0 10px 30px rgba(0,0,0,0.5);">${p.price} TL</div>
             </div>
-
             <div style="padding:20px; display:flex; flex-direction:column; gap:12px; background:linear-gradient(to top, #000 20%, transparent);">
-                
-                <button onclick="window.location.href='${p.link}'" style="background:#fff; color:#000; border:none; padding:16px; border-radius:50px; font-weight:900; font-size:14px; cursor:pointer; width:100%; box-shadow:0 5px 20px rgba(255,255,255,0.2); display:flex; justify-content:center; align-items:center; gap:8px;">
-                    ÜRÜNÜ İNCELE 🛍️
-                </button>
-
-                <button onclick="document.getElementById('mdm-story-viewer').remove(); ModumApp.switchTab('store');" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); padding:14px; border-radius:50px; font-weight:bold; font-size:13px; cursor:pointer; width:100%; backdrop-filter:blur(10px); display:flex; justify-content:center; align-items:center; gap:8px;">
-                    <i class="fas fa-ticket-alt"></i> KUPON İLE İNDİRİMLİ AL
-                </button>
-
+                <button onclick="window.location.href='${p.link}'" style="background:#fff; color:#000; border:none; padding:16px; border-radius:50px; font-weight:900; font-size:14px; cursor:pointer; width:100%; box-shadow:0 5px 20px rgba(255,255,255,0.2); display:flex; justify-content:center; align-items:center; gap:8px;">ÜRÜNÜ İNCELE 🛍️</button>
+                <button onclick="document.getElementById('mdm-story-viewer').remove(); ModumApp.switchTab('store');" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); padding:14px; border-radius:50px; font-weight:bold; font-size:13px; cursor:pointer; width:100%; backdrop-filter:blur(10px); display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-ticket-alt"></i> KUPON İLE İNDİRİMLİ AL</button>
             </div>
         </div>
         <style>@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }</style>
         `;
-
         document.body.insertAdjacentHTML("beforeend", html);
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
