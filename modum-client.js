@@ -2600,11 +2600,6 @@ margin-bottom: 20px;
     setTimeout(() => {
       ModumApp.initSurpriseSystem();
     }, 2000);
-    setTimeout(function () {
-      if (window.ModumApp && window.ModumApp.loadStoryBar) {
-        window.ModumApp.loadStoryBar();
-      }
-    }, 2000);
   }
 
   // --- VERİ ÇEKME (SERİ SORUNU %100 FİXLENDİ) ---
@@ -3048,139 +3043,145 @@ ${rowsHtml}
     }
   }
 
-  // --- KULLANICIYI TESPİT ET (ULTRA GÜÇLÜ MOD v7.0 - COOKIE & HOOK DESTEKLİ) ---
+  // --- KULLANICIYI TESPİT ET (CACHE ÇAKIŞMASI FİXLENDİ v4.0) ---
   async function detectUser() {
+    // 1. Önce Sayfadaki GERÇEK Veriyi Tara (DOM Öncelikli)
     var foundEmail = null;
     var foundName = "Misafir";
 
-    // 1. ÖNCE CACHE (HAFIZA) KONTROLÜ - EN HIZLI YÖNTEM
-    // Eğer daha önce giriş yaparken yakaladıysak, sayfayı taramaya gerek yok.
-    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
-    if (cachedUser && cachedUser.email && cachedUser.email.includes("@")) {
-      console.log("⚡ Kullanıcı hafızadan tanındı: " + cachedUser.email);
-      foundEmail = cachedUser.email;
-      foundName = cachedUser.name;
-    }
+    var inputs = [
+      'input[name="Email"]',
+      "#Email",
+      "#MemberEmail",
+      ".member-email",
+      'input[type="hidden"][name="Email"]',
+    ];
+    for (var i = 0; i < inputs.length; i++) {
+      var el = document.querySelector(inputs[i]);
+      if (el && el.value && el.value.includes("@")) {
+        foundEmail = el.value.trim();
 
-    // 2. DOM TARAMASI (Sayfadaki Gizli Inputlar)
-    // Eğer hafızada yoksa sayfayı tara
-    if (!foundEmail) {
-      var inputs = [
-        'input[name="Email"]',
-        "#Email",
-        "#MemberEmail",
-        ".member-email",
-        'input[type="hidden"][name="Email"]',
-        "#txtEmail", // Faprika özel
-        "#user_email",
-        'input[name="email"]',
-      ];
+        // İsmi de bulmaya çalış
+        var nameEl =
+          document.querySelector('input[name="FirstName"]') ||
+          document.querySelector("#FirstName");
+        if (nameEl && nameEl.value) foundName = nameEl.value;
 
-      for (var i = 0; i < inputs.length; i++) {
-        var el = document.querySelector(inputs[i]);
-        if (el && el.value && el.value.includes("@")) {
-          foundEmail = el.value.trim();
-
-          // İsmi de yakalamaya çalışalım
-          var nameEl =
-            document.querySelector('input[name="FirstName"]') ||
-            document.querySelector("#FirstName");
-          if (nameEl && nameEl.value) foundName = nameEl.value;
-
-          console.log("🔍 DOM Tarayıcı buldu: " + foundEmail);
-          break;
-        }
+        break; // Bulduysak döngüden çık
       }
     }
 
-    // 3. ÇEREZ (COOKIE) TARAMASI (Faprika Yedek Planı)
-    // Faprika bazen giriş bilgisini cookie'ye yazar ama HTML'e yazmaz.
-    if (!foundEmail) {
+    // 2. Şimdi Cache'e Bak
+    var cachedUser = JSON.parse(localStorage.getItem("mdm_user_cache"));
+
+    // 3. 🔥 KRİTİK KONTROL: Cache ile Ekran Farklı mı?
+    if (foundEmail && cachedUser && cachedUser.email !== foundEmail) {
+      console.log(
+        "♻️ Kullanıcı değişmiş! Cache temizleniyor... (" +
+          cachedUser.email +
+          " -> " +
+          foundEmail +
+          ")",
+      );
+      localStorage.removeItem("mdm_user_cache"); // Eski veriyi sil
+      cachedUser = null; // Cache'i boşalt
+    }
+
+    // 4. Kullanıcı Objesini Oluştur
+    // Eğer sayfada bulduysak onu kullan, bulamadıysak cache'tekini kullan, o da yoksa boş aç.
+    var user = {
+      email: foundEmail || (cachedUser ? cachedUser.email : null),
+      name: foundEmail ? foundName : cachedUser ? cachedUser.name : "Misafir",
+      puan: cachedUser ? cachedUser.puan : 0,
+      seviye: cachedUser ? cachedUser.seviye : "Çaylak",
+      hak: cachedUser ? cachedUser.hak : 0,
+    };
+
+    // 5. Eğer sayfada bulamadıysak ama "Hesabım" linki varsa, arka planda tarama yap (Dedektif Modu)
+    if (!user.email) {
       try {
-        var cookies = document.cookie.split(";");
-        for (var i = 0; i < cookies.length; i++) {
-          var c = cookies[i].trim();
-          // Faprika'da yaygın cookie isimleri
-          if (
-            c.startsWith("email=") ||
-            c.startsWith("Email=") ||
-            c.startsWith("member_email=") ||
-            c.startsWith("MemberEmail=")
-          ) {
-            var val = c.split("=")[1];
-            if (val) {
-              // URL encode varsa çöz (%40 -> @)
-              if (val.includes("%")) val = decodeURIComponent(val);
-              if (val.includes("@")) {
-                foundEmail = val;
-                console.log("🍪 Cookie'den bulundu: " + foundEmail);
+        var targetUrls = [
+          "/hesabim/bilgilerim/",
+          "/Uye/BilgiGuncelle",
+          "/uyelik-bilgilerim",
+        ];
+        for (let url of targetUrls) {
+          if (user.email) break;
+          var response = await fetch(url);
+          if (response.ok) {
+            var text = await response.text();
+            var doc = new DOMParser().parseFromString(text, "text/html");
+            var mailInput =
+              doc.querySelector('input[name="Email"]') ||
+              doc.querySelector("#Email") ||
+              doc.querySelector("#MemberEmail");
+
+            if (mailInput && mailInput.value && mailInput.value.includes("@")) {
+              // Eğer burada bulduğumuz mail de cache'den farklıysa yine cache'i ezmemiz lazım
+              var freshEmail = mailInput.value.trim();
+              if (cachedUser && cachedUser.email !== freshEmail) {
+                localStorage.removeItem("mdm_user_cache");
+                user.puan = 0; // Puanı sıfırla ki yanlış göstermesin
               }
+
+              user.email = freshEmail;
+              var nameInput =
+                doc.querySelector('input[name="FirstName"]') ||
+                doc.querySelector("#FirstName");
+              if (nameInput) user.name = nameInput.value;
             }
           }
         }
       } catch (e) {
-        console.log("Cookie hatası", e);
+        console.log("Dedektif hatası:", e);
       }
     }
 
-    // 4. SONUÇLARI BİRLEŞTİR VE OLUŞTUR
-    // Eğer yeni bir mail bulduysak ve cache ile farklıysa, cache'i güncelle.
-    if (foundEmail && (!cachedUser || cachedUser.email !== foundEmail)) {
-      localStorage.removeItem("mdm_user_cache"); // Eskiyi sil
-      cachedUser = null;
-    }
-
-    var user = {
-      email: foundEmail || (cachedUser ? cachedUser.email : null),
-      name:
-        foundName !== "Misafir"
-          ? foundName
-          : cachedUser
-            ? cachedUser.name
-            : "Misafir",
-      puan: cachedUser ? cachedUser.puan : 0,
-      seviye: cachedUser ? cachedUser.seviye : "Çaylak",
-      hak: cachedUser ? cachedUser.hak : 0,
-      badges: cachedUser ? cachedUser.badges : [],
-      selectedAvatar: cachedUser ? cachedUser.selectedAvatar : null,
-    };
-
-    // 5. EĞER E-POSTA VARSA API'DEN GÜNCEL VERİYİ ÇEK (Asıl Kimlik Doğrulama)
+    // 6. Sonuç: E-posta varsa API'ye bildir ve Cache'i Güncelle
     if (user.email) {
-      // Backend'e sor: "Bu mailin puanı ve adı ne?"
-      // Bu işlem arka planda çalışır, arayüzü dondurmaz.
-      fetchApi("get_user_details", { email: user.email }).then((res) => {
-        if (res && res.success) {
-          user.name = res.user.adSoyad || res.user.name;
-          user.puan = res.user.puan;
-          user.seviye = res.user.seviye;
-          user.badges = res.user.badges;
-          user.selectedAvatar = res.user.selectedAvatar;
-          user.hak = res.user.hak;
-
-          // Hafızayı taze veriyle güncelle
-          localStorage.setItem("mdm_user_cache", JSON.stringify(user));
-
-          // Sağ üstteki ismi güncelle
-          var navName = document.getElementById("nav-user-name");
-          if (navName) navName.innerText = user.name;
-
-          // Sağ üstteki avatarı güncelle
-          var navAvatar = document.getElementById("nav-avatar");
-          if (navAvatar) {
-            var initial = (user.name || "M").charAt(0).toUpperCase();
-            navAvatar.innerText = initial;
-            if (user.selectedAvatar && user.selectedAvatar.length < 5) {
-              navAvatar.innerText = user.selectedAvatar;
-              navAvatar.style.background = "transparent";
-              navAvatar.style.fontSize = "20px";
-            }
-          }
+      // Oturum tetikle
+      fetchApi("user_login_trigger", {
+        email: user.email,
+        adSoyad: user.name,
+      }).then((loginRes) => {
+        if (loginRes && loginRes.success && loginRes.isNew) {
+          // 👇 SÜREYİ BELİRLEYEN KISIM BURASIDIR 👇
+          setTimeout(() => {
+            ModumApp.checkWelcome(true, 250);
+          }, 8000); // 12000 = 12 Saniye demektir.
         }
       });
 
-      // Oturumu tetikle (Son görülme vs.)
-      fetchApi("user_login_trigger", { email: user.email, adSoyad: user.name });
+      // Detayları çek
+      var details = await fetchApi("get_user_details", { email: user.email });
+      if (details && details.success) {
+        user.puan = details.user.puan || 0;
+        user.seviye = details.user.seviye || "Çaylak";
+        user.hak = details.user.hak || 0;
+        user.gunlukSeri = details.user.gunlukSeri || 0;
+        user.katilimSayisi =
+          details.user.katilimSayisi || details.user.toplamkatilim || 0;
+        user.toplamkatilim =
+          details.user.katilimSayisi || details.user.toplamkatilim || 0;
+
+        if (details.user.adSoyad && details.user.adSoyad !== "Misafir")
+          user.name = details.user.adSoyad;
+        if (details.user.referansKodu)
+          user.referansKodu = details.user.referansKodu;
+        user.badges = details.user.badges || [];
+        user.selectedAvatar = details.user.selectedAvatar || null;
+        user.profileTheme = details.user.profileTheme || "default";
+        user.bio = details.user.bio || "";
+
+        // Eğer profil sekmesi açıksa anlık güncelle
+        if (APP_STATE.activeTab === "profile") {
+          var pContainer = document.getElementById("mdm-profile-container");
+          if (pContainer) pContainer.innerHTML = renderProfileTab(user);
+        }
+
+        // 🔥 EN GÜNCEL HALİNİ KAYDET
+        localStorage.setItem("mdm_user_cache", JSON.stringify(user));
+      }
     }
 
     return user;
@@ -3628,9 +3629,6 @@ GÖNDER VE KAZAN 🚀
 
     if (APP_STATE.activeTab !== "home") ModumApp.switchTab(APP_STATE.activeTab);
     startTimer();
-    setTimeout(function () {
-      ModumApp.loadStoryBar();
-    }, 2000);
   }
 
   // --- RENDER RAFFLES (SİNEMATİK POSTER TASARIMI - FİNAL v5 SADELEŞTİRİLMİŞ) ---
@@ -5904,12 +5902,6 @@ ${replyHtml}
         desc = "Fırsatları ilk sen duymak istiyorsan giriş yapmalısın.";
         icon = "🔔";
         btnText = "GİRİŞ YAP";
-      } else if (type === "style") {
-        title = "STİLİNİ SEÇ";
-        desc =
-          "Sana özel ürün önerileri ve indirimler almak için giriş yapmalısın.";
-        icon = "🔒";
-        btnText = "GİRİŞ YAP VE BAŞLA";
       }
 
       var html = `
@@ -8401,254 +8393,6 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
 
       window.open(calendarUrl, "_blank");
     }, // <-- Buraya virgül koymayı unutma, eğer devamında kod varsa. Yoksa gerek yok.
-    // --- 🕵️ ANA SAYFA STİL DEDEKTİFİ (Story Bar Yöneticisi) ---
-    loadStoryBar: async function () {
-      // Sadece Ana Sayfada Çalış
-      var path = window.location.pathname;
-      if (path !== "/" && path !== "/index.html" && path !== "") return;
-
-      var container = document.getElementById("mdm-story-container");
-      if (!container) return; // HTML yoksa dur
-
-      // 1. MİSAFİR MODU
-      if (!APP_STATE.user || !APP_STATE.user.email) {
-        container.innerHTML = `
-            <div class="mdm-story-item" onclick="ModumApp.showGuestPopup('style')">
-                <div class="mdm-story-ring" style="border:2px dashed #94a3b8; width:68px; height:68px;">
-                    <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#1e293b;">🔒</div>
-                </div>
-                <div class="mdm-story-name">Stilini Seç</div>
-            </div>`;
-        return;
-      }
-
-      // 2. ÜYE MODU (Durumu Kontrol Et)
-      // Backend'e soruyoruz: Bu adamın stili kayıtlı mı?
-      var res = await fetchApi("get_style_recommendations", {
-        email: APP_STATE.user.email,
-      });
-
-      // DURUM A: ANKET YOK -> Anket Butonu Göster
-      if (res.needSurvey) {
-        container.innerHTML = `
-            <div class="mdm-story-item" onclick="ModumApp.openStyleSurvey()">
-                <div class="mdm-story-ring survey-ring" style="width:68px; height:68px;">
-                    <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:30px;background:#0f172a;">👗</div>
-                </div>
-                <div class="mdm-story-name" style="color:#fbbf24; font-weight:bold;">Anketi Çöz</div>
-            </div>
-            
-            <div style="font-size:11px; color:#64748b; align-self:center; margin-left:10px;">
-                👈 Sana özel vitrin için<br>tercihlerini belirt.
-            </div>`;
-        return;
-      }
-
-      // DURUM B: ANKET VAR -> Ürünleri (Storyleri) Göster
-      if (res.success && res.list.length > 0) {
-        // Anket butonunu sildik, yerine ürünleri diziyoruz
-        var html = "";
-
-        // Başlık (Opsiyonel, şık durur)
-        html += `
-            <div class="mdm-story-item">
-                <div class="mdm-story-ring" style="background:transparent; border:2px solid #334155; width:68px; height:68px;">
-                   <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;background:#0f172a;">💖</div>
-                </div>
-                <div class="mdm-story-name">Sana Özel</div>
-            </div>`;
-
-        // Ürünler
-        res.list.forEach((p) => {
-          html += `
-                <div class="mdm-story-item" onclick="ModumApp.openProductPopup('${p.id}', '${p.title}', '${p.price}', '${p.image}', '${p.link}')">
-                    <div class="mdm-story-ring" style="width:68px; height:68px;">
-                        <img src="${p.image}" class="mdm-story-img">
-                    </div>
-                    <div class="mdm-story-name">${p.price} TL</div>
-                </div>`;
-        });
-
-        // En sona "Ayarlar" butonu (Tercih değiştirmek isterse)
-        html += `
-            <div class="mdm-story-item" onclick="ModumApp.openStyleSurvey()">
-                <div class="mdm-story-ring" style="background:#334155; width:68px; height:68px;">
-                   <div class="mdm-story-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;background:#1e293b; color:#94a3b8;"><i class="fas fa-cog"></i></div>
-                </div>
-                <div class="mdm-story-name">Düzenle</div>
-            </div>`;
-
-        container.innerHTML = html;
-      }
-    },
-
-    // --- 👗 ANKET PENCERESİ (Modal) ---
-    openStyleSurvey: function () {
-      if (!APP_STATE.user || !APP_STATE.user.email)
-        return ModumApp.showGuestPopup("style");
-
-      // Varsa eskisini sil
-      var old = document.getElementById("mdm-style-survey");
-      if (old) old.remove();
-
-      var html = `
-        <div id="mdm-style-survey" class="mdm-modal active" style="z-index:999999; display:flex; align-items:center; justify-content:center;">
-            <div class="mdm-modal-content" style="width:95%; max-width:500px; background:#1e293b; border-radius:16px; padding:0; overflow:hidden;">
-                
-                <div style="background:linear-gradient(135deg, #ec4899, #8b5cf6); padding:20px; text-align:center;">
-                    <h3 style="color:white; margin:0;">👗 Modum Stilisti</h3>
-                    <p style="color:white; opacity:0.9; font-size:12px; margin-top:5px;">Seni tanıyalım, vitrini sana göre döşeyelim. (+500 XP)</p>
-                </div>
-
-                <div style="padding:20px; max-height:60vh; overflow-y:auto;">
-                    
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-                        <div>
-                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Ayakkabı</label>
-                            <select id="sty-shoe" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
-                                <option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Üst Giyim</label>
-                            <select id="sty-top" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
-                                <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="color:#cbd5e1; font-size:10px; font-weight:bold; display:block; margin-bottom:5px;">Alt Giyim</label>
-                            <select id="sty-bot" style="width:100%; padding:8px; border-radius:6px; background:#0f172a; border:1px solid #334155; color:white;">
-                                <option value="36">36</option><option value="38">38</option><option value="40">40</option><option value="42">42</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <label style="color:#cbd5e1; font-size:12px; font-weight:bold; margin-bottom:10px; display:block;">Sevdiğin Renkler (En az 5 tane seç)</label>
-                    <div id="sty-colors" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
-                        ${[
-                          "Siyah",
-                          "Beyaz",
-                          "Kırmızı",
-                          "Mavi",
-                          "Yeşil",
-                          "Sarı",
-                          "Pembe",
-                          "Mor",
-                          "Turuncu",
-                          "Gri",
-                          "Bej",
-                          "Lacivert",
-                          "Kahverengi",
-                          "Bordo",
-                        ]
-                          .map(
-                            (c) =>
-                              `<div onclick="this.classList.toggle('selected')" class="sty-color-opt" data-color="${c}" style="padding:6px 12px; border:1px solid #475569; border-radius:20px; color:#cbd5e1; font-size:11px; cursor:pointer; transition:0.2s;">${c}</div>`,
-                          )
-                          .join("")}
-                    </div>
-                    
-                    <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:20px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-                        <input type="checkbox" id="sty-kvkk" style="margin-top:3px;">
-                        <span style="font-size:10px; color:#94a3b8; line-height:1.4;">
-                            Beden ve renk tercihlerimin bana özel ürün önerileri sunulması amacıyla işlenmesini ve <a href="https://modum.tr/gizlilik-sozlesmesi/" target="_blank" style="color:#60a5fa; text-decoration:underline;">Gizlilik Sözleşmesi</a>'ni kabul ediyorum.
-                        </span>
-                    </div>
-
-                    <button onclick="ModumApp.saveStyleSurvey()" style="width:100%; padding:15px; background:#10b981; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:14px; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
-                        KAYDET VE VİTRİNİ GÖR 👁️
-                    </button>
-
-                </div>
-                <div onclick="document.getElementById('mdm-style-survey').remove()" style="text-align:center; padding:15px; color:#64748b; cursor:pointer; font-size:12px;">Vazgeç</div>
-            </div>
-            <style>
-                .sty-color-opt.selected { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; transform: scale(1.05); box-shadow: 0 0 10px rgba(59,130,246,0.3); }
-            </style>
-        </div>`;
-      document.body.insertAdjacentHTML("beforeend", html);
-    },
-
-    // --- ANKETİ KAYDET (VE EKRANI DEĞİŞTİR) ---
-    saveStyleSurvey: function () {
-      var kvkk = document.getElementById("sty-kvkk").checked;
-      if (!kvkk)
-        return alert("Devam etmek için gizlilik sözleşmesini onaylamalısınız.");
-
-      var colors = [];
-      document
-        .querySelectorAll(".sty-color-opt.selected")
-        .forEach((el) => colors.push(el.dataset.color));
-
-      if (colors.length < 5)
-        return alert("Lütfen en az 5 renk seçiniz. (" + colors.length + "/5)");
-
-      var prefs = {
-        shoeSize: document.getElementById("sty-shoe").value,
-        dressSize: document.getElementById("sty-top").value,
-        pantSize: document.getElementById("sty-bot").value,
-        colors: colors,
-      };
-
-      var btn = event.target;
-      btn.innerHTML = "Kaydediliyor...";
-      btn.disabled = true;
-
-      fetchApi("submit_style_survey", {
-        email: APP_STATE.user.email,
-        preferences: prefs,
-      }).then((res) => {
-        if (res.success) {
-          // 1. Modalı Kapat
-          document.getElementById("mdm-style-survey").remove();
-
-          // 2. Hafızayı Güncelle
-          localStorage.setItem("mdm_style_completed", "true");
-
-          // 3. 🔥 KRİTİK NOKTA: Story Barı HEMEN Yenile (Anket gidecek, ürünler gelecek)
-          ModumApp.loadStoryBar();
-
-          // 4. Konfeti Patlat ve Puanı Güncelle
-          ModumApp.checkWelcome(true, 500);
-          updateDataInBackground();
-        } else {
-          alert(res.message);
-          btn.disabled = false;
-          btn.innerHTML = "TEKRAR DENE";
-        }
-      });
-    },
-
-    // --- 🛍️ ÜRÜN DETAY POPUP (2 Butonlu) ---
-    openProductPopup: function (id, title, price, img, link) {
-      var old = document.getElementById("mdm-prod-popup");
-      if (old) old.remove();
-
-      var html = `
-        <div id="mdm-prod-popup" class="mdm-modal active" style="z-index:999999; display:flex; align-items:center; justify-content:center;">
-            <div class="mdm-modal-content" style="width:90%; max-width:350px; background:white; border-radius:20px; padding:25px; text-align:center; position:relative; box-shadow:0 0 50px rgba(0,0,0,0.5);">
-                <div onclick="document.getElementById('mdm-prod-popup').remove()" style="position:absolute; top:15px; right:15px; font-size:24px; cursor:pointer; color:#333;">×</div>
-                
-                <div style="width:100%; height:250px; overflow:hidden; border-radius:12px; margin-bottom:15px; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">
-                    <img src="${img}" style="width:100%; height:100%; object-fit:contain;">
-                </div>
-                
-                <h4 style="margin:0 0 5px 0; color:#333; font-size:16px; line-height:1.3;">${title}</h4>
-                <div style="font-size:20px; font-weight:900; color:#10b981; margin-bottom:20px;">${price} TL</div>
-
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <a href="${link}" class="mdm-btn-v2" style="background:#0f172a; color:white; text-decoration:none; padding:12px; border-radius:50px; justify-content:center;">
-                        ÜRÜNE GİT ↗️
-                    </a>
-                    
-                    <button onclick="ModumApp.switchTab('store'); document.getElementById('mdm-prod-popup').remove();" class="mdm-btn-v2" style="background:#fef3c7; color:#d97706; border:1px solid #fbbf24; padding:12px; border-radius:50px; justify-content:center;">
-                        % İNDİRİM KUPONU AL
-                    </button>
-                </div>
-            </div>
-        </div>`;
-      document.body.insertAdjacentHTML("beforeend", html);
-    },
   }; // <--- BURASI ÇOK ÖNEMLİ: window.ModumApp BU NOKTALI VİRGÜL İLE BİTER.
 
   /* ======================================================
@@ -12595,51 +12339,6 @@ FIRSATI YAKALA & TAMAMLA 🚀
           }
         });
     }
-    // --- 🎣 LOGIN HOOK (Giriş Yaparken Maili Yakala) ---
-    (function hookLoginForm() {
-      // Tüm sayfalarda dinle, çünkü login popup olabilir
-      document.addEventListener("click", function (e) {
-        var btn = e.target;
-        // Eğer tıklanan şey bir buton ise ve içinde "Giriş" veya "Login" yazıyorsa (veya type submit ise)
-        var btnText = (btn.innerText || "").toLowerCase();
-
-        if (
-          btn.tagName === "BUTTON" ||
-          (btn.tagName === "INPUT" && btn.type === "submit") ||
-          btn.closest("button")
-        ) {
-          if (
-            btnText.includes("giriş") ||
-            btnText.includes("login") ||
-            btnText.includes("üye")
-          ) {
-            // Sayfadaki e-posta inputlarını bul
-            var inputs = document.querySelectorAll(
-              'input[type="text"], input[type="email"]',
-            );
-            inputs.forEach((input) => {
-              var val = input.value;
-              // Eğer inputun içinde @ varsa bu bir maildir
-              if (val && val.includes("@") && val.includes(".")) {
-                console.log("🎣 Giriş Hook: Mail yakalandı -> " + val);
-
-                // Maili hafızaya kaydet
-                var tempUser = {
-                  email: val.trim(),
-                  name: "Üye",
-                  puan: 0,
-                  seviye: "Çaylak",
-                };
-                localStorage.setItem(
-                  "mdm_user_cache",
-                  JSON.stringify(tempUser),
-                );
-              }
-            });
-          }
-        }
-      });
-    })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v2*/
 })();
