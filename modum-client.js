@@ -8433,29 +8433,44 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
           "🎯 ModumNet: Çekiliş Sayfası Algılandı. Panel Başlatılıyor...",
         );
 
-        // Footer sorununu çözen CSS yamasını ekle
-        // Bu CSS, paneli sayfanın en üstüne sabitler ve tam ekran yapar.
+        // Footer sorununu çözen ve TAM EKRAN yapan CSS yaması
         var fixStyle = document.createElement("style");
         fixStyle.innerHTML = `
-          #modum-firebase-test-root {
-            display: flex !important;
-            flex-direction: column !important;
-            position: relative !important;
-            z-index: 999 !important;
-            width: 100% !important;
-            min-height: 100vh !important;
-            background-color: #0f172a !important; /* Arkaplan rengi */
-            margin: 0 !important;
-            padding: 0 !important;
-            top: 0 !important;
-          }
-          /* Faprika'nın varsayılan container paddinglerini ez */
-          .page-container, .container, .row {
-             max-width: 100% !important;
-             padding: 0 !important;
-             margin: 0 !important;
-          }
-        `;
+  #modum-firebase-test-root {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    z-index: 999 !important;
+    
+    /* 🔥 DÜZELTME BAŞLANGICI: Kapsayıcıdan Kurtarma */
+    width: 100vw !important;       /* Parent'a değil, EKRANA göre %100 */
+    max-width: 100vw !important;   /* Taşmayı engelle */
+    
+    /* Bu 3 satır, elemanı neyin içinde olursa olsun EKRANA ORTALAR */
+    left: 50% !important;
+    right: 50% !important;
+    margin-left: -50vw !important; /* Genişliğin yarısı kadar geri çek */
+    margin-right: -50vw !important;
+    /* 🔥 DÜZELTME BİTİŞİ */
+
+    min-height: 100vh !important;
+    background-color: #0f172a !important;
+    padding: 0 !important;
+    top: 0 !important;
+  }
+
+  /* Faprika'nın varsayılan container paddinglerini ez */
+  .page-container, .container, .row {
+     max-width: 100% !important;
+     padding: 0 !important;
+     margin: 0 !important;
+  }
+  
+  /* Sayfa taşmasını engelle (Yatay scroll bar çıkmasın) */
+  body, html {
+      overflow-x: hidden !important;
+  }
+`;
         document.head.appendChild(fixStyle);
 
         // Widget'ı Başlat (Eğer root varsa)
@@ -12490,5 +12505,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
