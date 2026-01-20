@@ -8452,8 +8452,7 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
           /* 2. Faprika'nın Standartlarını Sıfırla (Mobilde Taşmayı Önler) */
           .page-container, .container, .row {
              max-width: 100% !important;
-             padding: 0 !important;
-             margin: 0 !important;
+             padding: 0 !important;             
           }
 
           /* 3. 🔥 MASAÜSTÜ ORTALAMA FİX (EKSİK OLAN KISIM) 🔥 */
@@ -12507,5 +12506,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
