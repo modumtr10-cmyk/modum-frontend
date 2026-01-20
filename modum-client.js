@@ -8433,25 +8433,44 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
           "🎯 ModumNet: Çekiliş Sayfası Algılandı. Panel Başlatılıyor...",
         );
 
-        // Footer sorununu çözen CSS yamasını ekle
-        // Bu CSS, paneli sayfanın en üstüne sabitler ve tam ekran yapar.
+        // 🔥 FİX: MASAÜSTÜNDE ORTALAMA İÇİN GÜNCELLENMİŞ CSS
         var fixStyle = document.createElement("style");
         fixStyle.innerHTML = `
+          /* 1. Ana Panel Ayarları */
           #modum-firebase-test-root {
             display: flex !important;
             flex-direction: column !important;
             position: relative !important;
             z-index: 999 !important;            
             min-height: 100vh !important;
-            background-color: #0f172a !important; /* Arkaplan rengi */            
+            background-color: #0f172a !important;            
             padding: 0 !important;
             top: 0 !important;
+            width: 100% !important;
           }
-          /* Faprika'nın varsayılan container paddinglerini ez */
+
+          /* 2. Faprika'nın Standartlarını Sıfırla (Mobilde Taşmayı Önler) */
           .page-container, .container, .row {
              max-width: 100% !important;
              padding: 0 !important;
              margin: 0 !important;
+          }
+
+          /* 3. 🔥 MASAÜSTÜ ORTALAMA FİX (EKSİK OLAN KISIM) 🔥 */
+          @media (min-width: 1024px) {
+             /* Sayfa arka planını koyu yap (Kenarlar beyaz kalmasın) */
+             body {
+                background-color: #020617 !important;
+             }
+
+             /* Bizim Paneli Ortala ve Sınırla */
+             #modum-firebase-test-root {
+                max-width: 1200px !important; /* Genişliği sınırla */
+                margin: 0 auto !important;    /* Ortala */
+                box-shadow: 0 0 100px rgba(0,0,0,0.8) !important; /* Gölge ekle */
+                border-left: 1px solid #334155 !important;
+                border-right: 1px solid #334155 !important;
+             }
           }
         `;
         document.head.appendChild(fixStyle);
@@ -12488,5 +12507,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
