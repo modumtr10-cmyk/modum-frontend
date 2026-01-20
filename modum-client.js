@@ -10135,27 +10135,21 @@ Her Pazartesi: 1.ye <b>500 XP</b>, 2.ye <b>250 XP</b>, 3.ye <b>150 XP</b>
 
       updateScores: function () {
         if (!APP_STATE.user || !APP_STATE.user.email) return;
-
-        // 🔥 ÖNEMLİ: Eski veriyi görmemek için kullanıcı önbelleğini temizliyoruz
-        localStorage.removeItem("mdm_user_cache");
-
         fetchApi("get_user_details", { email: APP_STATE.user.email }).then(
           (res) => {
             if (res && res.success && res.user) {
               var games = res.user.games || {};
 
-              // 🔥 TARİH HESAPLAMA (BACKEND İLE %100 AYNI FORMAT)
-              // Sunucu 'en-CA' formatı kullanıyor (YYYY-MM-DD). Biz de aynısını yapıyoruz.
+              // BUGÜNÜN TARİHİNİ AL (YYYY-MM-DD)
               var now = new Date();
-              var formatter = new Intl.DateTimeFormat("en-CA", {
-                timeZone: "Europe/Istanbul",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              });
-              var todayStr = formatter.format(now); // Örn: "2026-01-20"
-
-              console.log("📅 İstemci Tarihi:", todayStr); // Konsoldan kontrol edebilirsin
+              // Türkiye saatine ayarla
+              var trDate = new Date(
+                now.toLocaleString("en-US", { timeZone: "Europe/Istanbul" }),
+              );
+              var yyyy = trDate.getFullYear();
+              var mm = String(trDate.getMonth() + 1).padStart(2, "0");
+              var dd = String(trDate.getDate()).padStart(2, "0");
+              var todayStr = yyyy + "-" + mm + "-" + dd;
 
               // YILAN SKORLARI
               if (document.getElementById("mv2-snake-best"))
@@ -12512,5 +12506,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v3*/
 })();
