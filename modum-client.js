@@ -781,7 +781,7 @@ max-width: 100vw !important;
 
 /* Bu formül parent ne olursa olsun ekranın soluna yapıştırır */
 margin-left: calc(21% - 21vw) !important;
-margin-right: calc(21% - 21vw) !important;
+margin-right: calc(21% - 5vw) !important;
 
 /* Pozisyonu sıfırla ki 'left' komutları karışmasın */
 position: relative !important;
@@ -12490,5 +12490,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
