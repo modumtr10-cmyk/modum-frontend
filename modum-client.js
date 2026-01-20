@@ -4200,7 +4200,7 @@ ${badgeGridHtml}
   </div> 
 
 <div class="mdm-flip-face-back" style="${cardStyle} position: absolute !important; top: 0; left: 0; margin: 0; z-index:1;">
-<div style="text-align:center; padding:20px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+<div style="text-align:center; padding:20px; height:100%; display:flex; flex-direction:column; align-items:center;">
 <div style="margin-bottom:20px;">
 <div style="font-size:18px; font-weight:bold; color:#fff; margin-bottom:5px;">${name}</div>
 <div style="color:${
@@ -12506,5 +12506,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
