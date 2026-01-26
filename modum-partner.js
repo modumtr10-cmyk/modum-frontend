@@ -201,106 +201,93 @@
         }, 300);
       },
 
-      // 🔥 GÜNCELLENMİŞ DASHBOARD (SEVİYE SİSTEMİ)
-      renderHome: function (container) {
-        // Simüle Edilmiş Veri (Backend'den çekilecek)
-        let totalRevenue = 12450;
-        let currentLevel = "Bronz";
-        let nextLevel = "Gümüş";
-        let nextTarget = 50000;
-        let progress = (totalRevenue / nextTarget) * 100;
-        let commissionRate = 10;
+      renderHome: async function (container) {
+        // 1. Yükleniyor Ekranı
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
 
-        // Basit Mantık (Backend'dekiyle aynı olmalı)
-        if (totalRevenue > 50000) {
-          currentLevel = "Altın";
-          nextLevel = "Max";
-          progress = 100;
-          commissionRate = 15;
-        } else if (totalRevenue > 10000) {
-          currentLevel = "Gümüş";
-          nextLevel = "Altın";
-          nextTarget = 50000;
-          progress = (totalRevenue / 50000) * 100;
-          commissionRate = 12;
-        } else {
-          nextTarget = 10000;
-          progress = (totalRevenue / 10000) * 100;
+        var email = detectUser(); // Kullanıcı emailini bul
+        if (!email) {
+          container.innerHTML = "Lütfen giriş yapın.";
+          return;
         }
 
-        container.innerHTML = `
-                <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:-10px; right:-10px; font-size:80px; opacity:0.1;">👑</div>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div class="p-stat-lbl" style="color:#94a3b8;">MEVCUT SEVİYE</div>
-                            <div style="font-size:24px; font-weight:900; color:#fbbf24;">${currentLevel} Ortak</div>
-                            <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${commissionRate}</b></div>
-                        </div>
-                        <div style="text-align:right;">
-                              <div class="p-stat-lbl" style="color:#94a3b8;">SONRAKİ HEDEF</div>
-                              <div style="font-weight:bold;">${nextLevel}</div>
-                        </div>
-                    </div>
+        try {
+          // 2. Backend'e İstek At (Gerçek Veriyi İste)
+          const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+            // API URL'ni buraya yaz
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+          });
+          const res = await response.json();
 
-                    <div style="margin-top:15px;">
-                        <div style="display:flex; justify-content:space-between; font-size:10px; color:#cbd5e1; margin-bottom:5px;">
-                            <span>${totalRevenue.toLocaleString()} ₺</span>
-                            <span>${nextTarget.toLocaleString()} ₺</span>
-                        </div>
-                        <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                            <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
-                        </div>
-                        <div style="font-size:10px; color:#94a3b8; margin-top:5px; text-align:center;">
-                            Seviye atlamak için <b>${(nextTarget - totalRevenue).toLocaleString()} ₺</b> daha satış yapmalısın.
-                        </div>
-                    </div>
+          if (!res.success) {
+            container.innerHTML = "Hata: " + res.message;
+            return;
+          }
+
+          const s = res.stats; // Backend'den gelen gerçek veriler
+
+          // 3. Seviye Hesaplama (Görsel Bar İçin)
+          let nextTarget = 10000;
+          let progress = 0;
+          let currentRevenue = parseFloat(s.totalRevenue);
+
+          if (currentRevenue >= 50000) {
+            progress = 100; // Max seviye
+          } else if (currentRevenue >= 10000) {
+            nextTarget = 50000;
+            progress = ((currentRevenue - 10000) / 40000) * 100;
+          } else {
+            nextTarget = 10000;
+            progress = (currentRevenue / 10000) * 100;
+          }
+
+          // 4. HTML'i Gerçek Verilerle Doldur
+          container.innerHTML = `
+            <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
+                <div style="font-size:24px; font-weight:900; color:#fbbf24;">${s.level} Ortak</div>
+                <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${s.commission_rate}</b></div>
+                
+                <div style="font-weight:bold; font-size:20px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+
+                <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
+                <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
+                
+                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                    <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
                 </div>
+            </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                    <div class="p-card" style="margin:0; text-align:center;">
-                        <i class="fas fa-mouse-pointer" style="color:#3b82f6; font-size:20px; margin-bottom:5px;"></i>
-                        <div class="p-stat-val" style="font-size:20px;">8.420</div>
-                        <div class="p-stat-lbl">TIKLAMA</div>
-                    </div>
-                    <div class="p-card" style="margin:0; text-align:center;">
-                        <i class="fas fa-shopping-bag" style="color:#10b981; font-size:20px; margin-bottom:5px;"></i>
-                        <div class="p-stat-val" style="font-size:20px;">142</div>
-                        <div class="p-stat-lbl">SATIŞ</div>
-                    </div>
-                </div>
+            <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
+            <div class="p-stat-val" style="font-size:20px;">${s.totalSales}</div>
 
-                <div class="p-card">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <div class="p-stat-lbl">PERFORMANS GRAFİĞİ</div>
-                        <div style="font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 8px; border-radius:4px; font-weight:bold;">SON 7 GÜN</div>
-                    </div>
-                    <canvas id="p-chart" height="200"></canvas>
-                </div>
-            `;
+            <canvas id="p-chart" height="200"></canvas>
+        `;
 
-        // Grafik
-        new Chart(document.getElementById("p-chart"), {
-          type: "line",
-          data: {
-            labels: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
-            datasets: [
-              {
-                label: "Kazanç",
-                data: [150, 230, 180, 320, 290, 450, 400],
-                borderColor: "#3b82f6",
-                backgroundColor: "rgba(59, 130, 246, 0.1)",
-                fill: true,
-                tension: 0.4,
-              },
-            ],
-          },
-          options: {
-            plugins: { legend: { display: false } },
-            scales: { x: { grid: { display: false } } },
-          },
-        });
+          // 5. Grafiği Çiz (Backend verisiyle)
+          new Chart(document.getElementById("p-chart"), {
+            type: "line",
+            data: {
+              labels: s.chart.labels, // ["Pzt", "Sal"...] Backend'den geldi
+              datasets: [
+                {
+                  label: "Kazanç (₺)",
+                  data: s.chart.earnings, // [0, 50, 120...] Backend'den geldi
+                  borderColor: "#10b981",
+                  tension: 0.4,
+                },
+              ],
+            },
+            options: {
+              plugins: { legend: { display: false } },
+              scales: { x: { grid: { display: false } } },
+            },
+          });
+        } catch (e) {
+          container.innerHTML = "Bir hata oluştu: " + e.message;
+        }
       },
 
       renderLinks: function (container) {
@@ -446,5 +433,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
