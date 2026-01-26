@@ -38,7 +38,7 @@
 
     // 🔥 TEST İÇİN: Kendi email adresini buraya yaz ki butonu gör
     // Gerçek sistemde burası API'den gelecek cevaba göre çalışacak.
-    var adminEmails = ["info@modum.tr", "senin_emailin@mail.com"];
+    var adminEmails = ["info@modum.tr",];
 
     // API SORGUSU SİMÜLASYONU (Şimdilik)
     // İleride: const res = await fetch(API_URL, ... {islem: 'check_partner_status'})
