@@ -1,5 +1,10 @@
+/**
+ * 👑 MODUM PARTNER PRO (Influencer Hub)
+ * v3.0 - Tier (Seviye) Sistemi, Bildirimler ve Sol Buton
+ */
+
 (function () {
-  console.log("🚀 Modum Partner Pro (v2.1) Başlatılıyor...");
+  console.log("🚀 Modum Partner Pro (v3.0) Başlatılıyor...");
 
   // AYARLAR
   var API_URL = "https://api-hjen5442oq-uc.a.run.app";
@@ -28,7 +33,7 @@
   async function initPartnerSystem() {
     var email = detectUser();
     // Test İçin: Giriş yoksa bile butonu görmek istersen bu satırı yorum satırı yap
-    if (!email) return;
+    // if (!email) return;
 
     // 🔥 Backend Kontrolü (Simüle)
     // Gerçekte API'den isPartner:true gelmeli.
@@ -140,7 +145,13 @@
                           <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
                           <div style="font-size:20px; font-weight:800;">${name}</div>
                       </div>
-                      <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+                      <div style="display:flex; gap:10px; align-items:center;">
+                          <div onclick="PartnerApp.loadTab('notifications', null)" style="position:relative; cursor:pointer;">
+                              <i class="fas fa-bell" style="font-size:20px; color:#94a3b8;"></i>
+                              <div style="position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></div>
+                          </div>
+                          <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+                      </div>
                   </div>
               </div>
 
@@ -148,16 +159,16 @@
                   </div>
 
               <div class="p-nav">
-                  <div class="p-nav-item active" onclick="ModumPartner.loadTab('home', this)">
+                  <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)">
                       <i class="fas fa-chart-pie"></i> Özet
                   </div>
-                  <div class="p-nav-item" onclick="ModumPartner.loadTab('links', this)">
+                  <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
                       <i class="fas fa-link"></i> Linkler
                   </div>
-                  <div class="p-nav-item" onclick="ModumPartner.loadTab('wallet', this)">
+                  <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)">
                       <i class="fas fa-wallet"></i> Cüzdan
                   </div>
-                  <div class="p-nav-item" onclick="ModumPartner.loadTab('academy', this)">
+                  <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)">
                       <i class="fas fa-graduation-cap"></i> Akademi
                   </div>
               </div>
@@ -168,8 +179,8 @@
 
     document.body.insertAdjacentHTML("beforeend", html);
 
-    // PARTNER FONKSİYONLARI
-    window.ModumPartner = {
+    // PARTNER FONKSİYONLARI (GLOBAL NESNE)
+    window.PartnerApp = {
       loadTab: function (tab, el) {
         // Menü Aktifliği
         document
@@ -186,20 +197,63 @@
           if (tab === "links") this.renderLinks(area);
           if (tab === "wallet") this.renderWallet(area);
           if (tab === "academy") this.renderAcademy(area);
+          if (tab === "notifications") this.renderNotifications(area);
         }, 300);
       },
 
+      // 🔥 GÜNCELLENMİŞ DASHBOARD (SEVİYE SİSTEMİ)
       renderHome: function (container) {
+        // Simüle Edilmiş Veri (Backend'den çekilecek)
+        let totalRevenue = 12450;
+        let currentLevel = "Bronz";
+        let nextLevel = "Gümüş";
+        let nextTarget = 50000;
+        let progress = (totalRevenue / nextTarget) * 100;
+        let commissionRate = 10;
+
+        // Basit Mantık (Backend'dekiyle aynı olmalı)
+        if (totalRevenue > 50000) {
+          currentLevel = "Altın";
+          nextLevel = "Max";
+          progress = 100;
+          commissionRate = 15;
+        } else if (totalRevenue > 10000) {
+          currentLevel = "Gümüş";
+          nextLevel = "Altın";
+          nextTarget = 50000;
+          progress = (totalRevenue / 50000) * 100;
+          commissionRate = 12;
+        } else {
+          nextTarget = 10000;
+          progress = (totalRevenue / 10000) * 100;
+        }
+
         container.innerHTML = `
-                  <div class="p-card" style="background:linear-gradient(135deg, #0f172a, #1e293b); color:white; border:none;">
-                      <div style="display:flex; justify-content:space-between;">
+                  <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
+                      <div style="position:absolute; top:-10px; right:-10px; font-size:80px; opacity:0.1;">👑</div>
+                      
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
                           <div>
-                              <div class="p-stat-lbl" style="color:#94a3b8;">BU AYKİ KAZANÇ</div>
-                              <div class="p-stat-val" style="color:#fbbf24;">12.450 ₺</div>
+                              <div class="p-stat-lbl" style="color:#94a3b8;">MEVCUT SEVİYE</div>
+                              <div style="font-size:24px; font-weight:900; color:#fbbf24;">${currentLevel} Ortak</div>
+                              <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${commissionRate}</b></div>
                           </div>
                           <div style="text-align:right;">
-                              <div class="p-stat-lbl" style="color:#94a3b8;">BEKLEYEN</div>
-                              <div style="font-size:16px; font-weight:bold; color:#fff;">1.250 ₺</div>
+                               <div class="p-stat-lbl" style="color:#94a3b8;">SONRAKİ HEDEF</div>
+                               <div style="font-weight:bold;">${nextLevel}</div>
+                          </div>
+                      </div>
+
+                      <div style="margin-top:15px;">
+                          <div style="display:flex; justify-content:space-between; font-size:10px; color:#cbd5e1; margin-bottom:5px;">
+                              <span>${totalRevenue.toLocaleString()} ₺</span>
+                              <span>${nextTarget.toLocaleString()} ₺</span>
+                          </div>
+                          <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                              <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
+                          </div>
+                          <div style="font-size:10px; color:#94a3b8; margin-top:5px; text-align:center;">
+                              Seviye atlamak için <b>${(nextTarget - totalRevenue).toLocaleString()} ₺</b> daha satış yapmalısın.
                           </div>
                       </div>
                   </div>
@@ -258,7 +312,7 @@
                       <label class="p-stat-lbl">ÜRÜN LİNKİ</label>
                       <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px; box-sizing:border-box;">
                       
-                      <button onclick="ModumPartner.createLink()" class="p-btn p-btn-primary" style="margin-top:15px;">
+                      <button onclick="PartnerApp.createLink()" class="p-btn p-btn-primary" style="margin-top:15px;">
                           Link Oluştur ✨
                       </button>
                   </div>
@@ -323,12 +377,42 @@
                 </div>
              `;
       },
+
+      // 🔥 YENİ: BİLDİRİM EKRANI
+      renderNotifications: function (container) {
+        container.innerHTML = `
+                  <h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>
+                  <div class="p-card" style="padding:0;">
+                      <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                              <b style="color:#10b981;">💰 Yeni Satış!</b>
+                              <span style="font-size:10px; color:#94a3b8;">10 dk önce</span>
+                          </div>
+                          <div style="font-size:12px; color:#334155;">Tebrikler! Paylaştığın linkten 1.500 TL satış geldi. +150 TL kazandın.</div>
+                      </div>
+                      <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                              <b style="color:#3b82f6;">🚀 Seviye Yaklaşıyor</b>
+                              <span style="font-size:10px; color:#94a3b8;">1 saat önce</span>
+                          </div>
+                          <div style="font-size:12px; color:#334155;">Altın Partner olmaya sadece 2 satış kaldı! Komisyonun %15'e çıkacak.</div>
+                      </div>
+                      <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                              <b style="color:#f59e0b;">🎓 Yeni Ders</b>
+                              <span style="font-size:10px; color:#94a3b8;">Dün</span>
+                          </div>
+                          <div style="font-size:12px; color:#334155;">"Instagram Reels ile Satış Artırma" rehberi akademiye eklendi.</div>
+                      </div>
+                  </div>
+              `;
+      },
     };
 
     // Açılış
-    window.ModumPartner.loadTab("home");
+    window.PartnerApp.loadTab("home");
   }
 
   // Başlat
-  setTimeout(initPartnerSystem, 1000);
+  setTimeout(initPartnerSystem, 2000);
 })();
