@@ -210,18 +210,15 @@
       },
 
       renderHome: async function (container) {
-        // 1. Yükleniyor Ekranı
         container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Yükleniyor...</div>';
 
-        var email = detectUser(); // Kullanıcı emailini bul
-        if (!email) {
-          container.innerHTML = "Lütfen giriş yapın.";
-          return;
-        }
+        var email = detectUser();
+        if (!email)
+          return (container.innerHTML =
+            "<div style='text-align:center; padding:20px;'>Lütfen giriş yapın.</div>");
 
         try {
-          // 2. Backend'e İstek At
           const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -234,80 +231,96 @@
             return;
           }
 
-          const s = res.stats; // Veriler geldi
+          const s = res.stats;
 
-          // 3. Seviye Hesaplama (Görsel Bar İçin)
+          // Seviye İlerleme Hesabı
+          let currentRev = parseFloat(s.totalRevenue);
           let nextTarget = 10000;
           let progress = 0;
-          let currentRevenue = parseFloat(s.totalRevenue);
 
-          if (currentRevenue >= 50000) {
+          if (currentRev >= 50000) {
             progress = 100;
-          } else if (currentRevenue >= 10000) {
+          } else if (currentRev >= 10000) {
             nextTarget = 50000;
-            progress = ((currentRevenue - 10000) / 40000) * 100;
+            progress = ((currentRev - 10000) / 40000) * 100;
           } else {
             nextTarget = 10000;
-            progress = (currentRevenue / 10000) * 100;
+            progress = (currentRev / 10000) * 100;
           }
 
-          // 4. HTML Oluştur (GÜNCELLENMİŞ KISIM BURASI)
           container.innerHTML = `
-        <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
-            <div style="font-size:24px; font-weight:900; color:#fbbf24;">${s.level} Ortak</div>
-            <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${s.commission_rate}</b></div>
-            
-            <div style="font-weight:bold; font-size:20px; margin-top:10px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+            <div class="p-card" style="background:linear-gradient(135deg, #0f172a, #334155); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <div style="font-size:12px; opacity:0.7; font-weight:600; letter-spacing:1px;">MEVCUT SEVİYE</div>
+                        <div style="font-size:28px; font-weight:800; color:#fbbf24; margin-top:2px;">${s.level} Ortak</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; font-size:12px; font-weight:bold;">
+                        %${s.commission_rate} Komisyon
+                    </div>
+                </div>
+                
+                <div style="margin-top:20px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; opacity:0.8;">
+                        <span>${currentRev.toLocaleString()} ₺ Ciro</span>
+                        <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b); border-radius:10px;"></div>
+                    </div>
+                </div>
+            </div>
 
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-top:5px;">
-                <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
-                <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #e2e8f0;">
+                    <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
+                    <div class="p-stat-lbl">TIK</div>
+                </div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #e2e8f0;">
+                    <div class="p-stat-val" style="font-size:20px; color:#10b981;">${s.totalSales}</div>
+                    <div class="p-stat-lbl">SATIŞ</div>
+                </div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
+                    <div class="p-stat-val" style="font-size:20px; color:#8b5cf6;">${s.referralCount || 0}</div>
+                    <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
+                </div>
             </div>
-            
-            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; margin-top:5px;">
-                <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
-            </div>
-        </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-            <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                <div class="p-stat-val" style="font-size:18px;">${s.totalClicks}</div>
-                <div class="p-stat-lbl">TIK</div>
+            <h4 style="margin:0 0 15px 0; font-size:13px; color:#64748b; text-transform:uppercase;">Son 7 Günlük Kazanç</h4>
+            <div class="p-card" style="padding:10px; height:200px;">
+                <canvas id="p-home-chart"></canvas>
             </div>
-            <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                <div class="p-stat-val" style="font-size:18px;">${s.totalSales}</div>
-                <div class="p-stat-lbl">SATIŞ</div>
-            </div>
-            <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
-                <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
-                <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
-            </div>
-        </div>
+        `;
 
-        <canvas id="p-chart" height="200"></canvas>
-    `;
-
-          // 5. Grafiği Çiz
-          new Chart(document.getElementById("p-chart"), {
+          // Grafiği Çiz
+          new Chart(document.getElementById("p-home-chart"), {
             type: "line",
             data: {
               labels: s.chart.labels,
               datasets: [
                 {
-                  label: "Kazanç (₺)",
-                  data: s.chart.earnings,
-                  borderColor: "#10b981",
+                  label: "Kazanç",
+                  data: s.chart.data,
+                  borderColor: "#3b82f6",
+                  backgroundColor: "rgba(59, 130, 246, 0.1)",
                   tension: 0.4,
+                  fill: true,
+                  pointRadius: 3,
                 },
               ],
             },
             options: {
+              responsive: true,
+              maintainAspectRatio: false,
               plugins: { legend: { display: false } },
-              scales: { x: { grid: { display: false } } },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                y: { grid: { color: "#f1f5f9" }, beginAtZero: true },
+              },
             },
           });
         } catch (e) {
-          container.innerHTML = "Bir hata oluştu: " + e.message;
+          container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Hata: ${e.message}</div>`;
         }
       },
 
@@ -664,5 +677,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
