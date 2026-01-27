@@ -382,9 +382,10 @@ ${css}
       renderLinks: function (c) {
         // 🔥 VERİ KONTROLÜ VE VARSAYILAN DEĞERLER
         var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode || "Lütfen Sayfayı Yenileyin";
+        var myRefCode = pData.refCode || "REF-KODU-BEKLENIYOR";
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
+        
 
         // İndirim Kodu HTML'i (Eğer varsa göster)
         let couponHTML = "";
@@ -833,5 +834,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v1*/
 })();
