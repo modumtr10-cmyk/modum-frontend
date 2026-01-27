@@ -221,9 +221,8 @@
         }
 
         try {
-          // 2. Backend'e İstek At (Gerçek Veriyi İste)
+          // 2. Backend'e İstek At
           const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-            // API URL'ni buraya yaz
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ islem: "get_partner_stats", email: email }),
@@ -235,7 +234,7 @@
             return;
           }
 
-          const s = res.stats; // Backend'den gelen gerçek veriler
+          const s = res.stats; // Veriler geldi
 
           // 3. Seviye Hesaplama (Görsel Bar İçin)
           let nextTarget = 10000;
@@ -243,7 +242,7 @@
           let currentRevenue = parseFloat(s.totalRevenue);
 
           if (currentRevenue >= 50000) {
-            progress = 100; // Max seviye
+            progress = 100;
           } else if (currentRevenue >= 10000) {
             nextTarget = 50000;
             progress = ((currentRevenue - 10000) / 40000) * 100;
@@ -252,37 +251,51 @@
             progress = (currentRevenue / 10000) * 100;
           }
 
-          // 4. HTML'i Gerçek Verilerle Doldur
+          // 4. HTML Oluştur (GÜNCELLENMİŞ KISIM BURASI)
           container.innerHTML = `
         <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
             <div style="font-size:24px; font-weight:900; color:#fbbf24;">${s.level} Ortak</div>
             <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${s.commission_rate}</b></div>
             
-            <div style="font-weight:bold; font-size:20px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+            <div style="font-weight:bold; font-size:20px; margin-top:10px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
 
-            <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
-            <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-top:5px;">
+                <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
+                <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
+            </div>
             
-            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; margin-top:5px;">
                 <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
             </div>
         </div>
 
-        <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
-        <div class="p-stat-val" style="font-size:20px;">${s.totalSales}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+            <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                <div class="p-stat-val" style="font-size:18px;">${s.totalClicks}</div>
+                <div class="p-stat-lbl">TIK</div>
+            </div>
+            <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                <div class="p-stat-val" style="font-size:18px;">${s.totalSales}</div>
+                <div class="p-stat-lbl">SATIŞ</div>
+            </div>
+            <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
+                <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
+                <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
+            </div>
+        </div>
 
         <canvas id="p-chart" height="200"></canvas>
     `;
 
-          // 5. Grafiği Çiz (Backend verisiyle)
+          // 5. Grafiği Çiz
           new Chart(document.getElementById("p-chart"), {
             type: "line",
             data: {
-              labels: s.chart.labels, // ["Pzt", "Sal"...] Backend'den geldi
+              labels: s.chart.labels,
               datasets: [
                 {
                   label: "Kazanç (₺)",
-                  data: s.chart.earnings, // [0, 50, 120...] Backend'den geldi
+                  data: s.chart.earnings,
                   borderColor: "#10b981",
                   tension: 0.4,
                 },
@@ -299,36 +312,95 @@
       },
 
       renderLinks: function (container) {
+        var email = detectUser() || "guest";
+        // Referans kodunu oluştur (Gerçek sistemde user verisinden gelmeli)
+        var myRefCode =
+          "REF-" +
+          email.substring(0, 3).toUpperCase() +
+          Math.floor(Math.random() * 1000);
+
+        // Ana sayfa linki
+        var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
+
         container.innerHTML = `
-            <h3 style="margin:0 0 10px 0;">🔗 Link Oluşturucu</h3>
-            <p style="font-size:13px; color:#64748b; margin-bottom:20px;">Paylaşmak istediğin herhangi bir ürünün linkini yapıştır, sana özel takip linkini al.</p>
+        <h3 style="margin:0 0 15px 0;">🔗 Link Oluşturucu & Paylaş</h3>
 
-            <div class="p-card">
-                <label class="p-stat-lbl">ÜRÜN LİNKİ</label>
-                <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px; box-sizing:border-box;">
-                
-                <button onclick="PartnerApp.createLink()" class="p-btn p-btn-primary" style="margin-top:15px;">
-                    Link Oluştur ✨
-                </button>
+        <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:12px; margin-bottom:20px;">
+            <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 GENEL ANA SAYFA LİNKİN</label>
+            <div style="font-size:11px; color:#64748b; margin-bottom:10px;">Bu linki Instagram biyografine koyabilir veya arkadaşlarına atabilirsin. Bu linkten gelen herkes senin referansın olur.</div>
+            
+            <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
+                ${homeLink}
             </div>
-
-            <div id="pl-result" style="display:none;" class="p-card">
-                <div class="p-stat-lbl" style="color:#3b82f6;">ÖZEL LİNKİNİZ:</div>
-                <div id="pl-final" style="background:#eff6ff; padding:10px; border-radius:8px; font-family:monospace; color:#1e40af; margin:10px 0; word-break:break-all; font-size:12px;"></div>
-                <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white;">
+            
+            <div style="display:flex; gap:10px;">
+                <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1; cursor:pointer;">
                     <i class="fas fa-copy"></i> Kopyala
                 </button>
+                <a href="https://api.whatsapp.com/send?text=${encodeURIComponent("Harika ürünler var, mutlaka bakmalısın! Link: " + homeLink)}" target="_blank" class="p-btn" style="background:#25D366; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center; text-decoration:none;">
+                    <i class="fab fa-whatsapp" style="font-size:18px;"></i>
+                </a>
             </div>
-        `;
+        </div>
+
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+
+        <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Belirli bir ürünü paylaşmak için:</p>
+
+        <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
+            <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
+            <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/siyah-elbise..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
+            
+            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold; cursor:pointer;">
+                Link Oluştur ✨
+            </button>
+        </div>
+
+        <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
+            <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
+            <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                    <i class="fab fa-whatsapp" style="font-size:16px; margin-right:5px;"></i> WhatsApp
+                </a>
+                <a id="btn-tg" href="#" target="_blank" class="p-btn" style="background:#0088cc; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                    <i class="fab fa-telegram" style="font-size:16px; margin-right:5px;"></i> Telegram
+                </a>
+            </div>
+            
+            <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                <i class="fas fa-copy"></i> Linki Kopyala
+            </button>
+        </div>
+    `;
       },
 
-      createLink: function () {
+      createLink: function (refCode) {
         var val = document.getElementById("pl-input").value;
-        if (!val) return alert("Link giriniz.");
-        var refCode = "REF-" + email.substring(0, 3).toUpperCase();
+        if (!val) return alert("Lütfen bir ürün linki giriniz.");
+
+        // Linki oluştur (Var olan parametreleri koru)
         var final = val + (val.includes("?") ? "&" : "?") + "ref=" + refCode;
+
+        // Ekrana yaz ve kutuyu göster
         document.getElementById("pl-final").innerText = final;
         document.getElementById("pl-result").style.display = "block";
+
+        // Mesaj Hazırla (Otomatik doldurma)
+        var msgWA = encodeURIComponent(
+          "Bu ürüne bayıldım, kesin bakmalısın! Link: " + final,
+        );
+        var msgTG = encodeURIComponent("Harika bir ürün buldum! 👇");
+
+        // Buton Linklerini Güncelle
+        document.getElementById("btn-wa").href =
+          "https://api.whatsapp.com/send?text=" + msgWA;
+        document.getElementById("btn-tg").href =
+          "https://t.me/share/url?url=" +
+          encodeURIComponent(final) +
+          "&text=" +
+          msgTG;
       },
 
       renderWallet: async function (container) {
@@ -592,5 +664,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
