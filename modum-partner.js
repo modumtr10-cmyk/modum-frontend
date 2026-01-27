@@ -143,7 +143,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
-                    <div style="font-size:20px; font-weight:800;">${name}</div>
+                    <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <div onclick="PartnerApp.loadTab('notifications', null)" style="position:relative; cursor:pointer;">
@@ -235,11 +235,13 @@
           }
 
           const s = res.stats;
+          // 🔥 İSİM DÜZELTME (Backend'den geliyorsa onu kullan, yoksa mailden türet)
+          let displayName = email.split("@")[0];
+          // Eğer backend 'name' gönderiyorsa (stats objesi içinde veya ayrı bir alanda)
+          if (s.partnerName) displayName = s.partnerName;
 
-          // 🔥 İSİM DÜZELTME: "Info" yerine E-postanın başını büyük harfle yaz
-          const realName = email.split("@")[0].toUpperCase();
           const headerEl = document.getElementById("p-header-name");
-          if (headerEl) headerEl.innerText = realName;
+          if (headerEl) headerEl.innerText = displayName; // İsmi güncelle
 
           // 🔥 SEVİYE KUTULARI AYARLARI
           const levels = [
@@ -560,27 +562,30 @@
             container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>`;
             if (res.list.length === 0) {
               container.innerHTML +=
-                "<div style='text-align:center; color:#999;'>Henüz eğitim eklenmemiş.</div>";
+                "<div style='text-align:center; color:#999; padding:20px;'>Henüz eğitim eklenmemiş.</div>";
               return;
             }
 
             res.list.forEach((l) => {
               let icon = "🎥"; // Varsayılan Video
               let actionText = "İZLE";
-              let clickAction = `window.open('${l.link}', '_blank')`;
+              // Tırnak işaretlerini kaçırmak için güvenli hale getir
+              let safeLink = (l.link || "").replace(/'/g, "\\'");
+              let clickAction = `window.open('${safeLink}', '_blank')`;
               let badgeColor = "#ef4444"; // Kırmızı (YouTube rengi)
 
               if (l.type === "article") {
                 icon = "📝";
                 actionText = "OKU";
                 badgeColor = "#3b82f6"; // Mavi
-                // Makaleyi modal içinde açacağız (Basit alert şimdilik, sonra modal yapabiliriz)
-                // Tırnak işaretlerini kaçırmak için escape yapıyoruz
+
+                // Makale içeriğini güvenli hale getir (Satır sonları ve tırnaklar)
                 const safeContent = (l.content || "")
                   .replace(/'/g, "\\'")
                   .replace(/"/g, "&quot;")
                   .replace(/\n/g, "<br>");
-                clickAction = `PartnerApp.openArticleModal('${l.title}', '${safeContent}')`;
+
+                clickAction = `PartnerApp.openArticleModal('${l.title.replace(/'/g, "\\'")}', '${safeContent}')`;
               } else if (l.type === "pdf") {
                 icon = "📄";
                 actionText = "İNDİR";
@@ -588,7 +593,7 @@
               }
 
               container.innerHTML += `
-                    <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center;">
+                    <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center; margin-bottom:10px;">
                         <div style="width:50px; height:50px; background:${badgeColor}20; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">
                             ${icon}
                         </div>
@@ -616,16 +621,16 @@
 
         let html = `
     <div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
-        <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column;">
-            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:18px;">${title}</h3>
-                <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px;">&times;</span>
+        <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+                <h3 style="margin:0; font-size:18px; color:#1e293b;">${title}</h3>
+                <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px; color:#94a3b8;">&times;</span>
             </div>
-            <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155;">
+            <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155; font-size:14px;">
                 ${content}
             </div>
-            <div style="padding:15px; border-top:1px solid #eee; text-align:right;">
-                <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white;">Kapat</button>
+            <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
+                <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white; border-radius:8px;">Kapat</button>
             </div>
         </div>
     </div>
@@ -769,5 +774,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
