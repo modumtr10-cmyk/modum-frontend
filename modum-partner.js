@@ -32,16 +32,38 @@
   // --- BAŞLATICI ---
   async function initPartnerSystem() {
     var email = detectUser();
-    // Test İçin: Giriş yoksa bile butonu görmek istersen bu satırı yorum satırı yap
-    // if (!email) return;
 
-    // 🔥 Backend Kontrolü (Simüle)
-    // Gerçekte API'den isPartner:true gelmeli.
-    // Şimdilik herkes partner gibi görünsün ki tasarlayabilelim:
-    var isPartner = true;
+    // Eğer kullanıcı giriş yapmamışsa butonu gösterme
+    if (!email) {
+      console.log("Kullanıcı giriş yapmamış, partner butonu gizlendi.");
+      return;
+    }
 
-    if (isPartner) {
-      renderPartnerButton();
+    // 🔥 Backend Kontrolü (Artık Simülasyon Değil, Gerçek!)
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "check_partner_status",
+          email: email,
+        }),
+      });
+
+      const data = await response.json();
+
+      // SADECE "isPartner" VE "isActive" TRUE İSE BUTONU GÖSTER
+      if (data.success && data.isPartner && data.isActive) {
+        console.log("✅ Partner aktif, panel açılıyor.");
+        renderPartnerButton();
+      } else {
+        console.log("⛔ Partner değil veya hesabı pasif.");
+        // Eğer önceden kalma buton varsa sil
+        var oldBtn = document.getElementById("mdm-partner-btn");
+        if (oldBtn) oldBtn.remove();
+      }
+    } catch (e) {
+      console.log("Partner kontrol hatası:", e);
     }
   }
 
@@ -774,5 +796,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
