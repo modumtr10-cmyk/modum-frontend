@@ -29,14 +29,29 @@
     return null;
   }
 
-  // --- BAŞLATICI ---
+  // --- BAŞLATICI (API'den Gerçek Veriyi Çeker) ---
   async function initPartnerSystem() {
     var email = detectUser();
-    // Test için her zaman butonu göster (Canlıda if(!email) return; açılabilir)
+    if (!email) return; // Giriş yapmamışsa butonu gösterme
 
-    // Gerçekte API'den kullanıcının partner olup olmadığını sorgulayabilirsin.
-    // Şimdilik açık bırakıyoruz.
-    renderPartnerButton();
+    // 🔥 Backend'e soruyoruz: Bu kişi partner mi? Kodu ne?
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+      });
+      const res = await response.json();
+
+      // Eğer veritabanında kaydı varsa (Success: true)
+      if (res.success && res.stats) {
+        // Veriyi tarayıcı hafızasına alıyoruz ki her yerde kullanalım
+        window.PartnerData = res.stats;
+        renderPartnerButton();
+      }
+    } catch (e) {
+      console.log("Partner kontrol hatası:", e);
+    }
   }
 
   // --- SOL BUTON ---
@@ -85,12 +100,18 @@
   }
 
   // --- DASHBOARD ARAYÜZÜ ---
+  // --- DASHBOARD ARAYÜZÜ ---
   function openPartnerDashboard() {
     var old = document.getElementById("mdm-partner-modal");
     if (old) old.remove();
 
-    var email = detectUser() || "Misafir Ortak";
-    var name = email.split("@")[0];
+    // Verileri Hafızadan Al (API'den gelenler)
+    var pData = window.PartnerData || {};
+    var name = pData.name || "Ortak";
+
+    // 🔥 İŞTE BURASI: VERİTABANINDAKİ GERÇEK KODU ALIYORUZ
+    // Eğer kod gelmediyse hata vermesin diye varsayılan koyduk
+    var myRefCode = pData.refCode || "Henüz Kod Oluşmadı";
 
     var css = `
 <style>
@@ -358,37 +379,63 @@
         }
       },
 
-      renderLinks: function (container) {
-        var email = detectUser() || "guest";
-        // Referans kodunu oluştur (Gerçek sistemde user verisinden gelmeli)
-        var myRefCode =
-          "REF-" +
-          email.substring(0, 3).toUpperCase() +
-          Math.floor(Math.random() * 1000);
-
-        // Ana sayfa linki
+      renderLinks: function (c) {
+        // 🔥 BURASI ARTIK SABİT: Veritabanından gelen kodu kullanıyor
+        var myRefCode = window.PartnerData.refCode || "KOD_YOK";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        container.innerHTML = `
-      <h3 style="margin:0 0 15px 0;">🔗 Link Oluşturucu & Paylaş</h3>
+        c.innerHTML = `
+            <h3 style="margin:0 0 15px 0;">🔗 Link Oluşturucu</h3>
+            
+            <div class="p-card" style="background:#f0f9ff; border:1px dashed #0ea5e9; padding:15px; margin-bottom:20px;">
+                <label style="font-size:10px; color:#0284c7; font-weight:bold; display:block;">SABİT REF KODUNUZ (DEĞİŞMEZ)</label>
+                <div style="font-family:monospace; font-size:24px; font-weight:bold; color:#0369a1; margin-top:5px; letter-spacing:1px;">${myRefCode}</div>
+                <div style="font-size:11px; color:#64748b; margin-top:5px;">Bu kod sisteme tanımlıdır. Rastgele değildir.</div>
+            </div>
+            
+            <div class="p-card">
+                <label style="font-size:10px; color:#64748b;">ANA SAYFA LİNKİ</label>
+                <input type="text" value="${homeLink}" readonly style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px; color:#334155; font-family:monospace;">
+                
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; flex:1;">
+                        <i class="fas fa-copy"></i> Kopyala
+                    </button>
+                    <a href="https://api.whatsapp.com/send?text=${encodeURIComponent("Harika ürünler var! Link: " + homeLink)}" target="_blank" class="p-btn" style="background:#25D366; color:white; width:50px; display:flex; justify-content:center;">
+                        <i class="fab fa-whatsapp" style="font-size:18px;"></i>
+                    </a>
+                </div>
+            </div>
 
-      <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:12px; margin-bottom:20px;">
-          <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 GENEL ANA SAYFA LİNKİN</label>
-          <div style="font-size:11px; color:#64748b; margin-bottom:10px;">Bu linki Instagram biyografine koyabilir veya arkadaşlarına atabilirsin. Bu linkten gelen herkes senin referansın olur.</div>
-          
-          <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
-              ${homeLink}
-          </div>
-          
-          <div style="display:flex; gap:10px;">
-              <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1; cursor:pointer;">
-                  <i class="fas fa-copy"></i> Kopyala
-              </button>
-              <a href="https://api.whatsapp.com/send?text=${encodeURIComponent("Harika ürünler var, mutlaka bakmalısın! Link: " + homeLink)}" target="_blank" class="p-btn" style="background:#25D366; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center; text-decoration:none;">
-                  <i class="fab fa-whatsapp" style="font-size:18px;"></i>
-              </a>
-          </div>
-      </div>
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+            <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Belirli bir ürünü paylaşmak için:</p>
+
+            <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
+                <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
+                <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/siyah-elbise..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
+                
+                <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold; cursor:pointer;">
+                    Link Oluştur ✨
+                </button>
+            </div>
+
+            <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
+                <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
+                <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                    <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                        <i class="fab fa-whatsapp" style="font-size:16px; margin-right:5px;"></i> WhatsApp
+                    </a>
+                    <a id="btn-tg" href="#" target="_blank" class="p-btn" style="background:#0088cc; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                        <i class="fab fa-telegram" style="font-size:16px; margin-right:5px;"></i> Telegram
+                    </a>
+                </div>
+                
+                <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                    <i class="fas fa-copy"></i> Linki Kopyala
+                </button>
+            </div>      
 
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
 
@@ -799,5 +846,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
