@@ -1,10 +1,10 @@
 /**
  * 👑 MODUM PARTNER PRO (Influencer Hub)
- * v3.0 - Tier (Seviye) Sistemi, Bildirimler ve Sol Buton
+ * v3.1 - Tier Bilgilendirme Sistemi ve Gelişmiş Arayüz
  */
 
 (function () {
-  console.log("🚀 Modum Partner Pro (v3.0) Başlatılıyor...");
+  console.log("🚀 Modum Partner Pro (v3.1) Başlatılıyor...");
 
   // AYARLAR
   var API_URL = "https://api-hjen5442oq-uc.a.run.app";
@@ -32,76 +32,44 @@
   // --- BAŞLATICI ---
   async function initPartnerSystem() {
     var email = detectUser();
-
-    // Eğer kullanıcı giriş yapmamışsa butonu gösterme
-    if (!email) {
-      console.log("Kullanıcı giriş yapmamış, partner butonu gizlendi.");
-      return;
-    }
-
-    // 🔥 Backend Kontrolü (Artık Simülasyon Değil, Gerçek!)
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          islem: "check_partner_status",
-          email: email,
-        }),
-      });
-
-      const data = await response.json();
-
-      // SADECE "isPartner" VE "isActive" TRUE İSE BUTONU GÖSTER
-      if (data.success && data.isPartner && data.isActive) {
-        console.log("✅ Partner aktif, panel açılıyor.");
-        renderPartnerButton();
-      } else {
-        console.log("⛔ Partner değil veya hesabı pasif.");
-        // Eğer önceden kalma buton varsa sil
-        var oldBtn = document.getElementById("mdm-partner-btn");
-        if (oldBtn) oldBtn.remove();
-      }
-    } catch (e) {
-      console.log("Partner kontrol hatası:", e);
-    }
+    // Test için her zaman butonu göster (Canlıda if(!email) return; açılabilir)
+    
+    // Gerçekte API'den kullanıcının partner olup olmadığını sorgulayabilirsin.
+    // Şimdilik açık bırakıyoruz.
+    renderPartnerButton();
   }
 
-  // --- 👑 YENİ NESİL BUTON (SOLDA & İSİMLİ) ---
+  // --- SOL BUTON ---
   function renderPartnerButton() {
     var oldBtn = document.getElementById("mdm-partner-btn");
     if (oldBtn) oldBtn.remove();
 
     var btn = document.createElement("div");
     btn.id = "mdm-partner-btn";
-
-    // İçerik: İkon + Yazı
     btn.innerHTML = `
     <div style="display:flex; align-items:center; gap:8px;">
         <span style="font-size:18px;">👑</span>
         <span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
     </div>
 `;
-
     Object.assign(btn.style, {
       position: "fixed",
-      left: "20px", // SOL TARAFTA
-      bottom: "100px", // Whatsapp butonunun üstünde kalacak şekilde ayarla
+      left: "20px",
+      bottom: "100px",
       zIndex: "999999",
-      background: "linear-gradient(135deg, #0f172a, #334155)", // Koyu Premium Tema
-      color: "#fbbf24", // Altın Sarısı Yazı
+      background: "linear-gradient(135deg, #0f172a, #334155)",
+      color: "#fbbf24",
       padding: "12px 20px",
-      borderRadius: "50px", // Hap şekli
+      borderRadius: "50px",
       boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
       cursor: "pointer",
-      border: "2px solid #fbbf24", // Altın Çerçeve
+      border: "2px solid #fbbf24",
       transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
     });
 
-    // Hover Efekti
     btn.onmouseover = function () {
       this.style.transform = "scale(1.05) translateY(-3px)";
       this.style.boxShadow = "0 10px 30px rgba(251, 191, 36, 0.3)";
@@ -110,15 +78,13 @@
       this.style.transform = "scale(1) translateY(0)";
       this.style.boxShadow = "0 4px 20px rgba(0,0,0,0.4)";
     };
-
     btn.onclick = function () {
       openPartnerDashboard();
     };
-
     document.body.appendChild(btn);
   }
 
-  // --- 🌟 DASHBOARD ARAYÜZÜ (FULL SCREEN APP) ---
+  // --- DASHBOARD ARAYÜZÜ ---
   function openPartnerDashboard() {
     var old = document.getElementById("mdm-partner-modal");
     if (old) old.remove();
@@ -126,33 +92,29 @@
     var email = detectUser() || "Misafir Ortak";
     var name = email.split("@")[0];
 
-    // Mobil Uyumlu CSS
     var css = `
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
     .p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999999; backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; font-family:'Outfit', sans-serif; }
     .p-app { width:100%; height:100%; background:#f8fafc; position:relative; display:flex; flex-direction:column; overflow:hidden; }
-    
-    /* Masaüstünde ortalı modal gibi dursun */
-    @media (min-width: 769px) {
-        .p-app { width:450px; height:85vh; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.5); border:1px solid #cbd5e1; }
-    }
-
+    @media (min-width: 769px) { .p-app { width:450px; height:85vh; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.5); border:1px solid #cbd5e1; } }
     .p-header { background:#0f172a; padding:20px; padding-top:40px; color:white; border-bottom:1px solid #334155; }
     .p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:100px; }
     .p-nav { position:absolute; bottom:0; width:100%; height:70px; background:white; border-top:1px solid #e2e8f0; display:flex; justify-content:space-around; align-items:center; z-index:10; }
-    
     .p-nav-item { display:flex; flex-direction:column; align-items:center; color:#94a3b8; font-size:10px; font-weight:600; cursor:pointer; transition:0.2s; }
     .p-nav-item i { font-size:20px; margin-bottom:4px; }
     .p-nav-item.active { color:#3b82f6; transform:translateY(-5px); }
-
     .p-card { background:white; border-radius:16px; padding:20px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.03); border:1px solid #e2e8f0; }
     .p-stat-val { font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-1px; }
     .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
-
     .p-btn { width:100%; padding:14px; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
     .p-btn-primary { background:#3b82f6; color:white; box-shadow:0 4px 15px rgba(59,130,246,0.3); }
     .p-btn-primary:active { transform:scale(0.98); }
+    
+    /* Tier Info Table */
+    .tier-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+    .tier-table th { text-align:left; color:#64748b; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
+    .tier-table td { padding:8px 0; border-bottom:1px solid #f1f5f9; color:#334155; font-weight:600; }
 </style>
 `;
 
@@ -160,7 +122,6 @@
 <div id="mdm-partner-modal" class="p-overlay">
     ${css}
     <div class="p-app">
-        
         <div class="p-header">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -168,147 +129,140 @@
                     <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <div onclick="PartnerApp.loadTab('notifications', null)" style="position:relative; cursor:pointer;">
-                        <i class="fas fa-bell" style="font-size:20px; color:#94a3b8;"></i>
-                        <div style="position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></div>
+                    <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
+                        <i class="fas fa-info-circle"></i> Oranlar
                     </div>
                     <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
                 </div>
             </div>
         </div>
 
-        <div id="p-content-area" class="p-body">
-            </div>
+        <div id="p-content-area" class="p-body"></div>
 
         <div class="p-nav">
-<div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)">
-    <i class="fas fa-chart-pie"></i> Özet
-</div>
-<div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
-    <i class="fas fa-link"></i> Linkler
-</div>
-<div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)">
-    <i class="fas fa-wallet"></i> Cüzdan
-</div>
-
-<div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)">
-    <i class="fas fa-images"></i> Pazarlama
-</div>
-<div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)">
-    <i class="fas fa-graduation-cap"></i> Akademi
-</div>
-</div>
-
+            <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
+            <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
+            <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
+            <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
+            <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
+        </div>
     </div>
 </div>
 `;
 
     document.body.insertAdjacentHTML("beforeend", html);
 
-    // PARTNER FONKSİYONLARI (GLOBAL NESNE)
     window.PartnerApp = {
       loadTab: function (tab, el) {
-        // Menü Aktifliği
-        document
-          .querySelectorAll(".p-nav-item")
-          .forEach((i) => i.classList.remove("active"));
+        document.querySelectorAll(".p-nav-item").forEach((i) => i.classList.remove("active"));
         if (el) el.classList.add("active");
 
         var area = document.getElementById("p-content-area");
-        area.innerHTML =
-          '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-circle-notch fa-spin" style="font-size:30px;"></i></div>';
+        area.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-circle-notch fa-spin" style="font-size:30px;"></i></div>';
 
         setTimeout(() => {
           if (tab === "home") this.renderHome(area);
           if (tab === "links") this.renderLinks(area);
           if (tab === "wallet") this.renderWallet(area);
-
-          // 🔥 BURAYA EKLE:
           if (tab === "marketing") this.renderMarketing(area);
-
           if (tab === "academy") this.renderAcademy(area);
-          if (tab === "notifications") this.renderNotifications(area);
         }, 300);
       },
 
+      // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ
+      showTierInfo: function() {
+          let infoHtml = `
+          <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
+            <div style="background:white; width:100%; max-width:350px; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+                <div style="padding:20px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:16px;">💎 Kazanç Seviyeleri</h3>
+                    <span onclick="document.getElementById('p-tier-modal').remove()" style="cursor:pointer;">&times;</span>
+                </div>
+                <div style="padding:20px;">
+                    <p style="font-size:12px; color:#64748b; line-height:1.4;">Toplam satış cironuz arttıkça komisyon oranınız otomatik yükselir.</p>
+                    <table class="tier-table">
+                        <thead>
+                            <tr>
+                                <th>Seviye</th>
+                                <th>Ciro Şartı</th>
+                                <th>Komisyon</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>🥉 <b style="color:#CD7F32">Bronz</b></td>
+                                <td>0 - 10.000 ₺</td>
+                                <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%10</span></td>
+                            </tr>
+                            <tr>
+                                <td>🥈 <b style="color:#94a3b8">Gümüş</b></td>
+                                <td>10.000+ ₺</td>
+                                <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%12</span></td>
+                            </tr>
+                            <tr>
+                                <td>👑 <b style="color:#d97706">Altın</b></td>
+                                <td>50.000+ ₺</td>
+                                <td><span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px;">%15</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:15px; font-size:11px; background:#f0fdf4; color:#166534; padding:10px; border-radius:8px;">
+                        <i class="fas fa-check-circle"></i> Seviye atladığınızda yeni oran tüm yeni satışlarda geçerli olur.
+                    </div>
+                </div>
+            </div>
+          </div>
+          `;
+          document.body.insertAdjacentHTML("beforeend", infoHtml);
+      },
+
       renderHome: async function (container) {
-        // 1. Yükleniyor Ekranı
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
-
         var email = detectUser();
-        if (!email) {
-          container.innerHTML = "Lütfen giriş yapın.";
-          return;
-        }
-
+        if (!email) { container.innerHTML = "Giriş yapın."; return; }
         try {
-          // 2. Backend'den Verileri Çek
-          const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ islem: "get_partner_stats", email: email }),
           });
           const res = await response.json();
-
-          if (!res.success) {
-            container.innerHTML = "Hata: " + res.message;
-            return;
-          }
-
+          if (!res.success) { container.innerHTML = "Hata: " + res.message; return; }
           const s = res.stats;
-          // 🔥 İSİM DÜZELTME (Backend'den geliyorsa onu kullan, yoksa mailden türet)
-          let displayName = email.split("@")[0];
-          // Eğer backend 'name' gönderiyorsa (stats objesi içinde veya ayrı bir alanda)
-          if (s.partnerName) displayName = s.partnerName;
+          
+          let myRate = s.commission_rate || 10;
+          let myLevel = s.level || "Bronz";
+          let currentRev = parseFloat(s.totalRevenue || 0);
 
-          const headerEl = document.getElementById("p-header-name");
-          if (headerEl) headerEl.innerText = displayName; // İsmi güncelle
+          // Seviye İlerleme Çubuğu Hesaplama (Basit)
+          let nextLevel = "Gümüş";
+          let nextTarget = 10000;
+          if (currentRev >= 10000) { nextLevel = "Altın"; nextTarget = 50000; }
+          if (currentRev >= 50000) { nextLevel = "Max"; nextTarget = currentRev; }
+          
+          let progress = Math.min((currentRev / nextTarget) * 100, 100);
 
-          // 🔥 SEVİYE KUTULARI AYARLARI
-          const levels = [
-            { name: "Bronz", min: 0, color: "#CD7F32" },
-            { name: "Gümüş", min: 10000, color: "#C0C0C0" },
-            { name: "Altın", min: 50000, color: "#FFD700" },
-          ];
-
-          let levelHTML = `<div style="display:flex; gap:5px; margin-top:15px;">`;
-          let currentRev = parseFloat(s.totalRevenue);
-
-          // Kutuları Oluştur
-          levels.forEach((lvl) => {
-            let isUnlocked = currentRev >= lvl.min; // Kilit açık mı?
-            let icon = isUnlocked ? "🔓" : "🔒";
-            let opacity = isUnlocked ? "1" : "0.4"; // Kilitliyse soluk
-            let isCurrent = s.level === lvl.name; // Mevcut seviye mi?
-            let border = isCurrent
-              ? "2px solid #fff"
-              : "1px solid rgba(255,255,255,0.1)";
-
-            levelHTML += `
-                <div style="flex:1; background:rgba(255,255,255,0.1); border-radius:8px; padding:8px 2px; text-align:center; opacity:${opacity}; border:${border};">
-                    <div style="font-size:14px;">${icon}</div>
-                    <div style="font-weight:bold; font-size:10px; color:${lvl.color};">${lvl.name}</div>
-                    <div style="font-size:9px; color:#ccc;">${lvl.min / 1000}k+</div>
-                </div>
-            `;
-          });
-          levelHTML += `</div>`;
-
-          // 3. EKRANA BAS (HTML)
           container.innerHTML = `
             <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <div>
-                        <div style="font-size:12px; opacity:0.7;">TOPLAM CİRO</div>
-                        <div style="font-size:24px; font-weight:800;">${currentRev.toLocaleString()} ₺</div>
+                        <div style="font-size:11px; opacity:0.7;">MEVCUT SEVİYE</div>
+                        <div style="font-size:18px; font-weight:800; color:#fbbf24;">${myLevel} (%${myRate})</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:12px; opacity:0.7;">BAKİYE</div>
+                        <div style="font-size:11px; opacity:0.7;">BAKİYE</div>
                         <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString()} ₺</div>
                     </div>
                 </div>
-                ${levelHTML}
+                
+                <div style="margin-top:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
+                        <span>Ciro: ${currentRev.toLocaleString()} ₺</span>
+                        <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
+                    </div>
+                    <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div style="width:${progress}%; height:100%; background:#fbbf24;"></div>
+                    </div>
+                </div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
@@ -328,31 +282,29 @@
             
             <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
             <canvas id="p-chart" height="150"></canvas>
-        `;
+          `;
 
-          // 4. Grafiği Çiz
           new Chart(document.getElementById("p-chart"), {
             type: "line",
             data: {
               labels: s.chart.labels,
-              datasets: [
-                {
-                  label: "Kazanç",
-                  data: s.chart.data,
-                  borderColor: "#10b981",
-                  tension: 0.4,
-                  pointRadius: 0,
-                },
-              ],
+              datasets: [{
+                label: "Kazanç",
+                data: s.chart.data,
+                borderColor: "#10b981",
+                tension: 0.4,
+                pointRadius: 0,
+                fill: true,
+                backgroundColor: "rgba(16, 185, 129, 0.1)"
+              }]
             },
             options: {
               plugins: { legend: { display: false } },
-              scales: { x: { display: false } },
-            },
+              scales: { x: { display: false }, y: { display:false } }
+            }
           });
-        } catch (e) {
-          container.innerHTML = "Hata: " + e.message;
-        }
+
+        } catch (e) { container.innerHTML = "Hata: " + e.message; }
       },
 
       renderLinks: function (container) {
@@ -796,5 +748,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
