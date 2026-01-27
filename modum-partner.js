@@ -210,15 +210,18 @@
       },
 
       renderHome: async function (container) {
+        // 1. Yükleniyor Ekranı
         container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Yükleniyor...</div>';
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
 
         var email = detectUser();
-        if (!email)
-          return (container.innerHTML =
-            "<div style='text-align:center; padding:20px;'>Lütfen giriş yapın.</div>");
+        if (!email) {
+          container.innerHTML = "Lütfen giriş yapın.";
+          return;
+        }
 
         try {
+          // 2. Backend'den Verileri Çek
           const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -233,67 +236,78 @@
 
           const s = res.stats;
 
-          // Seviye İlerleme Hesabı
+          // 🔥 İSİM DÜZELTME: "Info" yerine E-postanın başını büyük harfle yaz
+          const realName = email.split("@")[0].toUpperCase();
+          const headerEl = document.getElementById("p-header-name");
+          if (headerEl) headerEl.innerText = realName;
+
+          // 🔥 SEVİYE KUTULARI AYARLARI
+          const levels = [
+            { name: "Bronz", min: 0, color: "#CD7F32" },
+            { name: "Gümüş", min: 10000, color: "#C0C0C0" },
+            { name: "Altın", min: 50000, color: "#FFD700" },
+          ];
+
+          let levelHTML = `<div style="display:flex; gap:5px; margin-top:15px;">`;
           let currentRev = parseFloat(s.totalRevenue);
-          let nextTarget = 10000;
-          let progress = 0;
 
-          if (currentRev >= 50000) {
-            progress = 100;
-          } else if (currentRev >= 10000) {
-            nextTarget = 50000;
-            progress = ((currentRev - 10000) / 40000) * 100;
-          } else {
-            nextTarget = 10000;
-            progress = (currentRev / 10000) * 100;
-          }
+          // Kutuları Oluştur
+          levels.forEach((lvl) => {
+            let isUnlocked = currentRev >= lvl.min; // Kilit açık mı?
+            let icon = isUnlocked ? "🔓" : "🔒";
+            let opacity = isUnlocked ? "1" : "0.4"; // Kilitliyse soluk
+            let isCurrent = s.level === lvl.name; // Mevcut seviye mi?
+            let border = isCurrent
+              ? "2px solid #fff"
+              : "1px solid rgba(255,255,255,0.1)";
 
+            levelHTML += `
+                <div style="flex:1; background:rgba(255,255,255,0.1); border-radius:8px; padding:8px 2px; text-align:center; opacity:${opacity}; border:${border};">
+                    <div style="font-size:14px;">${icon}</div>
+                    <div style="font-weight:bold; font-size:10px; color:${lvl.color};">${lvl.name}</div>
+                    <div style="font-size:9px; color:#ccc;">${lvl.min / 1000}k+</div>
+                </div>
+            `;
+          });
+          levelHTML += `</div>`;
+
+          // 3. EKRANA BAS (HTML)
           container.innerHTML = `
-            <div class="p-card" style="background:linear-gradient(135deg, #0f172a, #334155); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.2);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between;">
                     <div>
-                        <div style="font-size:12px; opacity:0.7; font-weight:600; letter-spacing:1px;">MEVCUT SEVİYE</div>
-                        <div style="font-size:28px; font-weight:800; color:#fbbf24; margin-top:2px;">${s.level} Ortak</div>
+                        <div style="font-size:12px; opacity:0.7;">TOPLAM CİRO</div>
+                        <div style="font-size:24px; font-weight:800;">${currentRev.toLocaleString()} ₺</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; font-size:12px; font-weight:bold;">
-                        %${s.commission_rate} Komisyon
-                    </div>
-                </div>
-                
-                <div style="margin-top:20px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; opacity:0.8;">
-                        <span>${currentRev.toLocaleString()} ₺ Ciro</span>
-                        <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
-                    </div>
-                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                        <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b); border-radius:10px;"></div>
+                    <div style="text-align:right;">
+                        <div style="font-size:12px; opacity:0.7;">BAKİYE</div>
+                        <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString()} ₺</div>
                     </div>
                 </div>
+                ${levelHTML}
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #e2e8f0;">
-                    <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                    <div class="p-stat-val" style="font-size:18px;">${s.totalClicks}</div>
                     <div class="p-stat-lbl">TIK</div>
                 </div>
-                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #e2e8f0;">
-                    <div class="p-stat-val" style="font-size:20px; color:#10b981;">${s.totalSales}</div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                    <div class="p-stat-val" style="font-size:18px;">${s.totalSales}</div>
                     <div class="p-stat-lbl">SATIŞ</div>
                 </div>
                 <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
-                    <div class="p-stat-val" style="font-size:20px; color:#8b5cf6;">${s.referralCount || 0}</div>
+                    <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
                     <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
                 </div>
             </div>
-
-            <h4 style="margin:0 0 15px 0; font-size:13px; color:#64748b; text-transform:uppercase;">Son 7 Günlük Kazanç</h4>
-            <div class="p-card" style="padding:10px; height:200px;">
-                <canvas id="p-home-chart"></canvas>
-            </div>
+            
+            <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
+            <canvas id="p-chart" height="150"></canvas>
         `;
 
-          // Grafiği Çiz
-          new Chart(document.getElementById("p-home-chart"), {
+          // 4. Grafiği Çiz
+          new Chart(document.getElementById("p-chart"), {
             type: "line",
             data: {
               labels: s.chart.labels,
@@ -301,26 +315,19 @@
                 {
                   label: "Kazanç",
                   data: s.chart.data,
-                  borderColor: "#3b82f6",
-                  backgroundColor: "rgba(59, 130, 246, 0.1)",
+                  borderColor: "#10b981",
                   tension: 0.4,
-                  fill: true,
-                  pointRadius: 3,
+                  pointRadius: 0,
                 },
               ],
             },
             options: {
-              responsive: true,
-              maintainAspectRatio: false,
               plugins: { legend: { display: false } },
-              scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                y: { grid: { color: "#f1f5f9" }, beginAtZero: true },
-              },
+              scales: { x: { display: false } },
             },
           });
         } catch (e) {
-          container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Hata: ${e.message}</div>`;
+          container.innerHTML = "Hata: " + e.message;
         }
       },
 
@@ -538,19 +545,35 @@
         }
       },
 
-      renderAcademy: function (container) {
-        container.innerHTML = `
-          <h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>
-          <div class="p-card">
-              <div style="font-weight:bold; margin-bottom:5px;">Nasıl daha çok satarım?</div>
-              <p style="font-size:12px; color:#64748b;">Instagram storylerinizde "Yukarı Kaydır" yerine link çıkartması kullanın...</p>
-          </div>
-          <div class="p-card">
-              <div style="font-weight:bold; margin-bottom:5px;">En çok satan ürünler</div>
-              <p style="font-size:12px; color:#64748b;">Bu hafta "Yaz Koleksiyonu" çok popüler. Hemen paylaş!</p>
-          </div>
-        `;
-      }, // ... renderAcademy fonksiyonu bitişi }, den sonra yapıştır:
+      renderAcademy: async function (container) {
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Dersler yükleniyor...</div>';
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_academy_lessons" }), // Backend'de tanımladık
+          }).then((r) => r.json());
+
+          if (res.success) {
+            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>`;
+            if (res.list.length === 0) container.innerHTML += "Henüz ders yok.";
+
+            res.list.forEach((l) => {
+              container.innerHTML += `
+                    <div class="p-card" onclick="window.open('${l.link}', '_blank')" style="cursor:pointer;">
+                        <div style="font-weight:bold; margin-bottom:5px;">${l.title}</div>
+                        <p style="font-size:12px; color:#64748b; margin:0;">${l.description}</p>
+                        <div style="margin-top:10px; font-size:11px; color:#3b82f6; font-weight:bold;">EĞİTİME GİT →</div>
+                    </div>
+                `;
+            });
+          }
+        } catch (e) {
+          container.innerHTML = "Hata.";
+        }
+      },
 
       renderMarketing: async function (container) {
         container.innerHTML =
@@ -610,34 +633,45 @@
       },
 
       // 🔥 YENİ: BİLDİRİM EKRANI
-      renderNotifications: function (container) {
-        container.innerHTML = `
-            <h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>
-            <div class="p-card" style="padding:0;">
-                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <b style="color:#10b981;">💰 Yeni Satış!</b>
-                        <span style="font-size:10px; color:#94a3b8;">10 dk önce</span>
+      renderNotifications: async function (container) {
+        var email = detectUser();
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Bildirimler...</div>';
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              islem: "get_my_notifications",
+              email: email,
+            }), // Backend'de tanımladık
+          }).then((r) => r.json());
+
+          if (res.success) {
+            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>`;
+            if (res.list.length === 0)
+              container.innerHTML +=
+                "<div style='text-align:center; color:#999;'>Yeni bildirim yok.</div>";
+
+            res.list.forEach((n) => {
+              let icon =
+                n.type === "sale" ? "💰" : n.type === "level_up" ? "🚀" : "📢";
+              container.innerHTML += `
+                    <div class="p-card" style="padding:15px; border-left:4px solid #3b82f6;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <b style="color:#1e293b;">${icon} ${n.title}</b>
+                            <span style="font-size:10px; color:#94a3b8;">${n.date}</span>
+                        </div>
+                        <div style="font-size:12px; color:#475569;">${n.message}</div>
                     </div>
-                    <div style="font-size:12px; color:#334155;">Tebrikler! Paylaştığın linkten 1.500 TL satış geldi. +150 TL kazandın.</div>
-                </div>
-                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <b style="color:#3b82f6;">🚀 Seviye Yaklaşıyor</b>
-                        <span style="font-size:10px; color:#94a3b8;">1 saat önce</span>
-                    </div>
-                    <div style="font-size:12px; color:#334155;">Altın Partner olmaya sadece 2 satış kaldı! Komisyonun %15'e çıkacak.</div>
-                </div>
-                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <b style="color:#f59e0b;">🎓 Yeni Ders</b>
-                        <span style="font-size:10px; color:#94a3b8;">Dün</span>
-                    </div>
-                    <div style="font-size:12px; color:#334155;">"Instagram Reels ile Satış Artırma" rehberi akademiye eklendi.</div>
-                </div>
-            </div>
-        `;
-      }, // window.ModumPartner objesinin içine ekle:
+                `;
+            });
+          }
+        } catch (e) {
+          container.innerHTML = "Hata.";
+        }
+      },
 
       requestPayout: function () {
         var email = detectUser();
@@ -677,5 +711,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
