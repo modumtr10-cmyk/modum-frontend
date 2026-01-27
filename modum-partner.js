@@ -547,32 +547,90 @@
 
       renderAcademy: async function (container) {
         container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Dersler yükleniyor...</div>';
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Akademi Yükleniyor...</div>';
 
         try {
           const res = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_academy_lessons" }), // Backend'de tanımladık
+            body: JSON.stringify({ islem: "get_academy_lessons" }),
           }).then((r) => r.json());
 
           if (res.success) {
             container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>`;
-            if (res.list.length === 0) container.innerHTML += "Henüz ders yok.";
+            if (res.list.length === 0) {
+              container.innerHTML +=
+                "<div style='text-align:center; color:#999;'>Henüz eğitim eklenmemiş.</div>";
+              return;
+            }
 
             res.list.forEach((l) => {
+              let icon = "🎥"; // Varsayılan Video
+              let actionText = "İZLE";
+              let clickAction = `window.open('${l.link}', '_blank')`;
+              let badgeColor = "#ef4444"; // Kırmızı (YouTube rengi)
+
+              if (l.type === "article") {
+                icon = "📝";
+                actionText = "OKU";
+                badgeColor = "#3b82f6"; // Mavi
+                // Makaleyi modal içinde açacağız (Basit alert şimdilik, sonra modal yapabiliriz)
+                // Tırnak işaretlerini kaçırmak için escape yapıyoruz
+                const safeContent = (l.content || "")
+                  .replace(/'/g, "\\'")
+                  .replace(/"/g, "&quot;")
+                  .replace(/\n/g, "<br>");
+                clickAction = `PartnerApp.openArticleModal('${l.title}', '${safeContent}')`;
+              } else if (l.type === "pdf") {
+                icon = "📄";
+                actionText = "İNDİR";
+                badgeColor = "#f59e0b"; // Turuncu
+              }
+
               container.innerHTML += `
-                    <div class="p-card" onclick="window.open('${l.link}', '_blank')" style="cursor:pointer;">
-                        <div style="font-weight:bold; margin-bottom:5px;">${l.title}</div>
-                        <p style="font-size:12px; color:#64748b; margin:0;">${l.description}</p>
-                        <div style="margin-top:10px; font-size:11px; color:#3b82f6; font-weight:bold;">EĞİTİME GİT →</div>
+                    <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center;">
+                        <div style="width:50px; height:50px; background:${badgeColor}20; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                            ${icon}
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">${l.title}</div>
+                            <p style="font-size:11px; color:#64748b; margin:0; line-height:1.3;">${l.description}</p>
+                        </div>
+                        <div style="font-size:10px; font-weight:bold; color:${badgeColor}; background:white; padding:5px 10px; border-radius:20px; border:1px solid ${badgeColor};">
+                            ${actionText}
+                        </div>
                     </div>
                 `;
             });
           }
         } catch (e) {
-          container.innerHTML = "Hata.";
+          container.innerHTML = "Hata: " + e.message;
         }
+      },
+
+      // 🔥 YENİ: Makale Okuma Penceresi (Basit Modal)
+      openArticleModal: function (title, content) {
+        // Varolan modal varsa sil
+        let old = document.getElementById("p-article-modal");
+        if (old) old.remove();
+
+        let html = `
+    <div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column;">
+            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:18px;">${title}</h3>
+                <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155;">
+                ${content}
+            </div>
+            <div style="padding:15px; border-top:1px solid #eee; text-align:right;">
+                <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white;">Kapat</button>
+            </div>
+        </div>
+    </div>
+    `;
+        document.body.insertAdjacentHTML("beforeend", html);
       },
 
       renderMarketing: async function (container) {
@@ -711,5 +769,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v1*/
 })();
