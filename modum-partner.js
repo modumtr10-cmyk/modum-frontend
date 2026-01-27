@@ -55,11 +55,11 @@
 
     // İçerik: İkon + Yazı
     btn.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:18px;">👑</span>
-            <span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
-        </div>
-    `;
+    <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">👑</span>
+        <span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
+    </div>
+`;
 
     Object.assign(btn.style, {
       position: "fixed",
@@ -106,76 +106,80 @@
 
     // Mobil Uyumlu CSS
     var css = `
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        .p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999999; backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; font-family:'Outfit', sans-serif; }
-        .p-app { width:100%; height:100%; background:#f8fafc; position:relative; display:flex; flex-direction:column; overflow:hidden; }
-        
-        /* Masaüstünde ortalı modal gibi dursun */
-        @media (min-width: 769px) {
-            .p-app { width:450px; height:85vh; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.5); border:1px solid #cbd5e1; }
-        }
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+    .p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:9999999; backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; font-family:'Outfit', sans-serif; }
+    .p-app { width:100%; height:100%; background:#f8fafc; position:relative; display:flex; flex-direction:column; overflow:hidden; }
+    
+    /* Masaüstünde ortalı modal gibi dursun */
+    @media (min-width: 769px) {
+        .p-app { width:450px; height:85vh; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.5); border:1px solid #cbd5e1; }
+    }
 
-        .p-header { background:#0f172a; padding:20px; padding-top:40px; color:white; border-bottom:1px solid #334155; }
-        .p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:100px; }
-        .p-nav { position:absolute; bottom:0; width:100%; height:70px; background:white; border-top:1px solid #e2e8f0; display:flex; justify-content:space-around; align-items:center; z-index:10; }
-        
-        .p-nav-item { display:flex; flex-direction:column; align-items:center; color:#94a3b8; font-size:10px; font-weight:600; cursor:pointer; transition:0.2s; }
-        .p-nav-item i { font-size:20px; margin-bottom:4px; }
-        .p-nav-item.active { color:#3b82f6; transform:translateY(-5px); }
+    .p-header { background:#0f172a; padding:20px; padding-top:40px; color:white; border-bottom:1px solid #334155; }
+    .p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:100px; }
+    .p-nav { position:absolute; bottom:0; width:100%; height:70px; background:white; border-top:1px solid #e2e8f0; display:flex; justify-content:space-around; align-items:center; z-index:10; }
+    
+    .p-nav-item { display:flex; flex-direction:column; align-items:center; color:#94a3b8; font-size:10px; font-weight:600; cursor:pointer; transition:0.2s; }
+    .p-nav-item i { font-size:20px; margin-bottom:4px; }
+    .p-nav-item.active { color:#3b82f6; transform:translateY(-5px); }
 
-        .p-card { background:white; border-radius:16px; padding:20px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.03); border:1px solid #e2e8f0; }
-        .p-stat-val { font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-1px; }
-        .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+    .p-card { background:white; border-radius:16px; padding:20px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.03); border:1px solid #e2e8f0; }
+    .p-stat-val { font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-1px; }
+    .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
 
-        .p-btn { width:100%; padding:14px; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .p-btn-primary { background:#3b82f6; color:white; box-shadow:0 4px 15px rgba(59,130,246,0.3); }
-        .p-btn-primary:active { transform:scale(0.98); }
-    </style>
-    `;
+    .p-btn { width:100%; padding:14px; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .p-btn-primary { background:#3b82f6; color:white; box-shadow:0 4px 15px rgba(59,130,246,0.3); }
+    .p-btn-primary:active { transform:scale(0.98); }
+</style>
+`;
 
     var html = `
-    <div id="mdm-partner-modal" class="p-overlay">
-        ${css}
-        <div class="p-app">
-            
-            <div class="p-header">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
-                        <div style="font-size:20px; font-weight:800;">${name}</div>
+<div id="mdm-partner-modal" class="p-overlay">
+    ${css}
+    <div class="p-app">
+        
+        <div class="p-header">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
+                    <div style="font-size:20px; font-weight:800;">${name}</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div onclick="PartnerApp.loadTab('notifications', null)" style="position:relative; cursor:pointer;">
+                        <i class="fas fa-bell" style="font-size:20px; color:#94a3b8;"></i>
+                        <div style="position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></div>
                     </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <div onclick="PartnerApp.loadTab('notifications', null)" style="position:relative; cursor:pointer;">
-                            <i class="fas fa-bell" style="font-size:20px; color:#94a3b8;"></i>
-                            <div style="position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:#ef4444; border-radius:50%;"></div>
-                        </div>
-                        <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
-                    </div>
+                    <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
                 </div>
             </div>
-
-            <div id="p-content-area" class="p-body">
-                </div>
-
-            <div class="p-nav">
-                <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)">
-                    <i class="fas fa-chart-pie"></i> Özet
-                </div>
-                <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
-                    <i class="fas fa-link"></i> Linkler
-                </div>
-                <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)">
-                    <i class="fas fa-wallet"></i> Cüzdan
-                </div>
-                <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)">
-                    <i class="fas fa-graduation-cap"></i> Akademi
-                </div>
-            </div>
-
         </div>
+
+        <div id="p-content-area" class="p-body">
+            </div>
+
+        <div class="p-nav">
+<div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)">
+    <i class="fas fa-chart-pie"></i> Özet
+</div>
+<div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
+    <i class="fas fa-link"></i> Linkler
+</div>
+<div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)">
+    <i class="fas fa-wallet"></i> Cüzdan
+</div>
+
+<div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)">
+    <i class="fas fa-images"></i> Pazarlama
+</div>
+<div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)">
+    <i class="fas fa-graduation-cap"></i> Akademi
+</div>
+</div>
+
     </div>
-    `;
+</div>
+`;
 
     document.body.insertAdjacentHTML("beforeend", html);
 
@@ -196,6 +200,10 @@
           if (tab === "home") this.renderHome(area);
           if (tab === "links") this.renderLinks(area);
           if (tab === "wallet") this.renderWallet(area);
+
+          // 🔥 BURAYA EKLE:
+          if (tab === "marketing") this.renderMarketing(area);
+
           if (tab === "academy") this.renderAcademy(area);
           if (tab === "notifications") this.renderNotifications(area);
         }, 300);
@@ -246,25 +254,25 @@
 
           // 4. HTML'i Gerçek Verilerle Doldur
           container.innerHTML = `
-            <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
-                <div style="font-size:24px; font-weight:900; color:#fbbf24;">${s.level} Ortak</div>
-                <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${s.commission_rate}</b></div>
-                
-                <div style="font-weight:bold; font-size:20px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+        <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; position:relative; overflow:hidden;">
+            <div style="font-size:24px; font-weight:900; color:#fbbf24;">${s.level} Ortak</div>
+            <div style="font-size:11px; color:#4ade80;">Komisyon Oranı: <b>%${s.commission_rate}</b></div>
+            
+            <div style="font-weight:bold; font-size:20px;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
 
-                <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
-                <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
-                
-                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                    <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
-                </div>
+            <span>${currentRevenue.toLocaleString("tr-TR")} ₺ Ciro</span>
+            <span>Hedef: ${nextTarget.toLocaleString("tr-TR")} ₺</span>
+            
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
             </div>
+        </div>
 
-            <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
-            <div class="p-stat-val" style="font-size:20px;">${s.totalSales}</div>
+        <div class="p-stat-val" style="font-size:20px;">${s.totalClicks}</div>
+        <div class="p-stat-val" style="font-size:20px;">${s.totalSales}</div>
 
-            <canvas id="p-chart" height="200"></canvas>
-        `;
+        <canvas id="p-chart" height="200"></canvas>
+    `;
 
           // 5. Grafiği Çiz (Backend verisiyle)
           new Chart(document.getElementById("p-chart"), {
@@ -292,26 +300,26 @@
 
       renderLinks: function (container) {
         container.innerHTML = `
-                <h3 style="margin:0 0 10px 0;">🔗 Link Oluşturucu</h3>
-                <p style="font-size:13px; color:#64748b; margin-bottom:20px;">Paylaşmak istediğin herhangi bir ürünün linkini yapıştır, sana özel takip linkini al.</p>
+            <h3 style="margin:0 0 10px 0;">🔗 Link Oluşturucu</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:20px;">Paylaşmak istediğin herhangi bir ürünün linkini yapıştır, sana özel takip linkini al.</p>
 
-                <div class="p-card">
-                    <label class="p-stat-lbl">ÜRÜN LİNKİ</label>
-                    <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px; box-sizing:border-box;">
-                    
-                    <button onclick="PartnerApp.createLink()" class="p-btn p-btn-primary" style="margin-top:15px;">
-                        Link Oluştur ✨
-                    </button>
-                </div>
+            <div class="p-card">
+                <label class="p-stat-lbl">ÜRÜN LİNKİ</label>
+                <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:5px; box-sizing:border-box;">
+                
+                <button onclick="PartnerApp.createLink()" class="p-btn p-btn-primary" style="margin-top:15px;">
+                    Link Oluştur ✨
+                </button>
+            </div>
 
-                <div id="pl-result" style="display:none;" class="p-card">
-                    <div class="p-stat-lbl" style="color:#3b82f6;">ÖZEL LİNKİNİZ:</div>
-                    <div id="pl-final" style="background:#eff6ff; padding:10px; border-radius:8px; font-family:monospace; color:#1e40af; margin:10px 0; word-break:break-all; font-size:12px;"></div>
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white;">
-                        <i class="fas fa-copy"></i> Kopyala
-                    </button>
-                </div>
-            `;
+            <div id="pl-result" style="display:none;" class="p-card">
+                <div class="p-stat-lbl" style="color:#3b82f6;">ÖZEL LİNKİNİZ:</div>
+                <div id="pl-final" style="background:#eff6ff; padding:10px; border-radius:8px; font-family:monospace; color:#1e40af; margin:10px 0; word-break:break-all; font-size:12px;"></div>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white;">
+                    <i class="fas fa-copy"></i> Kopyala
+                </button>
+            </div>
+        `;
       },
 
       createLink: function () {
@@ -326,10 +334,10 @@
       renderWallet: async function (container) {
         // 1. İskelet Yükleme Ekranı
         container.innerHTML = `
-            <div style="text-align:center; padding:40px;">
-                <i class="fas fa-circle-notch fa-spin" style="font-size:30px; color:#3b82f6;"></i>
-                <div style="margin-top:10px; color:#64748b;">Cüzdan verileri güvenli şekilde alınıyor...</div>
-            </div>`;
+        <div style="text-align:center; padding:40px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:30px; color:#3b82f6;"></i>
+            <div style="margin-top:10px; color:#64748b;">Cüzdan verileri güvenli şekilde alınıyor...</div>
+        </div>`;
 
         var email = detectUser();
         if (!email) {
@@ -396,46 +404,46 @@
                   '<span style="font-size:9px; background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px;">✅ Onaylı</span>';
 
               historyHTML += `
-                    <div style="background:white; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="width:40px; height:40px; background:${bgIcon}; color:${textIcon}; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">
-                                ${icon}
-                            </div>
-                            <div>
-                                <div style="font-weight:700; color:#1e293b; font-size:13px;">${item.desc}</div>
-                                <div style="font-size:11px; color:#64748b;">${item.date} • ${statusBadge}</div>
-                            </div>
+                <div style="background:white; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:40px; height:40px; background:${bgIcon}; color:${textIcon}; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">
+                            ${icon}
                         </div>
-                        <div style="font-weight:800; color:${amountColor}; font-size:15px;">
-                            ${sign}${parseFloat(item.commission).toLocaleString("tr-TR")} ₺
+                        <div>
+                            <div style="font-weight:700; color:#1e293b; font-size:13px;">${item.desc}</div>
+                            <div style="font-size:11px; color:#64748b;">${item.date} • ${statusBadge}</div>
                         </div>
-                    </div>`;
+                    </div>
+                    <div style="font-weight:800; color:${amountColor}; font-size:15px;">
+                        ${sign}${parseFloat(item.commission).toLocaleString("tr-TR")} ₺
+                    </div>
+                </div>`;
             });
           }
 
           // Ana Şablon
           container.innerHTML = `
-                <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(to bottom, #ffffff, #f8fafc);">
-                    <div style="font-size:11px; color:#64748b; font-weight:700; letter-spacing:1px; text-transform:uppercase;">ÇEKİLEBİLİR BAKİYE</div>
-                    <div class="p-stat-val" style="color:#0f172a; font-size:42px; margin:5px 0;">${balance} <span style="font-size:20px; color:#94a3b8;">₺</span></div>
-                    
-                    <button class="p-btn p-btn-primary" style="background:#10b981; margin-top:15px;" onclick="PartnerApp.requestPayout()">
-                        <i class="fas fa-paper-plane"></i> ÖDEME TALEP ET
-                    </button>
-                    <div style="font-size:10px; color:#94a3b8; margin-top:10px;">
-                        <i class="fas fa-info-circle"></i> Alt limit: 500 ₺ • Ödemeler her Cuma yapılır.
-                    </div>
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; margin:25px 0 15px 0;">
-                    <h4 style="margin:0; color:#334155; font-size:14px;">Son Hareketler</h4>
-                    <span style="font-size:11px; color:#3b82f6; cursor:pointer;">Tümü</span>
-                </div>
+            <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(to bottom, #ffffff, #f8fafc);">
+                <div style="font-size:11px; color:#64748b; font-weight:700; letter-spacing:1px; text-transform:uppercase;">ÇEKİLEBİLİR BAKİYE</div>
+                <div class="p-stat-val" style="color:#0f172a; font-size:42px; margin:5px 0;">${balance} <span style="font-size:20px; color:#94a3b8;">₺</span></div>
                 
-                <div style="padding-bottom:20px;">
-                    ${historyHTML}
+                <button class="p-btn p-btn-primary" style="background:#10b981; margin-top:15px;" onclick="PartnerApp.requestPayout()">
+                    <i class="fas fa-paper-plane"></i> ÖDEME TALEP ET
+                </button>
+                <div style="font-size:10px; color:#94a3b8; margin-top:10px;">
+                    <i class="fas fa-info-circle"></i> Alt limit: 500 ₺ • Ödemeler her Cuma yapılır.
                 </div>
-            `;
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:25px 0 15px 0;">
+                <h4 style="margin:0; color:#334155; font-size:14px;">Son Hareketler</h4>
+                <span style="font-size:11px; color:#3b82f6; cursor:pointer;">Tümü</span>
+            </div>
+            
+            <div style="padding-bottom:20px;">
+                ${historyHTML}
+            </div>
+        `;
         } catch (e) {
           container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Veri hatası: ${e.message}</div>`;
         }
@@ -443,46 +451,103 @@
 
       renderAcademy: function (container) {
         container.innerHTML = `
-              <h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>
-              <div class="p-card">
-                  <div style="font-weight:bold; margin-bottom:5px;">Nasıl daha çok satarım?</div>
-                  <p style="font-size:12px; color:#64748b;">Instagram storylerinizde "Yukarı Kaydır" yerine link çıkartması kullanın...</p>
-              </div>
-              <div class="p-card">
-                  <div style="font-weight:bold; margin-bottom:5px;">En çok satan ürünler</div>
-                  <p style="font-size:12px; color:#64748b;">Bu hafta "Yaz Koleksiyonu" çok popüler. Hemen paylaş!</p>
-              </div>
-            `;
+          <h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>
+          <div class="p-card">
+              <div style="font-weight:bold; margin-bottom:5px;">Nasıl daha çok satarım?</div>
+              <p style="font-size:12px; color:#64748b;">Instagram storylerinizde "Yukarı Kaydır" yerine link çıkartması kullanın...</p>
+          </div>
+          <div class="p-card">
+              <div style="font-weight:bold; margin-bottom:5px;">En çok satan ürünler</div>
+              <p style="font-size:12px; color:#64748b;">Bu hafta "Yaz Koleksiyonu" çok popüler. Hemen paylaş!</p>
+          </div>
+        `;
+      }, // ... renderAcademy fonksiyonu bitişi }, den sonra yapıştır:
+
+      renderMarketing: async function (container) {
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Görseller yükleniyor...</div>';
+
+        try {
+          // Backend'den görselleri çekiyoruz
+          const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_marketing_assets" }),
+          });
+          const res = await response.json();
+
+          if (res.success) {
+            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎨 Pazarlama Kiti</h3>`;
+
+            if (!res.list || res.list.length === 0) {
+              container.innerHTML += `<div style="text-align:center; color:#94a3b8; padding:20px;">Henüz görsel eklenmemiş.</div>`;
+              return;
+            }
+
+            res.list.forEach((item) => {
+              let badgeColor =
+                item.type === "story"
+                  ? "#e1306c"
+                  : item.type === "post"
+                    ? "#3b82f6"
+                    : "#ef4444";
+              let badgeText =
+                item.type === "story"
+                  ? "STORY (9:16)"
+                  : item.type === "post"
+                    ? "POST (1:1)"
+                    : "BANNER";
+
+              // Görsel Kartı HTML'i
+              container.innerHTML += `
+                    <div class="p-card" style="padding:0; overflow:hidden; margin-bottom:15px;">
+                        <div style="position:relative; background:#f1f5f9; min-height:150px; display:flex; align-items:center; justify-content:center;">
+                            <img src="${item.imageUrl}" style="width:100%; display:block; max-height:300px; object-fit:contain;">
+                            <span style="position:absolute; top:10px; right:10px; background:${badgeColor}; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold;">${badgeText}</span>
+                        </div>
+                        <div style="padding:15px;">
+                            <div style="font-weight:bold; margin-bottom:10px; color:#334155;">${item.title}</div>
+                            <button onclick="window.open('${item.imageUrl}', '_blank')" class="p-btn" style="background:#f8fafc; color:#334155; font-weight:600; border:1px solid #cbd5e1; width:100%;">
+                                <i class="fas fa-download"></i> İndir / Görüntüle
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+          }
+        } catch (e) {
+          container.innerHTML = `<div style="color:red; text-align:center;">Yükleme hatası: ${e.message}</div>`;
+        }
       },
 
       // 🔥 YENİ: BİLDİRİM EKRANI
       renderNotifications: function (container) {
         container.innerHTML = `
-                <h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>
-                <div class="p-card" style="padding:0;">
-                    <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <b style="color:#10b981;">💰 Yeni Satış!</b>
-                            <span style="font-size:10px; color:#94a3b8;">10 dk önce</span>
-                        </div>
-                        <div style="font-size:12px; color:#334155;">Tebrikler! Paylaştığın linkten 1.500 TL satış geldi. +150 TL kazandın.</div>
+            <h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>
+            <div class="p-card" style="padding:0;">
+                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <b style="color:#10b981;">💰 Yeni Satış!</b>
+                        <span style="font-size:10px; color:#94a3b8;">10 dk önce</span>
                     </div>
-                    <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <b style="color:#3b82f6;">🚀 Seviye Yaklaşıyor</b>
-                            <span style="font-size:10px; color:#94a3b8;">1 saat önce</span>
-                        </div>
-                        <div style="font-size:12px; color:#334155;">Altın Partner olmaya sadece 2 satış kaldı! Komisyonun %15'e çıkacak.</div>
-                    </div>
-                    <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <b style="color:#f59e0b;">🎓 Yeni Ders</b>
-                            <span style="font-size:10px; color:#94a3b8;">Dün</span>
-                        </div>
-                        <div style="font-size:12px; color:#334155;">"Instagram Reels ile Satış Artırma" rehberi akademiye eklendi.</div>
-                    </div>
+                    <div style="font-size:12px; color:#334155;">Tebrikler! Paylaştığın linkten 1.500 TL satış geldi. +150 TL kazandın.</div>
                 </div>
-            `;
+                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <b style="color:#3b82f6;">🚀 Seviye Yaklaşıyor</b>
+                        <span style="font-size:10px; color:#94a3b8;">1 saat önce</span>
+                    </div>
+                    <div style="font-size:12px; color:#334155;">Altın Partner olmaya sadece 2 satış kaldı! Komisyonun %15'e çıkacak.</div>
+                </div>
+                <div style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <b style="color:#f59e0b;">🎓 Yeni Ders</b>
+                        <span style="font-size:10px; color:#94a3b8;">Dün</span>
+                    </div>
+                    <div style="font-size:12px; color:#334155;">"Instagram Reels ile Satış Artırma" rehberi akademiye eklendi.</div>
+                </div>
+            </div>
+        `;
       }, // window.ModumPartner objesinin içine ekle:
 
       requestPayout: function () {
@@ -523,5 +588,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
