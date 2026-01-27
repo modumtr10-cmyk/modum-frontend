@@ -428,6 +428,29 @@
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
         }
+      }, // 🔥 EKSİK OLAN FONKSİYON BURAYA EKLENECEK:
+      updateBalanceDisplay: async function (container) {
+        var email = detectUser(); // Kullanıcı emailini al
+        if (!email) return;
+
+        try {
+          const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+            // API URL'ni kontrol et
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            const balEl = container.querySelector(".p-stat-val");
+            // Eğer element varsa bakiyeyi güncelle
+            if (balEl)
+              balEl.innerText =
+                parseFloat(data.stats.balance).toLocaleString("tr-TR") + " ₺";
+          }
+        } catch (e) {
+          console.log("Bakiye güncelleme hatası:", e);
+        }
       },
 
       renderAcademy: function (container) {
@@ -569,5 +592,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
