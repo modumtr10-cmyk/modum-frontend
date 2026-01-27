@@ -529,7 +529,12 @@ ${css}
 
               // 🔥 Ürün Listesini Hazırla (HTML)
               let productsHTML = "";
-              if (tx.soldItemsList && tx.soldItemsList.length > 0) {
+              // Veri bazen liste (array), bazen metin (string) gelebilir. İkisini de yönetiyoruz:
+              if (
+                tx.soldItemsList &&
+                Array.isArray(tx.soldItemsList) &&
+                tx.soldItemsList.length > 0
+              ) {
                 productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">`;
                 productsHTML += `<div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>`;
                 productsHTML += `<ul style="margin:0; padding-left:15px; font-size:11px; color:#334155;">`;
@@ -540,9 +545,12 @@ ${css}
               } else if (tx.soldItems) {
                 // Eski usul tekil metin varsa
                 productsHTML = `<div style="font-size:11px; color:#475569; margin-top:5px; font-style:italic;">📦 ${tx.soldItems}</div>`;
+              } else if (tx.type === "sale_commission") {
+                // Veri yoksa ama satışsa
+                productsHTML = `<div style="font-size:10px; color:#999; margin-top:5px;">Ürün bilgisi yok.</div>`;
               }
 
-              // 🔥 Kart Yapısı (Tıklayınca açılır)
+              // 🔥 Kart Yapısı (Tıklayınca açılır - Akordeon)
               historyHTML += `
             <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
                 <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
@@ -565,7 +573,7 @@ ${css}
                 <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
                     <div style="font-size:11px; color:#64748b; display:flex; justify-content:space-between;">
                         <span><b>Durum:</b> ${tx.status.toUpperCase()}</span>
-                        <span><b>Sipariş Tutarı:</b> ${parseFloat(tx.amount || 0).toLocaleString()} ₺</span>
+                        <span><b>Sipariş Ciro:</b> ${parseFloat(tx.amount || tx.orderAmount || 0).toLocaleString()} ₺</span>
                     </div>
                     
                     ${productsHTML} 
@@ -847,5 +855,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
