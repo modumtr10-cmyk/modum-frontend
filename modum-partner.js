@@ -332,120 +332,101 @@
       },
 
       renderWallet: async function (container) {
-        // 1. İskelet Yükleme Ekranı
-        container.innerHTML = `
-        <div style="text-align:center; padding:40px;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size:30px; color:#3b82f6;"></i>
-            <div style="margin-top:10px; color:#64748b;">Cüzdan verileri güvenli şekilde alınıyor...</div>
-        </div>`;
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Cüzdan yükleniyor...</div>';
 
         var email = detectUser();
-        if (!email) {
-          container.innerHTML =
-            "<div style='padding:20px; text-align:center;'>Lütfen giriş yapın.</div>";
-          return;
-        }
+        if (!email)
+          return (container.innerHTML =
+            "<div style='padding:20px; text-align:center;'>Giriş yapmalısınız.</div>");
 
         try {
-          // 2. İki Veriyi Paralel Çek: İstatistikler (Bakiye) + Geçmiş (Tablo)
-          const [resStats, resHistory] = await Promise.all([
-            fetch("https://api-hjen5442oq-uc.a.run.app", {
-              // API URL'ni kontrol et
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                islem: "get_partner_stats",
-                email: email,
-              }),
-            }).then((r) => r.json()),
+          // 1. Geçmiş Verileri Çek
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              islem: "get_partner_history",
+              email: email,
+            }),
+          });
+          const data = await res.json();
 
-            fetch("https://api-hjen5442oq-uc.a.run.app", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                islem: "get_partner_history",
-                email: email,
-              }),
-            }).then((r) => r.json()),
-          ]);
-
-          // Verileri Hazırla
-          const balance = resStats.success
-            ? parseFloat(resStats.stats.balance).toLocaleString("tr-TR")
-            : "0,00";
-          const historyList = resHistory.success ? resHistory.list : [];
-
-          // 3. HTML Oluşturma
           let historyHTML = "";
+          if (data.success && data.list.length > 0) {
+            data.list.forEach((tx) => {
+              let icon = tx.type === "sale_commission" ? "🛒" : "💸";
+              let color = tx.type === "sale_commission" ? "#10b981" : "#ef4444";
+              let sign = tx.type === "sale_commission" ? "+" : "-";
 
-          if (historyList.length === 0) {
-            historyHTML = `<div style="text-align:center; padding:20px; color:#94a3b8; background:white; border-radius:12px; border:1px solid #e2e8f0;">Henüz işlem kaydı yok.</div>`;
-          } else {
-            historyList.forEach((item) => {
-              // Renk ve İkon Mantığı
-              let isIncome =
-                item.type === "sale_commission" ||
-                item.type === "coupon_commission";
-              let amountColor = isIncome ? "#10b981" : "#ef4444"; // Yeşil veya Kırmızı
-              let sign = isIncome ? "+" : "-";
-              let icon = isIncome
-                ? '<i class="fas fa-shopping-bag"></i>'
-                : '<i class="fas fa-university"></i>';
-              let bgIcon = isIncome ? "#dcfce7" : "#fee2e2";
-              let textIcon = isIncome ? "#166534" : "#991b1b";
+              // 🔥 Ürün Listesini Hazırla (HTML)
+              let productsHTML = "";
+              if (tx.soldItemsList && tx.soldItemsList.length > 0) {
+                productsHTML = `<ul style="margin:5px 0 0 20px; padding:0; font-size:11px; color:#475569;">`;
+                tx.soldItemsList.forEach((p) => {
+                  productsHTML += `<li style="margin-bottom:2px;">${p}</li>`;
+                });
+                productsHTML += `</ul>`;
+              } else if (tx.soldItems) {
+                // Eski usul metin varsa
+                productsHTML = `<div style="font-size:11px; color:#475569; margin-top:5px;">${tx.soldItems}</div>`;
+              }
 
-              // Durum Rozeti
-              let statusBadge = "";
-              if (item.status === "pending")
-                statusBadge =
-                  '<span style="font-size:9px; background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;">⏳ Bekliyor</span>';
-              if (item.status === "approved" || item.status === "paid")
-                statusBadge =
-                  '<span style="font-size:9px; background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px;">✅ Onaylı</span>';
-
+              // 🔥 Akordeon Yapısı
               historyHTML += `
-                <div style="background:white; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:40px; height:40px; background:${bgIcon}; color:${textIcon}; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">
-                            ${icon}
+                <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden;">
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" 
+                         onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
+                            <div>
+                                <div style="font-weight:bold; font-size:13px; color:#334155;">${tx.desc}</div>
+                                <div style="font-size:10px; color:#94a3b8;">${tx.date}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div style="font-weight:700; color:#1e293b; font-size:13px;">${item.desc}</div>
-                            <div style="font-size:11px; color:#64748b;">${item.date} • ${statusBadge}</div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:bold; color:${color}; font-size:14px;">${sign}${parseFloat(tx.commission).toLocaleString()} ₺</div>
+                            ${tx.type === "sale_commission" ? '<div style="font-size:9px; color:#94a3b8;">▼ Detay</div>' : ""}
                         </div>
                     </div>
-                    <div style="font-weight:800; color:${amountColor}; font-size:15px;">
-                        ${sign}${parseFloat(item.commission).toLocaleString("tr-TR")} ₺
+                    
+                    <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0; border-left:4px solid ${color};">
+                        <div style="font-size:11px; color:#64748b;"><b>Durum:</b> ${tx.status}</div>
+                        <div style="font-size:11px; color:#64748b;"><b>İşlem Tutarı:</b> ${tx.amount} ₺</div>
+                        
+                        ${
+                          productsHTML
+                            ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;">
+                            <b style="font-size:11px; color:#334155;">📦 Satılan Ürünler:</b>
+                            ${productsHTML}
+                        </div>`
+                            : ""
+                        }
                     </div>
-                </div>`;
+                </div>
+                `;
             });
+          } else {
+            historyHTML =
+              '<div style="text-align:center; padding:20px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>';
           }
 
-          // Ana Şablon
+          // Ana Yapı
           container.innerHTML = `
-            <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(to bottom, #ffffff, #f8fafc);">
-                <div style="font-size:11px; color:#64748b; font-weight:700; letter-spacing:1px; text-transform:uppercase;">ÇEKİLEBİLİR BAKİYE</div>
-                <div class="p-stat-val" style="color:#0f172a; font-size:42px; margin:5px 0;">${balance} <span style="font-size:20px; color:#94a3b8;">₺</span></div>
-                
-                <button class="p-btn p-btn-primary" style="background:#10b981; margin-top:15px;" onclick="PartnerApp.requestPayout()">
-                    <i class="fas fa-paper-plane"></i> ÖDEME TALEP ET
-                </button>
-                <div style="font-size:10px; color:#94a3b8; margin-top:10px;">
-                    <i class="fas fa-info-circle"></i> Alt limit: 500 ₺ • Ödemeler her Cuma yapılır.
-                </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin:25px 0 15px 0;">
-                <h4 style="margin:0; color:#334155; font-size:14px;">Son Hareketler</h4>
-                <span style="font-size:11px; color:#3b82f6; cursor:pointer;">Tümü</span>
+            <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none;">
+                <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
+                <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
+                <button class="p-btn" style="background:white; color:#059669; margin-top:10px;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
             </div>
             
-            <div style="padding-bottom:20px;">
-                ${historyHTML}
-            </div>
+            <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
+            ${historyHTML}
         `;
+
+          // Bakiyeyi güncelle
+          PartnerApp.updateBalanceDisplay(container);
         } catch (e) {
-          container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Veri hatası: ${e.message}</div>`;
+          container.innerHTML = "Hata: " + e.message;
         }
       },
 
@@ -588,5 +569,5 @@
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
