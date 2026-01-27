@@ -385,7 +385,6 @@ ${css}
         var myRefCode = pData.refCode || "REF-KODU-BEKLENIYOR";
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
-        
 
         // İndirim Kodu HTML'i (Eğer varsa göster)
         let couponHTML = "";
@@ -485,6 +484,7 @@ ${css}
           msgTG;
       },
 
+      // --- CÜZDAN & GEÇMİŞ (GÜNCELLENMİŞ: ÜRÜN DETAYLI) ---
       renderWallet: async function (container) {
         container.innerHTML =
           '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Cüzdan yükleniyor...</div>';
@@ -509,53 +509,66 @@ ${css}
           let historyHTML = "";
           if (data.success && data.list.length > 0) {
             data.list.forEach((tx) => {
+              // Temel Değişkenler
               let icon = tx.type === "sale_commission" ? "🛒" : "💸";
               let color = tx.type === "sale_commission" ? "#10b981" : "#ef4444";
               let sign = tx.type === "sale_commission" ? "+" : "-";
+              let amountText = `${sign}${parseFloat(tx.commission).toLocaleString()} ₺`;
+
+              // İade Durumu Kontrolü
+              let isRefunded = tx.status === "refunded";
+              let statusBadge = "";
+
+              if (isRefunded) {
+                color = "#94a3b8"; // Soluk gri
+                amountText = `<span style="text-decoration:line-through;">${amountText}</span> <span style="color:red; font-size:10px;">(İADE)</span>`;
+                statusBadge =
+                  '<span style="background:#fee2e2; color:red; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">İADE EDİLDİ</span>';
+                icon = "↩️";
+              }
 
               // 🔥 Ürün Listesini Hazırla (HTML)
               let productsHTML = "";
               if (tx.soldItemsList && tx.soldItemsList.length > 0) {
-                productsHTML = `<ul style="margin:5px 0 0 20px; padding:0; font-size:11px; color:#475569;">`;
+                productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">`;
+                productsHTML += `<div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>`;
+                productsHTML += `<ul style="margin:0; padding-left:15px; font-size:11px; color:#334155;">`;
                 tx.soldItemsList.forEach((p) => {
                   productsHTML += `<li style="margin-bottom:2px;">${p}</li>`;
                 });
-                productsHTML += `</ul>`;
+                productsHTML += `</ul></div>`;
               } else if (tx.soldItems) {
-                // Eski usul metin varsa
-                productsHTML = `<div style="font-size:11px; color:#475569; margin-top:5px;">${tx.soldItems}</div>`;
+                // Eski usul tekil metin varsa
+                productsHTML = `<div style="font-size:11px; color:#475569; margin-top:5px; font-style:italic;">📦 ${tx.soldItems}</div>`;
               }
 
-              // 🔥 Akordeon Yapısı
+              // 🔥 Kart Yapısı (Tıklayınca açılır)
               historyHTML += `
-            <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden;">
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" 
-                      onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
+            <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
+                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
+                     onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
+                    
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
                         <div>
-                            <div style="font-weight:bold; font-size:13px; color:#334155;">${tx.desc}</div>
+                            <div style="font-weight:bold; font-size:13px; color:#334155;">${tx.desc} ${statusBadge}</div>
                             <div style="font-size:10px; color:#94a3b8;">${tx.date}</div>
                         </div>
                     </div>
+                    
                     <div style="text-align:right;">
-                        <div style="font-weight:bold; color:${color}; font-size:14px;">${sign}${parseFloat(tx.commission).toLocaleString()} ₺</div>
+                        <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
                         ${tx.type === "sale_commission" ? '<div style="font-size:9px; color:#94a3b8;">▼ Detay</div>' : ""}
                     </div>
                 </div>
                 
-                <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0; border-left:4px solid ${color};">
-                    <div style="font-size:11px; color:#64748b;"><b>Durum:</b> ${tx.status}</div>
-                    <div style="font-size:11px; color:#64748b;"><b>İşlem Tutarı:</b> ${tx.amount} ₺</div>
+                <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
+                    <div style="font-size:11px; color:#64748b; display:flex; justify-content:space-between;">
+                        <span><b>Durum:</b> ${tx.status.toUpperCase()}</span>
+                        <span><b>Sipariş Tutarı:</b> ${parseFloat(tx.amount || 0).toLocaleString()} ₺</span>
+                    </div>
                     
-                    ${
-                      productsHTML
-                        ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;">
-                        <b style="font-size:11px; color:#334155;">📦 Satılan Ürünler:</b>
-                        ${productsHTML}
-                    </div>`
-                        : ""
-                    }
+                    ${productsHTML} 
                 </div>
             </div>
             `;
@@ -567,10 +580,10 @@ ${css}
 
           // Ana Yapı
           container.innerHTML = `
-        <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none;">
+        <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
             <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
             <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
-            <button class="p-btn" style="background:white; color:#059669; margin-top:10px;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
+            <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
         </div>
         
         <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
@@ -834,5 +847,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
