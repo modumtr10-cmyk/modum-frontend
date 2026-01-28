@@ -153,7 +153,9 @@ ${css}
                 <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
                     <i class="fas fa-info-circle"></i> Oranlar
                 </div>
-                <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+                <div onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:5px;">
+    <i class="fas fa-bell"></i>
+</div>
             </div>
         </div>
     </div>
@@ -529,7 +531,6 @@ ${css}
 
               // 🔥 Ürün Listesini Hazırla (HTML)
               let productsHTML = "";
-              // Veri bazen liste (array), bazen metin (string) gelebilir. İkisini de yönetiyoruz:
               if (
                 tx.soldItemsList &&
                 Array.isArray(tx.soldItemsList) &&
@@ -543,14 +544,11 @@ ${css}
                 });
                 productsHTML += `</ul></div>`;
               } else if (tx.soldItems) {
-                // Eski usul tekil metin varsa
+                // Eski usul metin varsa
                 productsHTML = `<div style="font-size:11px; color:#475569; margin-top:5px; font-style:italic;">📦 ${tx.soldItems}</div>`;
-              } else if (tx.type === "sale_commission") {
-                // Veri yoksa ama satışsa
-                productsHTML = `<div style="font-size:10px; color:#999; margin-top:5px;">Ürün bilgisi yok.</div>`;
               }
 
-              // 🔥 Kart Yapısı (Tıklayınca açılır - Akordeon)
+              // 🔥 Kart Yapısı (Tıklayınca açılır)
               historyHTML += `
             <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
                 <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
@@ -573,7 +571,7 @@ ${css}
                 <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
                     <div style="font-size:11px; color:#64748b; display:flex; justify-content:space-between;">
                         <span><b>Durum:</b> ${tx.status.toUpperCase()}</span>
-                        <span><b>Sipariş Ciro:</b> ${parseFloat(tx.amount || tx.orderAmount || 0).toLocaleString()} ₺</span>
+                        <span><b>Sipariş Tutarı:</b> ${parseFloat(tx.amount || 0).toLocaleString()} ₺</span>
                     </div>
                     
                     ${productsHTML} 
@@ -855,5 +853,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
