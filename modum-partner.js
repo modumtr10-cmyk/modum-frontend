@@ -100,7 +100,6 @@
   }
 
   // --- DASHBOARD ARAYÜZÜ ---
-  // --- DASHBOARD ARAYÜZÜ ---
   function openPartnerDashboard() {
     var old = document.getElementById("mdm-partner-modal");
     if (old) old.remove();
@@ -169,6 +168,7 @@ ${css}
     <div class="p-nav">
         <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
         <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
+        <div class="p-nav-item" onclick="PartnerApp.loadTab('showcase', this)"><i class="fas fa-fire"></i> Vitrin</div>
         <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
         <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
         <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
@@ -196,6 +196,7 @@ ${css}
           if (tab === "wallet") this.renderWallet(area);
           if (tab === "marketing") this.renderMarketing(area);
           if (tab === "academy") this.renderAcademy(area);
+          if (tab === "showcase") this.renderShowcase(area);
         }, 300);
       },
 
@@ -906,6 +907,57 @@ ${css}
             }
           },
         );
+      }, // --- 🔥 VİTRİN / ÇOK SATANLAR ---
+      renderShowcase: async function (container) {
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Vitrin yükleniyor...</div>';
+
+        var pData = window.PartnerData || {};
+        var myRefCode = pData.refCode || "REF-YOK";
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_showcase_products" }),
+          });
+          const data = await res.json();
+
+          if (data.success && data.list.length > 0) {
+            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🔥 Çok Satanlar & Fırsatlar</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+
+            let gridHtml = "";
+            data.list.forEach((p) => {
+              // Ref linki hazırla
+              let shareLink =
+                p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
+
+              gridHtml += `
+                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
+                        <div style="height:120px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div style="padding:10px; flex:1; display:flex; flex-direction:column;">
+                            <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:5px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
+                            
+                            <div style="margin-top:auto;">
+                                <div style="color:#10b981; font-weight:800; font-size:13px; margin-bottom:8px;">${p.price} ₺</div>
+                                <button class="p-btn" style="padding:8px; font-size:11px; background:#3b82f6; color:white;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('Link Kopyalandı! 🚀')">
+                                    <i class="fas fa-link"></i> Paylaş
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML += gridHtml + `</div>`;
+          } else {
+            container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Şu an vitrinde ürün yok.</div>`;
+          }
+        } catch (e) {
+          container.innerHTML = "Hata: " + e.message;
+        }
       },
     };
 
@@ -916,5 +968,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
