@@ -942,18 +942,23 @@ ${css}
                 p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
               gridHtml += `
-                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid #e2e8f0; margin:0;">
-                        <div style="height:140px; background:#fff; position:relative;">
+                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid #e2e8f0; margin:0; height:100%;">
+                        
+                        <div style="height:160px; background:#fff; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             <img src="${p.image}" style="width:100%; height:100%; object-fit:contain; padding:5px; box-sizing:border-box;">
-                            <div style="position:absolute; top:5px; right:5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">Fırsat</div>
+                            <div style="position:absolute; top:5px; right:5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">Fırsat</div>
                         </div>
-                        <div style="padding:10px; flex:1; display:flex; flex-direction:column; background:#f8fafc;">
-                            <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:5px; line-height:1.3; height:32px; overflow:hidden;">${p.title}</div>
+
+                        <div style="padding:10px; flex:1; display:flex; flex-direction:column; background:#f8fafc; border-top:1px solid #f1f5f9;">
+                            
+                            <div style="font-weight:bold; font-size:11px; color:#334155; margin-bottom:8px; line-height:1.4; height:30px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                                ${p.title}
+                            </div>
                             
                             <div style="margin-top:auto;">
                                 <div style="color:#10b981; font-weight:900; font-size:14px; margin-bottom:8px;">${p.price}</div>
-                                <button class="p-btn" style="padding:8px; font-size:12px; background:#3b82f6; color:white; width:100%; border-radius:6px;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı! Paylaşmaya hazır.')">
-                                    🔗 Linki Kopyala
+                                <button class="p-btn" style="padding:8px; font-size:11px; background:#3b82f6; color:white; width:100%; border-radius:6px; font-weight:bold;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı! Paylaşmaya hazır.')">
+                                    🔗 Paylaş
                                 </button>
                             </div>
                         </div>
@@ -982,5 +987,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
