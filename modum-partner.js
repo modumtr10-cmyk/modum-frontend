@@ -713,7 +713,7 @@ ${css}
           ctx.fillStyle = "rgba(255,255,255,0.5)";
           ctx.font = "bold 30px 'Inter', sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("MODUM PARTNER FIRSATI", canvas.width / 2, 100);
+          ctx.fillText("modum.tr", canvas.width / 2, 100);
 
           // 4. Ürün Görselini Çiz
           // Görseli kare yapıp ortalayalım.
