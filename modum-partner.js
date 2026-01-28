@@ -63,8 +63,8 @@
     btn.id = "mdm-partner-btn";
     btn.innerHTML = `
 <div style="display:flex; align-items:center; gap:8px;">
-  <span style="font-size:18px;">👑</span>
-  <span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
+<span style="font-size:18px;">👑</span>
+<span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
 </div>
 `;
     Object.assign(btn.style, {
@@ -119,11 +119,21 @@
 .p-app { width:100%; height:100%; background:#f8fafc; position:relative; display:flex; flex-direction:column; overflow:hidden; }
 @media (min-width: 769px) { .p-app { width:450px; height:85vh; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.5); border:1px solid #cbd5e1; } }
 .p-header { background:#0f172a; padding:20px; padding-top:40px; color:white; border-bottom:1px solid #334155; }
-.p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:100px; }
-.p-nav { position:absolute; bottom:0; width:100%; height:70px; background:white; border-top:1px solid #e2e8f0; display:flex; justify-content:space-around; align-items:center; z-index:10; }
-.p-nav-item { display:flex; flex-direction:column; align-items:center; color:#94a3b8; font-size:10px; font-weight:600; cursor:pointer; transition:0.2s; }
-.p-nav-item i { font-size:20px; margin-bottom:4px; }
-.p-nav-item.active { color:#3b82f6; transform:translateY(-5px); }
+.p-body { flex:1; overflow-y:auto; padding:20px; padding-left:90px; }
+.p-nav { 
+  position:absolute; top:70px; left:0; bottom:0;
+  width:70px; background:white; border-right:1px solid #e2e8f0; 
+  display:flex; flex-direction:column; align-items:center; padding-top:20px; gap:20px; z-index:10;
+  overflow-y: auto;
+}
+.p-nav-item { 
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:#94a3b8; font-size:9px; font-weight:600; cursor:pointer; transition:0.2s; width:100%;
+}
+.p-nav-item i { font-size:20px; margin-bottom:4px; background:#f8fafc; padding:8px; border-radius:10px; transition:0.2s; }
+.p-nav-item.active { color:#3b82f6; transform:none; }
+.p-nav-item.active i { background:#eff6ff; color:#3b82f6; box-shadow:0 4px 10px rgba(59,130,246,0.2); }
+.p-nav-item:hover i { background:#f1f5f9; color:#334155; }
 .p-card { background:white; border-radius:16px; padding:20px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.03); border:1px solid #e2e8f0; }
 .p-stat-val { font-size:28px; font-weight:900; color:#0f172a; letter-spacing:-1px; }
 .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
@@ -142,37 +152,37 @@
 <div id="mdm-partner-modal" class="p-overlay">
 ${css}
 <div class="p-app">
-    <div class="p-header">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
-                <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
-            </div>
-            
-            <div style="display:flex; gap:10px; align-items:center;">
-                <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
-                    <i class="fas fa-info-circle"></i> Oranlar
-                </div>
-                
-                <div onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                    <i class="fas fa-bell"></i>
-                </div>
+  <div class="p-header">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+              <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
+              <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
+          </div>
+          
+          <div style="display:flex; gap:10px; align-items:center;">
+              <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
+                  <i class="fas fa-info-circle"></i> Oranlar
+              </div>
+              
+              <div onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                  <i class="fas fa-bell"></i>
+              </div>
 
-                <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
-            </div>
-        </div>
-    </div>
+              <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+          </div>
+      </div>
+  </div>
 
-    <div id="p-content-area" class="p-body"></div>
+  <div id="p-content-area" class="p-body"></div>
 
-    <div class="p-nav">
-        <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
-        <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
-        <div class="p-nav-item" onclick="PartnerApp.loadTab('showcase', this)"><i class="fas fa-fire"></i> Vitrin</div>
-        <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
-        <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
-        <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
-    </div>
+  <div class="p-nav">
+      <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('showcase', this)"><i class="fas fa-fire"></i> Vitrin</div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
+  </div>
 </div>
 </div>
 `;
@@ -203,47 +213,47 @@ ${css}
       // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ
       showTierInfo: function () {
         let infoHtml = `
-    <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
-      <div style="background:white; width:100%; max-width:350px; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-          <div style="padding:20px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center;">
-              <h3 style="margin:0; font-size:16px;">💎 Kazanç Seviyeleri</h3>
-              <span onclick="document.getElementById('p-tier-modal').remove()" style="cursor:pointer;">&times;</span>
-          </div>
-          <div style="padding:20px;">
-              <p style="font-size:12px; color:#64748b; line-height:1.4;">Toplam satış cironuz arttıkça komisyon oranınız otomatik yükselir.</p>
-              <table class="tier-table">
-                  <thead>
-                      <tr>
-                          <th>Seviye</th>
-                          <th>Ciro Şartı</th>
-                          <th>Komisyon</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr>
-                          <td>🥉 <b style="color:#CD7F32">Bronz</b></td>
-                          <td>0 - 10.000 ₺</td>
-                          <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%10</span></td>
-                      </tr>
-                      <tr>
-                          <td>🥈 <b style="color:#94a3b8">Gümüş</b></td>
-                          <td>10.000+ ₺</td>
-                          <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%15</span></td>
-                      </tr>
-                      <tr>
-                          <td>👑 <b style="color:#d97706">Altın</b></td>
-                          <td>50.000+ ₺</td>
-                          <td><span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px;">%20</span></td>
-                      </tr>
-                  </tbody>
-              </table>
-              <div style="margin-top:15px; font-size:11px; background:#f0fdf4; color:#166534; padding:10px; border-radius:8px;">
-                  <i class="fas fa-check-circle"></i> Seviye atladığınızda yeni oran tüm yeni satışlarda geçerli olur.
-              </div>
-          </div>
-      </div>
+  <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
+    <div style="background:white; width:100%; max-width:350px; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+        <div style="padding:20px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:16px;">💎 Kazanç Seviyeleri</h3>
+            <span onclick="document.getElementById('p-tier-modal').remove()" style="cursor:pointer;">&times;</span>
+        </div>
+        <div style="padding:20px;">
+            <p style="font-size:12px; color:#64748b; line-height:1.4;">Toplam satış cironuz arttıkça komisyon oranınız otomatik yükselir.</p>
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th>Seviye</th>
+                        <th>Ciro Şartı</th>
+                        <th>Komisyon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🥉 <b style="color:#CD7F32">Bronz</b></td>
+                        <td>0 - 10.000 ₺</td>
+                        <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%10</span></td>
+                    </tr>
+                    <tr>
+                        <td>🥈 <b style="color:#94a3b8">Gümüş</b></td>
+                        <td>10.000+ ₺</td>
+                        <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%15</span></td>
+                    </tr>
+                    <tr>
+                        <td>👑 <b style="color:#d97706">Altın</b></td>
+                        <td>50.000+ ₺</td>
+                        <td><span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px;">%20</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top:15px; font-size:11px; background:#f0fdf4; color:#166534; padding:10px; border-radius:8px;">
+                <i class="fas fa-check-circle"></i> Seviye atladığınızda yeni oran tüm yeni satışlarda geçerli olur.
+            </div>
+        </div>
     </div>
-    `;
+  </div>
+  `;
         document.body.insertAdjacentHTML("beforeend", infoHtml);
       },
 
@@ -296,49 +306,49 @@ ${css}
 
           // HTML ÇIKTISI
           container.innerHTML = `
-      <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-              <div>
-                  <div style="font-size:11px; opacity:0.7;">MEVCUT SEVİYE</div>
-                  <div style="font-size:18px; font-weight:800; color:#fbbf24;">${myLevel} (%${myRate})</div>
-              </div>
-              <div style="text-align:right;">
-                  <div style="font-size:11px; opacity:0.7;">BAKİYE</div>
-                  <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString()} ₺</div>
-              </div>
-          </div>
-          
-          <div style="margin-top:10px;">
-              <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
-                  <span>Ciro: ${currentRev.toLocaleString()} ₺</span>
-                  <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
-              </div>
-              <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                  <div style="width:${progress}%; height:100%; background:#fbbf24;"></div>
-              </div>
-          </div>
-      </div>
+    <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <div>
+                <div style="font-size:11px; opacity:0.7;">MEVCUT SEVİYE</div>
+                <div style="font-size:18px; font-weight:800; color:#fbbf24;">${myLevel} (%${myRate})</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:11px; opacity:0.7;">BAKİYE</div>
+                <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString()} ₺</div>
+            </div>
+        </div>
+        
+        <div style="margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
+                <span>Ciro: ${currentRev.toLocaleString()} ₺</span>
+                <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
+            </div>
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                <div style="width:${progress}%; height:100%; background:#fbbf24;"></div>
+            </div>
+        </div>
+    </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-          <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-              <div class="p-stat-val" style="font-size:18px;">${s.totalClicks || 0}</div>
-              <div class="p-stat-lbl">TIK</div>
-          </div>
-          <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-              <div class="p-stat-val" style="font-size:18px;">${s.totalSales || 0}</div>
-              <div class="p-stat-lbl">SATIŞ</div>
-          </div>
-          <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
-              <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
-              <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
-          </div>
-      </div>
-      
-      <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
-      <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
-          <canvas id="p-chart" height="150"></canvas>
-      </div>
-    `;
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+        <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+            <div class="p-stat-val" style="font-size:18px;">${s.totalClicks || 0}</div>
+            <div class="p-stat-lbl">TIK</div>
+        </div>
+        <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+            <div class="p-stat-val" style="font-size:18px;">${s.totalSales || 0}</div>
+            <div class="p-stat-lbl">SATIŞ</div>
+        </div>
+        <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
+            <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
+            <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
+        </div>
+    </div>
+    
+    <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
+    <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
+        <canvas id="p-chart" height="150"></canvas>
+    </div>
+  `;
 
           // GRAFİK ÇİZİMİ (HATA KORUMALI)
           try {
@@ -397,71 +407,71 @@ ${css}
         let couponHTML =
           myCoupon !== "Tanımlanmamış"
             ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
-                  <div style="position:absolute; top:-10px; right:-10px; font-size:60px; opacity:0.1;">🎟️</div>
-                  <label style="font-size:10px; opacity:0.8; font-weight:bold; display:block;">İNDİRİM KODUN</label>
-                  <div style="font-family:monospace; font-size:28px; font-weight:900; margin-top:5px; letter-spacing:1px;">${myCoupon}</div>
-                  <button onclick="navigator.clipboard.writeText('${myCoupon}'); alert('Kupon Kopyalandı!')" class="p-btn" style="background:white; color:#6d28d9; margin-top:10px; height:36px; font-size:12px;">Kopyala</button>
-               </div>`
+                <div style="position:absolute; top:-10px; right:-10px; font-size:60px; opacity:0.1;">🎟️</div>
+                <label style="font-size:10px; opacity:0.8; font-weight:bold; display:block;">İNDİRİM KODUN</label>
+                <div style="font-family:monospace; font-size:28px; font-weight:900; margin-top:5px; letter-spacing:1px;">${myCoupon}</div>
+                <button onclick="navigator.clipboard.writeText('${myCoupon}'); alert('Kupon Kopyalandı!')" class="p-btn" style="background:white; color:#6d28d9; margin-top:10px; height:36px; font-size:12px;">Kopyala</button>
+              </div>`
             : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
         c.innerHTML = `
-          <h3 style="margin:0 0 15px 0;">🔗 Link ve QR Araçları</h3>
-          ${couponHTML}
-          
-          <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
-              <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 ANA SAYFA LİNKİN</label>
-              <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
-                  ${homeLink}
-              </div>
-              <div style="display:flex; gap:10px;">
-                  <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1;">
-                      <i class="fas fa-copy"></i> Kopyala
-                  </button>
-                  <button onclick="PartnerApp.toggleQR('${homeLink}')" class="p-btn" style="background:#334155; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center;">
-                      <i class="fas fa-qrcode" style="font-size:18px;"></i>
-                  </button>
-              </div>
-          </div>
+        <h3 style="margin:0 0 15px 0;">🔗 Link ve QR Araçları</h3>
+        ${couponHTML}
+        
+        <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
+            <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 ANA SAYFA LİNKİN</label>
+            <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
+                ${homeLink}
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1;">
+                    <i class="fas fa-copy"></i> Kopyala
+                </button>
+                <button onclick="PartnerApp.toggleQR('${homeLink}')" class="p-btn" style="background:#334155; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-qrcode" style="font-size:18px;"></i>
+                </button>
+            </div>
+        </div>
 
-          <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
 
-          <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Ürün Linki & QR Oluştur:</p>
+        <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Ürün Linki & QR Oluştur:</p>
 
-          <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
-              <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
-              <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
-              
-              <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
-                  Link ve QR Oluştur ✨
-              </button>
-          </div>
+        <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
+            <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
+            <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
+            
+            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
+                Link ve QR Oluştur ✨
+            </button>
+        </div>
 
-          <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
-              <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
-              <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
-              
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                  <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
-                      <i class="fab fa-whatsapp" style="margin-right:5px;"></i> WhatsApp
-                  </a>
-                  <button id="btn-qr-show" class="p-btn" style="background:#334155; color:white; border:none; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
-                      <i class="fas fa-qrcode" style="margin-right:5px;"></i> QR Kod
-                  </button>
-              </div>
-              
-              <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">
-                  <i class="fas fa-copy"></i> Linki Kopyala
-              </button>
+        <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
+            <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
+            <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                    <i class="fab fa-whatsapp" style="margin-right:5px;"></i> WhatsApp
+                </a>
+                <button id="btn-qr-show" class="p-btn" style="background:#334155; color:white; border:none; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                    <i class="fas fa-qrcode" style="margin-right:5px;"></i> QR Kod
+                </button>
+            </div>
+            
+            <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">
+                <i class="fas fa-copy"></i> Linki Kopyala
+            </button>
 
-              <div id="pl-qr-box" style="display:none; margin-top:15px; background:white; padding:15px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
-                  <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Bu QR kodu okutan, senin referansınla ürüne gider! 👇</div>
-                  <img id="pl-qr-img" src="" style="width:200px; height:200px; margin:0 auto; display:block; border:1px solid #eee; padding:5px;">
-                  <a id="pl-qr-dl" href="#" target="_blank" class="p-btn" style="margin-top:10px; background:#f59e0b; color:white; font-size:12px; width:auto; display:inline-flex; text-decoration:none;">
-                     📥 Resmi İndir
-                  </a>
-              </div>
-          </div>
-        `;
+            <div id="pl-qr-box" style="display:none; margin-top:15px; background:white; padding:15px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
+                <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Bu QR kodu okutan, senin referansınla ürüne gider! 👇</div>
+                <img id="pl-qr-img" src="" style="width:200px; height:200px; margin:0 auto; display:block; border:1px solid #eee; padding:5px;">
+                <a id="pl-qr-dl" href="#" target="_blank" class="p-btn" style="margin-top:10px; background:#f59e0b; color:white; font-size:12px; width:auto; display:inline-flex; text-decoration:none;">
+                    📥 Resmi İndir
+                </a>
+            </div>
+        </div>
+      `;
       },
 
       createLink: function (refCode) {
@@ -504,14 +514,14 @@ ${css}
           "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
           encodeURIComponent(url);
         var html = `
-         <div id="p-qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999999; display:flex; justify-content:center; align-items:center;" onclick="this.remove()">
-            <div style="background:white; padding:20px; border-radius:16px; text-align:center; max-width:300px;" onclick="event.stopPropagation()">
-                <h3 style="margin:0 0 10px 0; color:#333;">📱 QR KODUN</h3>
-                <img src="${qrApi}" style="width:100%; display:block; margin-bottom:10px;">
-                <a href="${qrApi}" target="_blank" class="p-btn" style="background:#3b82f6; color:white; text-decoration:none;">Resmi İndir</a>
-                <div style="margin-top:10px; font-size:11px; color:#999;">Kapatmak için boşluğa tıkla</div>
-            </div>
-         </div>`;
+        <div id="p-qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999999; display:flex; justify-content:center; align-items:center;" onclick="this.remove()">
+          <div style="background:white; padding:20px; border-radius:16px; text-align:center; max-width:300px;" onclick="event.stopPropagation()">
+              <h3 style="margin:0 0 10px 0; color:#333;">📱 QR KODUN</h3>
+              <img src="${qrApi}" style="width:100%; display:block; margin-bottom:10px;">
+              <a href="${qrApi}" target="_blank" class="p-btn" style="background:#3b82f6; color:white; text-decoration:none;">Resmi İndir</a>
+              <div style="margin-top:10px; font-size:11px; color:#999;">Kapatmak için boşluğa tıkla</div>
+          </div>
+        </div>`;
         document.body.insertAdjacentHTML("beforeend", html);
       },
 
@@ -598,54 +608,54 @@ ${css}
                   productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
               } else {
                 productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
-                      <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>
-                      <div style="font-size:11px; color:#334155;">${rawProd}</div>
-                  </div>`;
+                    <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>
+                    <div style="font-size:11px; color:#334155;">${rawProd}</div>
+                </div>`;
               }
 
               // --- 6. KART HTML OLUŞTUR ---
               historyHTML += `
-            <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${
-              isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"
-            }">
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${
-                  isRefunded ? "#fff1f2" : "white"
-                };" 
-                     onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
-                    
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
-                        <div>
-                            <div style="font-weight:bold; font-size:13px; color:#334155;">${desc} ${statusBadge}</div>
-                            <div style="font-size:10px; color:#94a3b8;">${
-                              tx.date
-                            }</div>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align:right;">
-                        <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
-                        ${receiptBtn}
-                        <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
-                    </div>
-                </div>
-                
-                <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                       <span style="color:#64748b">İşlem ID:</span>
-                       <span style="font-family:monospace; color:#334155;">#${tx.id.substring(0, 6)}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                       <span style="color:#64748b">Durum:</span>
-                       <span style="font-weight:bold;">${
-                         tx.status === "paid"
-                           ? "ÖDENDİ ✅"
-                           : tx.status.toUpperCase()
-                       }</span>
-                    </div>
-                    ${productsHTML}
-                </div>
-            </div>`;
+          <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${
+            isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"
+          }">
+              <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${
+                isRefunded ? "#fff1f2" : "white"
+              };" 
+                    onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
+                  
+                  <div style="display:flex; align-items:center; gap:10px;">
+                      <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
+                      <div>
+                          <div style="font-weight:bold; font-size:13px; color:#334155;">${desc} ${statusBadge}</div>
+                          <div style="font-size:10px; color:#94a3b8;">${
+                            tx.date
+                          }</div>
+                      </div>
+                  </div>
+                  
+                  <div style="text-align:right;">
+                      <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
+                      ${receiptBtn}
+                      <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
+                  </div>
+              </div>
+              
+              <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
+                  <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                      <span style="color:#64748b">İşlem ID:</span>
+                      <span style="font-family:monospace; color:#334155;">#${tx.id.substring(0, 6)}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                      <span style="color:#64748b">Durum:</span>
+                      <span style="font-weight:bold;">${
+                        tx.status === "paid"
+                          ? "ÖDENDİ ✅"
+                          : tx.status.toUpperCase()
+                      }</span>
+                  </div>
+                  ${productsHTML}
+              </div>
+          </div>`;
             });
           } else {
             historyHTML =
@@ -653,14 +663,14 @@ ${css}
           }
 
           container.innerHTML = `
-          <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
-              <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
-              <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
-              <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
-          </div>
-          <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
-          ${historyHTML}
-        `;
+        <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
+            <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
+            <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
+            <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
+        </div>
+        <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
+        ${historyHTML}
+      `;
           PartnerApp.updateBalanceDisplay(container);
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
@@ -736,19 +746,19 @@ ${css}
               }
 
               container.innerHTML += `
-              <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center; margin-bottom:10px;">
-                  <div style="width:50px; height:50px; background:${badgeColor}20; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">
-                      ${icon}
-                  </div>
-                  <div style="flex:1;">
-                      <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">${l.title}</div>
-                      <p style="font-size:11px; color:#64748b; margin:0; line-height:1.3;">${l.description}</p>
-                  </div>
-                  <div style="font-size:10px; font-weight:bold; color:${badgeColor}; background:white; padding:5px 10px; border-radius:20px; border:1px solid ${badgeColor};">
-                      ${actionText}
-                  </div>
-              </div>
-          `;
+            <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center; margin-bottom:10px;">
+                <div style="width:50px; height:50px; background:${badgeColor}20; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                    ${icon}
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">${l.title}</div>
+                    <p style="font-size:11px; color:#64748b; margin:0; line-height:1.3;">${l.description}</p>
+                </div>
+                <div style="font-size:10px; font-weight:bold; color:${badgeColor}; background:white; padding:5px 10px; border-radius:20px; border:1px solid ${badgeColor};">
+                    ${actionText}
+                </div>
+            </div>
+        `;
             });
           }
         } catch (e) {
@@ -764,18 +774,18 @@ ${css}
 
         let html = `
 <div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
-  <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-      <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
-          <h3 style="margin:0; font-size:18px; color:#1e293b;">${title}</h3>
-          <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px; color:#94a3b8;">&times;</span>
-      </div>
-      <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155; font-size:14px;">
-          ${content}
-      </div>
-      <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
-          <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white; border-radius:8px;">Kapat</button>
-      </div>
-  </div>
+<div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+        <h3 style="margin:0; font-size:18px; color:#1e293b;">${title}</h3>
+        <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px; color:#94a3b8;">&times;</span>
+    </div>
+    <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155; font-size:14px;">
+        ${content}
+    </div>
+    <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
+        <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white; border-radius:8px;">Kapat</button>
+    </div>
+</div>
 </div>
 `;
         document.body.insertAdjacentHTML("beforeend", html);
@@ -818,19 +828,19 @@ ${css}
 
               // Görsel Kartı HTML'i
               container.innerHTML += `
-              <div class="p-card" style="padding:0; overflow:hidden; margin-bottom:15px;">
-                  <div style="position:relative; background:#f1f5f9; min-height:150px; display:flex; align-items:center; justify-content:center;">
-                      <img src="${item.imageUrl}" style="width:100%; display:block; max-height:300px; object-fit:contain;">
-                      <span style="position:absolute; top:10px; right:10px; background:${badgeColor}; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold;">${badgeText}</span>
-                  </div>
-                  <div style="padding:15px;">
-                      <div style="font-weight:bold; margin-bottom:10px; color:#334155;">${item.title}</div>
-                      <button onclick="window.open('${item.imageUrl}', '_blank')" class="p-btn" style="background:#f8fafc; color:#334155; font-weight:600; border:1px solid #cbd5e1; width:100%;">
-                          <i class="fas fa-download"></i> İndir / Görüntüle
-                      </button>
-                  </div>
-              </div>
-          `;
+            <div class="p-card" style="padding:0; overflow:hidden; margin-bottom:15px;">
+                <div style="position:relative; background:#f1f5f9; min-height:150px; display:flex; align-items:center; justify-content:center;">
+                    <img src="${item.imageUrl}" style="width:100%; display:block; max-height:300px; object-fit:contain;">
+                    <span style="position:absolute; top:10px; right:10px; background:${badgeColor}; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold;">${badgeText}</span>
+                </div>
+                <div style="padding:15px;">
+                    <div style="font-weight:bold; margin-bottom:10px; color:#334155;">${item.title}</div>
+                    <button onclick="window.open('${item.imageUrl}', '_blank')" class="p-btn" style="background:#f8fafc; color:#334155; font-weight:600; border:1px solid #cbd5e1; width:100%;">
+                        <i class="fas fa-download"></i> İndir / Görüntüle
+                    </button>
+                </div>
+            </div>
+        `;
             });
           }
         } catch (e) {
@@ -864,14 +874,14 @@ ${css}
               let icon =
                 n.type === "sale" ? "💰" : n.type === "level_up" ? "🚀" : "📢";
               container.innerHTML += `
-              <div class="p-card" style="padding:15px; border-left:4px solid #3b82f6;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                      <b style="color:#1e293b;">${icon} ${n.title}</b>
-                      <span style="font-size:10px; color:#94a3b8;">${n.date}</span>
-                  </div>
-                  <div style="font-size:12px; color:#475569;">${n.message}</div>
-              </div>
-          `;
+            <div class="p-card" style="padding:15px; border-left:4px solid #3b82f6;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <b style="color:#1e293b;">${icon} ${n.title}</b>
+                    <span style="font-size:10px; color:#94a3b8;">${n.date}</span>
+                </div>
+                <div style="font-size:12px; color:#475569;">${n.message}</div>
+            </div>
+        `;
             });
           }
         } catch (e) {
@@ -925,15 +935,15 @@ ${css}
 
           if (data.success && data.list.length > 0) {
             container.innerHTML = `
-                <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:15px; color:white; display:flex; align-items:center; justify-content:space-between;">
-                    <div>
-                        <h3 style="margin:0; font-size:16px;">🔥 Günün Fırsatları</h3>
-                        <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
-                    </div>
-                    <div style="font-size:24px;">🚀</div>
-                </div>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
+              <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:15px; color:white; display:flex; align-items:center; justify-content:space-between;">
+                  <div>
+                      <h3 style="margin:0; font-size:16px;">🔥 Günün Fırsatları</h3>
+                      <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
+                  </div>
+                  <div style="font-size:24px;">🚀</div>
+              </div>
+              
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
 
             let gridHtml = "";
             data.list.forEach((p) => {
@@ -942,35 +952,35 @@ ${css}
                 p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
               gridHtml += `
-                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid #e2e8f0; margin:0; height:100%; background: white;">
-                        
-                        <div style="height:150px; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; background: #fff;">
-                            <img src="${p.image}" style="max-width:100%; max-height:100%; object-fit:contain; padding:5px;">
-                            <div style="position:absolute; top:5px; right:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">Fırsat</div>
-                        </div>
+                  <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid #e2e8f0; margin:0; height:100%; background: white;">
+                      
+                      <div style="width:100%; aspect-ratio:1/1; background:#fff; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-bottom:1px solid #f1f5f9;">
+  <img src="${p.image}" style="width:100%; height:100%; object-fit:cover; padding:0;">
+  <div style="position:absolute; top:5px; right:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">%15 İNDİRİM</div>
+</div>
 
-                        <div style="padding:10px; flex:1; display:flex; flex-direction:column; border-top:1px solid #f1f5f9; background: #f8fafc;">
-                            
-                            <div style="font-weight:bold; font-size:11px; color:#334155; margin-bottom:8px; line-height:1.3; height:28px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                                ${p.title}
-                            </div>
-                            
-                            <div style="margin-top:auto;">
-                                <div style="color:#10b981; font-weight:900; font-size:14px; margin-bottom:8px;">${p.price}</div>
-                                <button class="p-btn" style="padding:8px 0; font-size:11px; background:#3b82f6; color:white; width:100%; border-radius:6px; font-weight:bold;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı! Paylaşmaya hazır.')">
-                                    🔗 Paylaş
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
+                      <div style="padding:10px; flex:1; display:flex; flex-direction:column; border-top:1px solid #f1f5f9; background: #f8fafc;">
+                          
+                          <div style="font-weight:bold; font-size:11px; color:#334155; margin-bottom:8px; line-height:1.3; height:28px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                              ${p.title}
+                          </div>
+                          
+                          <div style="margin-top:auto;">
+                              <div style="color:#10b981; font-weight:900; font-size:14px; margin-bottom:8px;">${p.price}</div>
+                              <button class="p-btn" style="padding:8px 0; font-size:11px; background:#3b82f6; color:white; width:100%; border-radius:6px; font-weight:bold;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı! Paylaşmaya hazır.')">
+                                  🔗 Paylaş
+                              </button>
+                          </div>
+                      </div>
+                  </div>`;
             });
 
             container.innerHTML += gridHtml + `</div>`;
 
             // Alt bilgi
             container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
-                    <i class="fas fa-sync"></i> Liste her gece 00:00'da yenilenir.
-                </div>`;
+                  <i class="fas fa-sync"></i> Liste her gece 00:00'da yenilenir.
+              </div>`;
           } else {
             container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Bugün için vitrin oluşturulamadı.</div>`;
           }
@@ -987,5 +997,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
