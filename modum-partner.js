@@ -1312,12 +1312,27 @@ ${css}
   // Bir görselin canvas'a çizilebilmesi için tamamen yüklenmiş olması gerekir.
   function loadCanvasImage(src) {
     return new Promise((resolve, reject) => {
+      // 1. Resim linkindeki "https://" kısmını temizleyip temiz URL alalım
+      let cleanUrl = src.replace(/^https?:\/\//, "");
+
+      // 2. Güvenli Proxy Servisi (wsrv.nl) üzerinden geçir
+      // Bu servis resmi alır, güvenlik izinlerini (CORS) ekler ve bize geri verir.
+      // Ayrıca &w=800 diyerek resmi optimize ediyoruz, çok daha hızlı çalışır.
+      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&output=png&w=800&n=-1`;
+
       const img = new Image();
-      // Çok önemli: Farklı domainden gelen resimlerin canvas'ı kirletmemesi için (CORS)
-      img.crossOrigin = "Anonymous";
+      img.crossOrigin = "Anonymous"; // Artık bu çalışacak çünkü proxy izin veriyor
       img.onload = () => resolve(img);
-      img.onerror = (e) => reject(e);
-      img.src = src;
+      img.onerror = (e) => {
+        console.error("Resim yükleme hatası:", e);
+        // Proxy başarısız olursa orijinali dene (Yedek plan)
+        const backupImg = new Image();
+        backupImg.crossOrigin = "Anonymous";
+        backupImg.onload = () => resolve(backupImg);
+        backupImg.onerror = () => reject(new Error("Resim yüklenemedi"));
+        backupImg.src = src;
+      };
+      img.src = proxyUrl;
     });
   }
 
@@ -1348,5 +1363,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
