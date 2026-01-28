@@ -656,6 +656,176 @@ ${css}
           </div>
         </div>`;
         document.body.insertAdjacentHTML("beforeend", html);
+      }, // 🔥 YENİ: STORY EDİTÖR MODALI AÇ
+      openStoryEditor: function (encodedProductData) {
+        // Eski modal varsa sil
+        let old = document.getElementById("p-story-modal");
+        if (old) old.remove();
+
+        // Veriyi geri al
+        let product = JSON.parse(decodeURIComponent(encodedProductData));
+        let pData = window.PartnerData || {};
+        let myCoupon = pData.custom_coupon || "KOD YOK";
+
+        let html = `
+<div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+    <div style="display:flex; justify-content:flex-end; width:100%; max-width:400px; margin-bottom:10px;">
+        <span onclick="document.getElementById('p-story-modal').remove()" style="cursor:pointer; font-size:30px; color:white;">&times;</span>
+    </div>
+    
+    <div style="box-shadow:0 20px 50px rgba(0,0,0,0.5); border-radius:12px; overflow:hidden; max-height:70vh; aspect-ratio: 9 / 16;">
+        <canvas id="story-canvas" width="1080" height="1920" style="width:100%; height:100%; object-fit:contain;"></canvas>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+        <button id="dl-story-btn" class="p-btn" style="background:#f59e0b; color:white; font-size:16px; padding:12px 30px; opacity:0.5; pointer-events:none;">
+            <i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...
+        </button>
+    </div>
+    <div style="color:rgba(255,255,255,0.6); font-size:12px; margin-top:10px;">Hikayende paylaşmak için indir! 👆</div>
+</div>
+`;
+        document.body.insertAdjacentHTML("beforeend", html);
+
+        // Çizim işlemini başlat
+        this.drawStory("story-canvas", product, myCoupon);
+      },
+
+      // 🔥 YENİ: CANVAS ÇİZİM MOTORU (EN ÖNEMLİ KISIM)
+      drawStory: async function (canvasId, product, coupon) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext("2d");
+        const btn = document.getElementById("dl-story-btn");
+
+        try {
+          // 1. Görseli yükle (Bekle)
+          const img = await loadCanvasImage(product.image);
+
+          // 2. Arka Planı Temizle ve Boya (Şık bir koyu degrade)
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          grd.addColorStop(0, "#1e293b"); // Koyu lacivert üst
+          grd.addColorStop(1, "#0f172a"); // Daha koyu alt
+          ctx.fillStyle = grd;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // 3. Üst Başlık (Marka Adı)
+          ctx.fillStyle = "rgba(255,255,255,0.5)";
+          ctx.font = "bold 30px 'Inter', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("MODUM PARTNER FIRSATI", canvas.width / 2, 100);
+
+          // 4. Ürün Görselini Çiz
+          // Görseli kare yapıp ortalayalım.
+          const imgSize = 800;
+          const imgX = (canvas.width - imgSize) / 2;
+          const imgY = 200;
+
+          // Görselin altına hafif bir gölge efekti için
+          ctx.fillStyle = "rgba(0,0,0,0.3)";
+          ctx.fillRect(imgX + 20, imgY + 20, imgSize, imgSize);
+          // Beyaz çerçeve
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(imgX - 10, imgY - 10, imgSize + 20, imgSize + 20);
+          // Resmi çiz (Eğer resim kare değilse sündürmemek için object-fit benzeri bir hesaplama yapılabilir ama şimdilik basit tutalım)
+          ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+
+          // 5. Ürün Başlığı (Satır atlamalı)
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 50px 'Inter', sans-serif";
+          ctx.textAlign = "center";
+          // wrapText(context, text, x, y, maxWidth, lineHeight)
+          let nextY = wrapText(
+            ctx,
+            product.title.toUpperCase(),
+            canvas.width / 2,
+            imgY + imgSize + 100,
+            900,
+            70,
+          );
+
+          // 6. Fiyat
+          ctx.fillStyle = "#fbbf24"; // Sarı renk
+          ctx.font = "900 120px 'Inter', sans-serif";
+          ctx.fillText(product.price, canvas.width / 2, nextY + 80);
+
+          // 7. Kupon Kutusu Tasarımı
+          if (coupon && coupon !== "KOD YOK") {
+            const couponBoxY = nextY + 180;
+            const boxWidth = 700;
+            const boxHeight = 250;
+            const boxX = (canvas.width - boxWidth) / 2;
+
+            // Kutunun kendisi (Mor degrade)
+            let cGrd = ctx.createLinearGradient(
+              boxX,
+              couponBoxY,
+              boxX + boxWidth,
+              couponBoxY + boxHeight,
+            );
+            cGrd.addColorStop(0, "#8b5cf6");
+            cGrd.addColorStop(1, "#6d28d9");
+            ctx.fillStyle = cGrd;
+            // Basit dikdörtgen yerine köşeleri yuvarlak yapmak için (Basit tutalım şimdilik)
+            ctx.fillRect(boxX, couponBoxY, boxWidth, boxHeight);
+
+            // Kutunun kenarlığı
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.strokeRect(
+              boxX + 5,
+              couponBoxY + 5,
+              boxWidth - 10,
+              boxHeight - 10,
+            );
+
+            // Üst yazı
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "bold 30px 'Inter', sans-serif";
+            ctx.fillText(
+              "BU KODU KULLAN, İNDİRİMİ KAP!",
+              canvas.width / 2,
+              couponBoxY + 60,
+            );
+
+            // Kupon Kodu (Devasa)
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "900 100px monospace";
+            ctx.letterSpacing = "5px";
+            ctx.fillText(coupon, canvas.width / 2, couponBoxY + 180);
+          }
+
+          // --- Çizim Bitti ---
+
+          // Butonu aktif et ve indirme fonksiyonunu bağla
+          btn.style.opacity = "1";
+          btn.style.pointerEvents = "all";
+          btn.innerHTML = '<i class="fas fa-download"></i> Görseli İndir';
+          btn.onclick = () =>
+            this.downloadStory(canvasId, "modum-firsat-" + coupon);
+        } catch (e) {
+          console.error("Story çizim hatası:", e);
+          btn.innerHTML = "Hata Oluştu";
+          btn.style.background = "red";
+          alert(
+            "Görsel oluşturulurken bir hata oluştu. Ürün görseli farklı bir sunucudan geliyor olabilir.",
+          );
+        }
+      },
+
+      // 🔥 YENİ: CANVAS İNDİRME FONKSİYONU
+      downloadStory: function (canvasId, fileName) {
+        const canvas = document.getElementById(canvasId);
+        // Canvas'ı resim verisine (Data URL) çevir
+        const dataUrl = canvas.toDataURL("image/png", 1.0);
+
+        // Sanal bir link oluştur ve tıkla
+        const link = document.createElement("a");
+        link.download = fileName + ".png";
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       },
 
       // --- CÜZDAN & GEÇMİŞ (DEKONT BUTONLU FİNAL HALİ) ---
@@ -1084,29 +1254,40 @@ ${css}
               let shareLink =
                 p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
-              gridHtml += `
-                  <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%;">
-                      
-                      <div class="showcase-img-box">
-                          <img src="${p.image}" class="showcase-img">
-                          <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
-                              Fırsat
-                          </div>
-                      </div>
+              // Ürün verisini güvenli bir şekilde string'e çevir (fonksiyona parametre olarak geçmek için)
+              // Tırnak işaretleri sorun çıkarmasın diye encodeURIComponent kullanıyoruz.
+              let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-                      <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff;">
-                          <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                              ${p.title}
-                          </div>
-                          
-                          <div style="margin-top:auto;">
-                              <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>
-                              <button class="p-btn" style="background:#3b82f6; color:white;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı!')">
-                                  <i class="fas fa-link"></i> Linki Kopyala
-                              </button>
-                          </div>
-                      </div>
-                  </div>`;
+              gridHtml += `
+      <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%;">
+          
+          <div class="showcase-img-box">
+              <img src="${p.image}" class="showcase-img">
+              <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+                  Fırsat
+              </div>
+          </div>
+
+          <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff;">
+              <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                  ${p.title}
+              </div>
+              
+              <div style="margin-top:auto;">
+                  <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>
+                  
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                      <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı!')">
+                          <i class="fas fa-link"></i> Link
+                      </button>
+                      <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
+                          <i class="fas fa-paint-brush"></i> Story Yap
+                      </button>
+                  </div>
+
+              </div>
+          </div>
+      </div>`;
             });
 
             container.innerHTML += gridHtml + `</div>`;
@@ -1127,9 +1308,45 @@ ${css}
     // Açılış
     window.PartnerApp.loadTab("home");
   }
+  // --- CANVAS YARDIMCISI: RESİM YÜKLEME ---
+  // Bir görselin canvas'a çizilebilmesi için tamamen yüklenmiş olması gerekir.
+  function loadCanvasImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      // Çok önemli: Farklı domainden gelen resimlerin canvas'ı kirletmemesi için (CORS)
+      img.crossOrigin = "Anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      img.src = src;
+    });
+  }
+
+  // --- CANVAS YARDIMCISI: UZUN METİNLERİ SATIRLARA BÖLME ---
+  // Canvas, uzun metinleri otomatik olarak alt satıra geçirmez. Bunu elle yapıyoruz.
+  function wrapText(context, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(" ");
+    var line = "";
+    var currentY = y;
+
+    for (var n = 0; n < words.length; n++) {
+      var testLine = line + words[n] + " ";
+      var metrics = context.measureText(testLine);
+      var testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        context.fillText(line, x, currentY);
+        line = words[n] + " ";
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, currentY);
+    // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
+    return currentY + lineHeight;
+  }
 
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
