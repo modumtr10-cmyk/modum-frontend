@@ -117,88 +117,111 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 /* --- 1. ANA KAPLAYICI (Overlay) --- */
-.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:9999999; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:flex-end; /* Mobilde alttan başlasın */ font-family:'Inter', sans-serif; }
-@media (min-width: 769px) { .p-overlay { align-items:center; } } /* PC'de ortala */
+.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:9999999; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
 
 /* --- 2. UYGULAMA KUTUSU --- */
-.p-app { width:100%; height:90%; background:#f1f5f9; position:relative; display:flex; flex-direction:column; overflow:hidden; border-radius: 20px 20px 0 0; }
+.p-app { width:100%; height:100%; background:#f1f5f9; position:relative; display:flex; flex-direction:row; overflow:hidden; }
 @media (min-width: 769px) { 
-    .p-app { width:900px; height:85vh; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); flex-direction:row; } 
+    .p-app { width:900px; height:85vh; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); } 
 }
 
-/* --- 3. MENÜ (NAVIGASYON) - MOBİL İÇİN ALT MENÜ --- */
-.p-nav { 
-    order: 2; /* İçeriğin altına al */
-    height: 70px; background:white; border-top:1px solid #e2e8f0; 
-    display:flex; justify-content:space-around; align-items:center; 
-    flex-shrink:0; z-index:10;
+/* --- 3. ORTAK SOL MENÜ (Hem Mobil Hem PC) --- */
+.p-nav {
+    width: 70px; /* PC Kapalı Genişlik */
+    height: 100%;
+    background: #0f172a;
+    border-right: 1px solid #e2e8f0;
+    display: flex; flex-direction: column;
+    padding-top: 20px; gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; z-index: 50;
+    flex-shrink: 0;
 }
-.p-nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; font-size:10px; font-weight:600; cursor:pointer; width:100%; }
-.p-nav-icon { font-size: 20px; margin-bottom: 4px; }
-.p-nav-text { display:block; }
-.p-toggle-btn { display:none; } /* Mobilde toggle butonu gizli */
 
-.p-nav-item.active { color:#3b82f6; }
-.p-nav-item.active .p-nav-icon { transform:translateY(-2px); transition:0.2s; }
+/* Mobilde menüyü başlangıçta gizle (sola it) veya dar tut */
+@media (max-width: 768px) {
+    .p-nav { position: absolute; left: -70px; top: 0; bottom: 0; width: 70px; }
+    .p-nav.mobile-open { left: 0; width: 200px; } /* Mobilde açılınca genişle */
+    .p-app { flex-direction: column; } /* Mobilde içerik alta kaysın */
+}
 
-/* --- 4. MENÜ - PC İÇİN SOL MENÜ (Media Query) --- */
+/* PC'de Genişleme */
 @media (min-width: 769px) {
-    .p-nav {
-        order: 0; /* Sola al */
-        width: 70px; height:100%; border-top:none; border-right:1px solid #e2e8f0;
-        flex-direction:column; justify-content:flex-start; padding-top:20px; gap:10px;
-        transition: width 0.3s ease; position:relative;
-        background: #0f172a; /* PC'de Koyu renk menü */
-    }
-    .p-nav.expanded { width: 200px; align-items: flex-start; }
-    
-    .p-nav-item { height: 50px; flex-direction: row; color: #94a3b8; }
-    .p-nav-item:hover { background: rgba(255,255,255,0.1); color:white; }
-    .p-nav-item.active { background: #3b82f6; color:white; }
-    
-    .p-nav-icon { margin-bottom:0; width:70px; text-align:center; font-size:18px; }
-    .p-nav-text { display:none; font-size:13px; margin-left:5px; white-space:nowrap; }
-    
-    /* Menü açılınca yazıyı göster */
-    .p-nav.expanded .p-nav-text { display:block; }
-    
-    /* Toggle Butonu PC'de görünür */
-    .p-toggle-btn { 
-        display:flex; align-items:center; justify-content:center;
-        position:absolute; bottom:0; left:0; width:100%; height:50px; 
-        color:#64748b; cursor:pointer; border-top:1px solid rgba(255,255,255,0.1); 
-    }
-    .p-nav.expanded .p-toggle-btn { justify-content:flex-end; padding-right:20px; }
+    .p-nav.expanded { width: 200px; }
 }
 
-/* --- 5. HEADER VE İÇERİK --- */
-.p-content-wrapper { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
-.p-header { height:60px; background:white; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; }
-.p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:50px; }
+/* Menü İçi */
+.p-nav-logo { height:60px; display:flex; align-items:center; justify-content:center; width:100%; color:white; font-size:24px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:10px; }
 
-/* --- 6. VİTRİN GÖRSEL DÜZELTMESİ (Kare ve Dolu) --- */
-.showcase-img-box {
-    width: 100%;
-    aspect-ratio: 1 / 1; /* Tam kare yap */
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-    border-bottom: 1px solid #f1f5f9;
+.p-nav-item { 
+    height: 50px; display: flex; align-items: center; 
+    color: #94a3b8; cursor: pointer; transition: 0.2s;
+    text-decoration: none; padding: 0 20px;
+    justify-content: center; /* Kapalıyken ortala */
 }
-.showcase-img {
-    width: 100%; height: 100%;
-    object-fit: cover; /* 🔥 Resmi kutuya tam doldur (boşluk kalmaz) */
-    transition: transform 0.3s;
-}
-/* Üzerine gelince resim hafif büyüsün */
-.p-card:hover .showcase-img { transform: scale(1.05); }
+.p-nav-item:hover { background: rgba(255,255,255,0.1); color:white; }
+.p-nav-item.active { background: #3b82f6; color:white; border-right: 3px solid #60a5fa; }
 
-/* --- GENEL ELEMENTLER --- */
+.p-nav-icon { font-size: 18px; min-width: 30px; text-align: center; }
+.p-nav-text { font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; width: 0; overflow: hidden; transition: 0.3s; }
+
+/* Menü Açıkken Yazıları Göster */
+.p-nav.expanded .p-nav-text, .p-nav.mobile-open .p-nav-text { opacity: 1; width: auto; margin-left: 10px; }
+.p-nav.expanded .p-nav-item, .p-nav.mobile-open .p-nav-item { justify-content: flex-start; }
+
+/* Toggle Butonu (PC) */
+.p-toggle-btn { 
+    display:none; /* Mobilde gizli */
+    position:absolute; bottom:0; left:0; width:100%; height:50px; 
+    color:#64748b; cursor:pointer; border-top:1px solid rgba(255,255,255,0.1); 
+    align-items:center; justify-content:center;
+}
+@media (min-width: 769px) { .p-toggle-btn { display:flex; } }
+.p-nav.expanded .p-toggle-btn { justify-content:flex-end; padding-right:20px; }
+
+/* --- 4. HEADER VE İÇERİK --- */
+.p-content-wrapper { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; width: 100%; }
+.p-header { 
+    height:60px; background:white; border-bottom:1px solid #e2e8f0; 
+    display:flex; align-items:center; justify-content:space-between; padding:0 20px; 
+    flex-shrink:0; 
+}
+.p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:80px; }
+
+/* Mobil Hamburger Menü Butonu */
+.mobile-menu-btn { display:none; font-size:24px; color:#334155; cursor:pointer; margin-right:10px; }
+@media (max-width: 768px) { .mobile-menu-btn { display:block; } }
+
+/* Mobil Overlay (Menü açılınca arkaplanı karart) */
+.mobile-nav-overlay {
+    display: none; position: absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.5); z-index: 40;
+}
+.p-nav.mobile-open + .p-content-wrapper .mobile-nav-overlay { display: block; }
+
+/* --- 5. ORANLAR ve BİLDİRİM BUTONLARI --- */
+.header-action-btn {
+    width:32px; height:32px; border-radius:50%; 
+    display:flex; align-items:center; justify-content:center; 
+    cursor:pointer; transition:0.2s;
+}
+.btn-rates { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:12px; padding:0 10px; width:auto; border-radius:20px; font-weight:600; gap:5px; }
+.btn-bell { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
+.btn-close { background:#fee2e2; color:#ef4444; border:1px solid #fecaca; }
+
+/* --- 6. DİĞER STİLLER (Vitrin vb.) --- */
+.showcase-img-box { width: 100%; aspect-ratio: 1 / 1; background: #fff; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid #f1f5f9; }
+.showcase-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
 .p-card { background:white; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.02); }
 .p-stat-val { font-size:24px; font-weight:800; color:#0f172a; }
 .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
 .p-btn { width:100%; padding:12px; border:none; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:0.2s; }
 .p-btn:active { transform:scale(0.98); }
+
+/* Oranlar Tablosu */
+.tier-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+.tier-table th { text-align:left; color:#64748b; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
+.tier-table td { padding:8px 0; border-bottom:1px solid #f1f5f9; color:#334155; font-weight:600; }
 </style>
 `;
 
@@ -208,9 +231,7 @@ ${css}
 <div class="p-app">
     
     <div id="p-nav-container" class="p-nav">
-        <div style="height:60px; display:none; align-items:center; justify-content:center; width:100%; color:white; font-size:20px; border-bottom:1px solid rgba(255,255,255,0.1);" class="pc-only-logo">
-            👑
-        </div>
+        <div class="p-nav-logo">👑</div>
 
         <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)">
             <div class="p-nav-icon"><i class="fas fa-chart-pie"></i></div>
@@ -243,16 +264,29 @@ ${css}
     </div>
 
     <div class="p-content-wrapper">
+        <div class="mobile-nav-overlay" onclick="PartnerApp.toggleSidebar()"></div>
+
         <div class="p-header">
-            <div>
-                <span style="font-size:11px; color:#64748b;">MODUM PARTNER</span>
-                <div style="font-weight:800; color:#1e293b; font-size:16px;">${name}</div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                 <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:#f1f5f9; padding:6px 12px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px; border:1px solid #e2e8f0; color:#64748b; font-weight:600;">
-                    <i class="fas fa-star" style="color:#f59e0b"></i> Oranlar
+            <div style="display:flex; align-items:center;">
+                <div class="mobile-menu-btn" onclick="PartnerApp.toggleSidebar()">
+                    <i class="fas fa-bars"></i>
                 </div>
-                <div onclick="document.getElementById('mdm-partner-modal').remove()" style="cursor:pointer; width:32px; height:32px; background:#fee2e2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">✕</div>
+                <div>
+                    <span style="font-size:10px; color:#64748b; display:block; line-height:1;">MODUM PARTNER</span>
+                    <div style="font-weight:800; color:#1e293b; font-size:15px;">${name}</div>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:8px;">
+                 <div class="header-action-btn btn-rates" onclick="PartnerApp.showTierInfo()">
+                    <i class="fas fa-star" style="color:#16a34a"></i> Oranlar
+                </div>
+                
+                <div class="header-action-btn btn-bell" onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))">
+                    <i class="fas fa-bell"></i>
+                </div>
+
+                <div class="header-action-btn btn-close" onclick="document.getElementById('mdm-partner-modal').remove()">✕</div>
             </div>
         </div>
 
@@ -261,7 +295,6 @@ ${css}
 
 </div>
 </div>
-<style> @media (min-width: 769px) { .pc-only-logo { display:flex !important; } } </style>
 `;
 
     document.body.insertAdjacentHTML("beforeend", html);
@@ -270,14 +303,24 @@ ${css}
       toggleSidebar: function () {
         var sb = document.getElementById("p-nav-container");
         var icon = document.getElementById("p-toggle-icon");
+        var isMobile = window.innerWidth <= 768;
 
-        // Sadece PC'de çalışsın diye kontrol edebiliriz ama CSS zaten gizliyor mobilde.
-        if (sb.classList.contains("expanded")) {
-          sb.classList.remove("expanded");
-          icon.className = "fas fa-angle-double-right";
+        if (isMobile) {
+          // Mobilde class 'mobile-open'
+          if (sb.classList.contains("mobile-open")) {
+            sb.classList.remove("mobile-open");
+          } else {
+            sb.classList.add("mobile-open");
+          }
         } else {
-          sb.classList.add("expanded");
-          icon.className = "fas fa-angle-double-left";
+          // PC'de class 'expanded'
+          if (sb.classList.contains("expanded")) {
+            sb.classList.remove("expanded");
+            if (icon) icon.className = "fas fa-angle-double-right";
+          } else {
+            sb.classList.add("expanded");
+            if (icon) icon.className = "fas fa-angle-double-left";
+          }
         }
       },
       loadTab: function (tab, el) {
@@ -1088,5 +1131,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
