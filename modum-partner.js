@@ -385,109 +385,133 @@ ${css}
         }
       },
 
+      // --- LİNKLER & QR KOD (GÜNCELLENMİŞ) ---
       renderLinks: function (c) {
-        // 🔥 VERİ KONTROLÜ VE VARSAYILAN DEĞERLER
         var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode || "REF-KODU-BEKLENIYOR";
+        var myRefCode = pData.refCode || "REF-BEKLENIYOR";
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        // İndirim Kodu HTML'i (Eğer varsa göster)
-        let couponHTML = "";
-        if (myCoupon !== "Tanımlanmamış") {
-          couponHTML = `
-        <div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
-            <div style="position:absolute; top:-10px; right:-10px; font-size:60px; opacity:0.1;">🎟️</div>
-            <label style="font-size:10px; opacity:0.8; font-weight:bold; display:block;">MÜŞTERİLERİN İÇİN İNDİRİM KODU</label>
-            <div style="font-family:monospace; font-size:28px; font-weight:900; margin-top:5px; letter-spacing:1px;">${myCoupon}</div>
-            <div style="font-size:11px; opacity:0.8; margin-top:5px;">Bu kodu kullanan takipçilerin indirim kazanır, sen de komisyon alırsın!</div>
-            <button onclick="navigator.clipboard.writeText('${myCoupon}'); alert('Kupon Kopyalandı!')" class="p-btn" style="background:white; color:#6d28d9; margin-top:10px; height:36px; font-size:12px;">Kopyala</button>
-        </div>`;
-        } else {
-          couponHTML = `
-        <div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center;">
-            <div style="font-size:12px; color:#64748b;">Henüz sana özel bir indirim kuponu tanımlanmamış.</div>
-        </div>`;
-        }
+        // İndirim Kodu HTML
+        let couponHTML =
+          myCoupon !== "Tanımlanmamış"
+            ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
+                  <div style="position:absolute; top:-10px; right:-10px; font-size:60px; opacity:0.1;">🎟️</div>
+                  <label style="font-size:10px; opacity:0.8; font-weight:bold; display:block;">İNDİRİM KODUN</label>
+                  <div style="font-family:monospace; font-size:28px; font-weight:900; margin-top:5px; letter-spacing:1px;">${myCoupon}</div>
+                  <button onclick="navigator.clipboard.writeText('${myCoupon}'); alert('Kupon Kopyalandı!')" class="p-btn" style="background:white; color:#6d28d9; margin-top:10px; height:36px; font-size:12px;">Kopyala</button>
+               </div>`
+            : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
         c.innerHTML = `
-        <h3 style="margin:0 0 15px 0;">🔗 Link ve Kuponlarım</h3>
-        
-        ${couponHTML}
-        
-        <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
-            <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 ANA SAYFA LİNKİN (REF)</label>
-            <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
-                ${homeLink}
-            </div>
-            
-            <div style="display:flex; gap:10px;">
-                <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1; cursor:pointer;">
-                    <i class="fas fa-copy"></i> Kopyala
-                </button>
-                <a href="https://api.whatsapp.com/send?text=${encodeURIComponent("Harika ürünler var! Link: " + homeLink)}" target="_blank" class="p-btn" style="background:#25D366; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center; text-decoration:none;">
-                    <i class="fab fa-whatsapp" style="font-size:18px;"></i>
-                </a>
-            </div>
-        </div>
+          <h3 style="margin:0 0 15px 0;">🔗 Link ve QR Araçları</h3>
+          ${couponHTML}
+          
+          <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
+              <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 ANA SAYFA LİNKİN</label>
+              <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
+                  ${homeLink}
+              </div>
+              <div style="display:flex; gap:10px;">
+                  <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1;">
+                      <i class="fas fa-copy"></i> Kopyala
+                  </button>
+                  <button onclick="PartnerApp.toggleQR('${homeLink}')" class="p-btn" style="background:#334155; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center;">
+                      <i class="fas fa-qrcode" style="font-size:18px;"></i>
+                  </button>
+              </div>
+          </div>
 
-        <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
+          <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
 
-        <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Belirli bir ürünü paylaşmak için:</p>
+          <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Ürün Linki & QR Oluştur:</p>
 
-        <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
-            <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
-            <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/siyah-elbise..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
-            
-            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold; cursor:pointer;">
-                Link Oluştur ✨
-            </button>
-        </div>
+          <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
+              <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
+              <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
+              
+              <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
+                  Link ve QR Oluştur ✨
+              </button>
+          </div>
 
-        <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
-            <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
-            <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
-            
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
-                    <i class="fab fa-whatsapp" style="font-size:16px; margin-right:5px;"></i> WhatsApp
-                </a>
-                <a id="btn-tg" href="#" target="_blank" class="p-btn" style="background:#0088cc; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
-                    <i class="fab fa-telegram" style="font-size:16px; margin-right:5px;"></i> Telegram
-                </a>
-            </div>
-            
-            <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
-                <i class="fas fa-copy"></i> Linki Kopyala
-            </button>
-        </div>
-    `;
+          <div id="pl-result" style="display:none; margin-top:20px;" class="p-card">
+              <div class="p-stat-lbl" style="color:#3b82f6; margin-bottom:10px;">ÖZEL PAYLAŞIM LİNKİN:</div>
+              <div id="pl-final" style="background:#eff6ff; padding:12px; border-radius:8px; font-family:monospace; color:#1e40af; margin-bottom:15px; word-break:break-all; font-size:12px; border:1px solid #dbeafe;"></div>
+              
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                  <a id="btn-wa" href="#" target="_blank" class="p-btn" style="background:#25D366; color:white; text-decoration:none; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                      <i class="fab fa-whatsapp" style="margin-right:5px;"></i> WhatsApp
+                  </a>
+                  <button id="btn-qr-show" class="p-btn" style="background:#334155; color:white; border:none; padding:10px; border-radius:8px; font-size:13px; font-weight:bold;">
+                      <i class="fas fa-qrcode" style="margin-right:5px;"></i> QR Kod
+                  </button>
+              </div>
+              
+              <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">
+                  <i class="fas fa-copy"></i> Linki Kopyala
+              </button>
+
+              <div id="pl-qr-box" style="display:none; margin-top:15px; background:white; padding:15px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
+                  <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Bu QR kodu okutan, senin referansınla ürüne gider! 👇</div>
+                  <img id="pl-qr-img" src="" style="width:200px; height:200px; margin:0 auto; display:block; border:1px solid #eee; padding:5px;">
+                  <a id="pl-qr-dl" href="#" target="_blank" class="p-btn" style="margin-top:10px; background:#f59e0b; color:white; font-size:12px; width:auto; display:inline-flex; text-decoration:none;">
+                     📥 Resmi İndir
+                  </a>
+              </div>
+          </div>
+        `;
       },
+
       createLink: function (refCode) {
         var val = document.getElementById("pl-input").value;
         if (!val) return alert("Lütfen bir ürün linki giriniz.");
 
-        // Linki oluştur (Var olan parametreleri koru)
+        // 🔥 REFERANS KODUNU EKLİYORUZ (ÇOK ÖNEMLİ)
         var final = val + (val.includes("?") ? "&" : "?") + "ref=" + refCode;
 
-        // Ekrana yaz ve kutuyu göster
+        // Linki Ekrana Bas
         document.getElementById("pl-final").innerText = final;
         document.getElementById("pl-result").style.display = "block";
 
-        // Mesaj Hazırla (Otomatik doldurma)
-        var msgWA = encodeURIComponent(
-          "Bu ürüne bayıldım, kesin bakmalısın! Link: " + final,
-        );
-        var msgTG = encodeURIComponent("Harika bir ürün buldum! 👇");
-
-        // Buton Linklerini Güncelle
+        // WhatsApp Linki
+        var msgWA = encodeURIComponent("Bu ürüne bayıldım! Link: " + final);
         document.getElementById("btn-wa").href =
           "https://api.whatsapp.com/send?text=" + msgWA;
-        document.getElementById("btn-tg").href =
-          "https://t.me/share/url?url=" +
-          encodeURIComponent(final) +
-          "&text=" +
-          msgTG;
+
+        // 🔥 QR KOD OLUŞTURMA (API KULLANIYORUZ - HIZLI VE KESİN)
+        // qrserver.com ücretsiz ve güvenilir bir QR servisidir.
+        var qrUrl =
+          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
+          encodeURIComponent(final);
+
+        document.getElementById("pl-qr-img").src = qrUrl;
+        document.getElementById("pl-qr-dl").href = qrUrl;
+
+        // QR Butonuna Tıklama Olayı
+        document.getElementById("btn-qr-show").onclick = function () {
+          var qrBox = document.getElementById("pl-qr-box");
+          qrBox.style.display =
+            qrBox.style.display === "none" ? "block" : "none";
+        };
+      },
+
+      // Ana Sayfa QR Kodu İçin Helper
+      toggleQR: function (url) {
+        // Hızlıca bir modal ile gösterelim
+        var qrApi =
+          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
+          encodeURIComponent(url);
+        var html = `
+         <div id="p-qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999999; display:flex; justify-content:center; align-items:center;" onclick="this.remove()">
+            <div style="background:white; padding:20px; border-radius:16px; text-align:center; max-width:300px;" onclick="event.stopPropagation()">
+                <h3 style="margin:0 0 10px 0; color:#333;">📱 QR KODUN</h3>
+                <img src="${qrApi}" style="width:100%; display:block; margin-bottom:10px;">
+                <a href="${qrApi}" target="_blank" class="p-btn" style="background:#3b82f6; color:white; text-decoration:none;">Resmi İndir</a>
+                <div style="margin-top:10px; font-size:11px; color:#999;">Kapatmak için boşluğa tıkla</div>
+            </div>
+         </div>`;
+        document.body.insertAdjacentHTML("beforeend", html);
       },
 
       // --- CÜZDAN & GEÇMİŞ (GELİŞMİŞ GÖRÜNÜM) ---
@@ -871,5 +895,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
