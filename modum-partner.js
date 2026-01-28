@@ -907,10 +907,10 @@ ${css}
             }
           },
         );
-      }, // --- 🔥 VİTRİN / ÇOK SATANLAR ---
+      }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
       renderShowcase: async function (container) {
         container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Vitrin yükleniyor...</div>';
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
 
         var pData = window.PartnerData || {};
         var myRefCode = pData.refCode || "REF-YOK";
@@ -924,8 +924,16 @@ ${css}
           const data = await res.json();
 
           if (data.success && data.list.length > 0) {
-            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🔥 Çok Satanlar & Fırsatlar</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            container.innerHTML = `
+                <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:15px; color:white; display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <h3 style="margin:0; font-size:16px;">🔥 Günün Fırsatları</h3>
+                        <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
+                    </div>
+                    <div style="font-size:24px;">🚀</div>
+                </div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
 
             let gridHtml = "";
             data.list.forEach((p) => {
@@ -934,17 +942,18 @@ ${css}
                 p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
               gridHtml += `
-                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
-                        <div style="height:120px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                            <img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">
+                    <div class="p-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid #e2e8f0; margin:0;">
+                        <div style="height:140px; background:#fff; position:relative;">
+                            <img src="${p.image}" style="width:100%; height:100%; object-fit:contain; padding:5px; box-sizing:border-box;">
+                            <div style="position:absolute; top:5px; right:5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">Fırsat</div>
                         </div>
-                        <div style="padding:10px; flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:5px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
+                        <div style="padding:10px; flex:1; display:flex; flex-direction:column; background:#f8fafc;">
+                            <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:5px; line-height:1.3; height:32px; overflow:hidden;">${p.title}</div>
                             
                             <div style="margin-top:auto;">
-                                <div style="color:#10b981; font-weight:800; font-size:13px; margin-bottom:8px;">${p.price} ₺</div>
-                                <button class="p-btn" style="padding:8px; font-size:11px; background:#3b82f6; color:white;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('Link Kopyalandı! 🚀')">
-                                    <i class="fas fa-link"></i> Paylaş
+                                <div style="color:#10b981; font-weight:900; font-size:14px; margin-bottom:8px;">${p.price}</div>
+                                <button class="p-btn" style="padding:8px; font-size:12px; background:#3b82f6; color:white; width:100%; border-radius:6px;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı! Paylaşmaya hazır.')">
+                                    🔗 Linki Kopyala
                                 </button>
                             </div>
                         </div>
@@ -952,8 +961,13 @@ ${css}
             });
 
             container.innerHTML += gridHtml + `</div>`;
+
+            // Alt bilgi
+            container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
+                    <i class="fas fa-sync"></i> Liste her gece 00:00'da yenilenir.
+                </div>`;
           } else {
-            container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Şu an vitrinde ürün yok.</div>`;
+            container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Bugün için vitrin oluşturulamadı.</div>`;
           }
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
@@ -968,5 +982,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
