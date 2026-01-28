@@ -143,36 +143,36 @@
 <div id="mdm-partner-modal" class="p-overlay">
 ${css}
 <div class="p-app">
-  <div class="p-header">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-              <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
-              <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
-          </div>
-<div style="display:flex; gap:10px; align-items:center;">
-  <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
-      <i class="fas fa-info-circle"></i> Oranlar
-  </div>
-  
-  <div onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-      <i class="fas fa-bell"></i>
-  </div>
+    <div class="p-header">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-size:12px; color:#94a3b8;">Hoşgeldin Ortak,</div>
+                <div id="p-header-name" style="font-size:20px; font-weight:800; text-transform:capitalize;">${name}</div>
+            </div>
+            
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div onclick="PartnerApp.showTierInfo()" style="cursor:pointer; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:20px; font-size:11px; display:flex; align-items:center; gap:5px;">
+                    <i class="fas fa-info-circle"></i> Oranlar
+                </div>
+                
+                <div onclick="PartnerApp.renderNotifications(document.getElementById('p-content-area'))" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <i class="fas fa-bell"></i>
+                </div>
 
-  <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
-</div>
-          </div>
-      </div>
-  </div>
+                <div onclick="document.getElementById('mdm-partner-modal').remove()" style="width:36px; height:36px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+            </div>
+        </div>
+    </div>
 
-  <div id="p-content-area" class="p-body"></div>
+    <div id="p-content-area" class="p-body"></div>
 
-  <div class="p-nav">
-      <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
-      <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
-      <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
-      <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
-      <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
-  </div>
+    <div class="p-nav">
+        <div class="p-nav-item active" onclick="PartnerApp.loadTab('home', this)"><i class="fas fa-chart-pie"></i> Özet</div>
+        <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)"><i class="fas fa-link"></i> Linkler</div>
+        <div class="p-nav-item" onclick="PartnerApp.loadTab('wallet', this)"><i class="fas fa-wallet"></i> Cüzdan</div>
+        <div class="p-nav-item" onclick="PartnerApp.loadTab('marketing', this)"><i class="fas fa-images"></i> Pazarlama</div>
+        <div class="p-nav-item" onclick="PartnerApp.loadTab('academy', this)"><i class="fas fa-graduation-cap"></i> Akademi</div>
+    </div>
 </div>
 </div>
 `;
@@ -895,5 +895,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v1*/
 })();
