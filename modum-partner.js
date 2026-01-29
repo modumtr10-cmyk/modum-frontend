@@ -996,13 +996,22 @@ ${css}
           }
 
           // --- BURASI GÜNCELLENDİ (ÖDEME İSTE BUTONU KALKTI, BEKLEYEN EKLENDİ) ---
-          let pendingVal = parseFloat(window.PartnerData.pending_balance || 0);
+
+          // Önce partner verisinin yüklü olduğundan emin olalım
+          let pStats = window.PartnerData || {};
+
+          // Eğer API'den gelen veriyi kullanmak istersen (daha güncel):
+          // Ancak 'res' değişkeni sadece 'get_partner_history' çağrısının sonucudur, 'stats' içermez.
+          // Bu yüzden window.PartnerData'yı kullanmak daha güvenlidir.
+
+          let safeBalance = parseFloat(pStats.balance || 0);
+          let pendingVal = parseFloat(pStats.pending_balance || 0);
 
           container.innerHTML = `
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
         <div class="p-card" style="text-align:center; padding:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2); margin:0;">
             <div style="font-size:10px; opacity:0.9; font-weight:bold;">ÇEKİLEBİLİR BAKİYE</div>
-            <div class="p-stat-val" style="color:white; font-size:28px; margin:5px 0;">${parseFloat(res.stats.balance).toLocaleString("tr-TR")} ₺</div> 
+            <div class="p-stat-val" style="color:white; font-size:28px; margin:5px 0;">${safeBalance.toLocaleString("tr-TR")} ₺</div> 
             <div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block;">Otomatik Ödenir</div>
         </div>
 
@@ -1024,6 +1033,7 @@ ${css}
     <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
     ${historyHTML}
 `;
+          // Son olarak güncel bakiyeyi tekrar çekip ekrana basalım (Garanti olsun)
           PartnerApp.updateBalanceDisplay(container);
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
@@ -1413,5 +1423,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
