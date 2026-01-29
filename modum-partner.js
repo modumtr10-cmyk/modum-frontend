@@ -416,113 +416,104 @@ ${css}
               "</div>";
             return;
           }
+
           const s = res.stats;
           let currentRev = parseFloat(s.totalRevenue || 0);
-          let myRate = parseFloat(s.commission_rate || 10); // Veritabanındaki güncel oran
+          let myRate = parseFloat(s.commission_rate || 10);
 
           // OTOMATİK HEDEF HESAPLAMA MOTORU
           let nextLevelName = "Maksimum";
-          let nextTargetAmount = 0;
+          let nextTargetAmount = 0; // Değişken ismimiz bu
           let progressPercent = 0;
-          let barColor = "#fbbf24"; // Varsayılan Sarı
+          let barColor = "#fbbf24";
 
           if (currentRev < 10000) {
             nextLevelName = "Gümüş (%15)";
             nextTargetAmount = 10000;
             progressPercent = (currentRev / 10000) * 100;
-            barColor = "#94a3b8"; // Gümüşe gidiyor
+            barColor = "#94a3b8";
           } else if (currentRev < 50000) {
             nextLevelName = "Altın (%20)";
             nextTargetAmount = 50000;
-            progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100; // Aradaki farka göre yüzde
-            barColor = "#fbbf24"; // Altına gidiyor
+            progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100;
+            barColor = "#fbbf24";
           } else {
-            // Zaten en üst seviyede
             nextLevelName = "Efsane";
-            nextTargetAmount = currentRev; // Hedef yok
+            nextTargetAmount = currentRev;
             progressPercent = 100;
-            barColor = "#ef4444"; // Efsane Rengi
+            barColor = "#ef4444";
           }
 
-          // İlerleme çubuğu HTML'i
+          // İlerleme çubuğu HTML'i (Kartın içine gömülecek)
           let progressHTML = "";
           if (progressPercent < 100) {
             let remaining = (nextTargetAmount - currentRev).toLocaleString(
               "tr-TR",
             );
+
+            // 🔥 DÜZELTME BURADA YAPILDI (nextTarget -> nextTargetAmount)
             progressHTML = `
-        <div style="margin-top:15px;">
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
-                <span>🚀 Sonraki: <b>${nextLevelName}</b></span>
-                <span>Kalan: <b>${remaining} ₺</b></span>
-            </div>
-            <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                <div style="width:${progressPercent}%; height:100%; background:${barColor}; transition: width 1s ease-in-out;"></div>
-            </div>
-            <div style="font-size:10px; text-align:center; margin-top:3px; color:rgba(255,255,255,0.5);">
-                Hedef: ${nextTargetAmount.toLocaleString()} ₺
-            </div>
-        </div>
-    `;
+                <div style="margin-top:15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
+                        <span>🚀 Sonraki: <b>${nextLevelName}</b></span>
+                        <span>Kalan: <b>${remaining} ₺</b></span>
+                    </div>
+                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div style="width:${progressPercent}%; height:100%; background:${barColor}; transition: width 1s ease-in-out;"></div>
+                    </div>
+                    <div style="font-size:10px; text-align:center; margin-top:3px; color:rgba(255,255,255,0.5);">
+                        Hedef: ${nextTargetAmount.toLocaleString()} ₺ 
+                    </div>
+                </div>
+            `;
           } else {
             progressHTML = `
-        <div style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.1); padding:5px; border-radius:8px;">
-            <span style="font-size:12px;">🏆 Zirvedesin! Maksimum oran geçerli.</span>
-        </div>
-    `;
+                <div style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.1); padding:5px; border-radius:8px;">
+                    <span style="font-size:12px;">🏆 Zirvedesin! Maksimum oran geçerli.</span>
+                </div>
+            `;
           }
 
-          // KART HTML (Güncellenmiş)
+          // KART HTML (Temizlendi, çift bar kaldırıldı)
           container.innerHTML = `
-    <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">MEVCUT SEVİYE</div>
-                <div style="font-size:22px; font-weight:800; color:${barColor}; text-shadow:0 0 10px ${barColor}40;">
-                    ${s.level || "Bronz"} <span style="font-size:14px; color:white; opacity:0.8;">(%${myRate})</span>
+            <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">MEVCUT SEVİYE</div>
+                        <div style="font-size:22px; font-weight:800; color:${barColor}; text-shadow:0 0 10px ${barColor}40;">
+                            ${s.level || "Bronz"} <span style="font-size:14px; color:white; opacity:0.8;">(%${myRate})</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">BAKİYE</div>
+                        <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+                    </div>
+                </div>
+                ${progressHTML}
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                    <div class="p-stat-val" style="font-size:18px;">${s.totalClicks || 0}</div>
+                    <div class="p-stat-lbl">TIK</div>
+                </div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0;">
+                    <div class="p-stat-val" style="font-size:18px;">${s.totalSales || 0}</div>
+                    <div class="p-stat-lbl">SATIŞ</div>
+                </div>
+                <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
+                    <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
+                    <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
                 </div>
             </div>
-            <div style="text-align:right;">
-                <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">BAKİYE</div>
-                <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+            
+            <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
+            <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
+                <canvas id="p-chart" height="150"></canvas>
             </div>
-        </div>
-        ${progressHTML}
-    </div>
-        
-        <div style="margin-top:10px;">
-            <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
-                <span>Ciro: ${currentRev.toLocaleString()} ₺</span>
-                <span>Hedef: ${nextTarget.toLocaleString()} ₺</span>
-            </div>
-            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                <div style="width:${progress}%; height:100%; background:#fbbf24;"></div>
-            </div>
-        </div>
-    </div>
+          `;
 
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-        <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-            <div class="p-stat-val" style="font-size:18px;">${s.totalClicks || 0}</div>
-            <div class="p-stat-lbl">TIK</div>
-        </div>
-        <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-            <div class="p-stat-val" style="font-size:18px;">${s.totalSales || 0}</div>
-            <div class="p-stat-lbl">SATIŞ</div>
-        </div>
-        <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
-            <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
-            <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
-        </div>
-    </div>
-    
-    <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
-    <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
-        <canvas id="p-chart" height="150"></canvas>
-    </div>
-  `;
-
-          // GRAFİK ÇİZİMİ (HATA KORUMALI)
+          // GRAFİK ÇİZİMİ
           try {
             if (s.chart && s.chart.labels && s.chart.data) {
               new Chart(document.getElementById("p-chart"), {
@@ -1402,5 +1393,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
