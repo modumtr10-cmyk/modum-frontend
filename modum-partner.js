@@ -1401,5 +1401,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
