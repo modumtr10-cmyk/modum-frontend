@@ -996,14 +996,22 @@ ${css}
           }
 
           container.innerHTML = `
-        <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
-            <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
-            <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
-            <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
+    <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
+        <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
+        <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
+        <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
+    </div>
+
+    <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+        <div style="font-size:20px;">🗓️</div>
+        <div>
+            <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
+            <div style="font-size:11px; color:#047857;">Ödeme talepleri her <b style="text-decoration:underline;">Çarşamba</b> işleme alınır ve hesabına yatırılır.</div>
         </div>
-        <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
-        ${historyHTML}
-      `;
+    </div>
+    <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
+    ${historyHTML}
+`;
           PartnerApp.updateBalanceDisplay(container);
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
@@ -1393,5 +1401,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
