@@ -995,21 +995,33 @@ ${css}
               '<div style="text-align:center; padding:20px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>';
           }
 
+          // --- BURASI GÜNCELLENDİ (ÖDEME İSTE BUTONU KALKTI, BEKLEYEN EKLENDİ) ---
+          let pendingVal = parseFloat(window.PartnerData.pending_balance || 0);
+
           container.innerHTML = `
-    <div class="p-card" style="text-align:center; padding:30px 20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2);">
-        <div style="font-size:11px; opacity:0.9; font-weight:bold;">AKTİF BAKİYE</div>
-        <div class="p-stat-val" style="color:white; font-size:36px; margin:5px 0;">...</div> 
-        <button class="p-btn" style="background:white; color:#059669; margin-top:10px; border-radius:50px; font-weight:800;" onclick="PartnerApp.requestPayout()">🚀 ÖDEME İSTE</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+        <div class="p-card" style="text-align:center; padding:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2); margin:0;">
+            <div style="font-size:10px; opacity:0.9; font-weight:bold;">ÇEKİLEBİLİR BAKİYE</div>
+            <div class="p-stat-val" style="color:white; font-size:28px; margin:5px 0;">${parseFloat(res.stats.balance).toLocaleString("tr-TR")} ₺</div> 
+            <div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block;">Otomatik Ödenir</div>
+        </div>
+
+        <div class="p-card" style="text-align:center; padding:20px; background:#fffbeb; border:1px solid #fcd34d; color:#b45309; margin:0;">
+            <div style="font-size:10px; opacity:0.8; font-weight:bold;">14 GÜN BEKLEYEN</div>
+            <div class="p-stat-val" style="color:#d97706; font-size:28px; margin:5px 0;">${pendingVal.toLocaleString("tr-TR")} ₺</div> 
+            <div style="font-size:10px; color:#d97706; opacity:0.8;">İade süresi dolunca aktarılır</div>
+        </div>
     </div>
 
     <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
         <div style="font-size:20px;">🗓️</div>
         <div>
             <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
-            <div style="font-size:11px; color:#047857;">Ödeme talepleri her <b style="text-decoration:underline;">Çarşamba</b> işleme alınır ve hesabına yatırılır.</div>
+            <div style="font-size:11px; color:#047857;">Çekilebilir bakiyeniz 500 TL üzerindeyse her <b style="text-decoration:underline;">Çarşamba</b> günü otomatik olarak IBAN'ınıza yatırılır.</div>
         </div>
     </div>
-    <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Son Hareketler</h4>
+    
+    <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
     ${historyHTML}
 `;
           PartnerApp.updateBalanceDisplay(container);
@@ -1401,5 +1413,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v1*/
 })();
