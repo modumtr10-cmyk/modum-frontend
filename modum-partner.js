@@ -946,21 +946,19 @@ ${css}
           if (data.success && data.list.length > 0) {
             data.list.forEach((tx) => {
               // --- 1. DEĞERLERİ HAZIRLA ---
-              // Gelen para (commission) veya giden para (amount)
               let val = parseFloat(tx.commission || tx.amount || 0);
               if (isNaN(val)) val = 0;
 
-              let icon = "🛒"; // Varsayılan: Satış
-              let color = "#10b981"; // Yeşil
+              let icon = "🛒";
+              let color = "#10b981";
               let sign = "+";
               let desc = tx.desc;
 
-              // --- 2. TİP KONTROLÜ (SATIŞ MI ÖDEME Mİ?) ---
+              // --- 2. TİP KONTROLÜ ---
               if (tx.type === "payout_request") {
                 icon = "💸";
-                color = "#ef4444"; // Kırmızı (Para Çıktı)
+                color = "#ef4444";
                 sign = "-";
-                // Eğer açıklama yoksa "Ödeme" yaz
                 if (!desc || desc === "Para Çekme Talebi")
                   desc = "Ödeme Alındı";
               }
@@ -971,21 +969,33 @@ ${css}
               let amountText = `${sign}${val.toLocaleString()} ₺`;
 
               if (isRefunded) {
-                color = "#94a3b8"; // Soluk gri
+                color = "#94a3b8";
                 amountText = `<span style="text-decoration:line-through;">${amountText}</span> <span style="color:red; font-size:10px;">(İADE)</span>`;
                 statusBadge =
                   '<span style="background:#fee2e2; color:red; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">İADE EDİLDİ</span>';
                 icon = "↩️";
               }
 
-              // --- 4. DEKONT BUTONU (YENİ ÖZELLİK) ---
+              // --- 4. DEKONT BUTONU ---
               let receiptBtn = "";
               if (tx.receiptUrl && tx.receiptUrl.length > 5) {
-                // onclick="event.stopPropagation()" ekledik ki butona basınca kutu açılıp kapanmasın
                 receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block; margin-top:2px; font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 6px; border-radius:4px; text-decoration:none; font-weight:bold; border:1px solid #dbeafe;">📄 Dekont</a>`;
               }
 
-              // --- 5. ÜRÜN LİSTESİ ---
+              // --- 🔥 5. KAYNAK ETİKETİ (YENİ EKLENDİ) ---
+              let sourceBadge = "";
+              // Backend'den 'sourceTag' alanı geliyorsa ve 'direct' değilse göster
+              if (tx.soldItems && tx.soldItems.includes("🏷️")) {
+                // Eski versiyonlarda sourceTag yoksa diye manuel parse denemesi (Gerekmeyebilir ama garanti olsun)
+              }
+
+              // Backend'den tx.sourceTag gelmesini bekliyoruz (Controller'da eklemiştik)
+              // Eğer backend henüz göndermiyorsa, geçici olarak boş kalır.
+              if (tx.sourceTag && tx.sourceTag !== "direct") {
+                sourceBadge = `<span style="background:#f3e8ff; color:#7c3aed; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid #ddd6fe;">🏷️ ${tx.sourceTag}</span>`;
+              }
+
+              // --- 6. ÜRÜN LİSTESİ ---
               let productsHTML = "";
               let rawProd = "";
 
@@ -999,7 +1009,6 @@ ${css}
                 rawProd = tx.soldItems;
               }
 
-              // Temizlik (%...% varsa gizle)
               if (rawProd.includes("%") || rawProd === "") {
                 if (tx.type === "sale_commission")
                   productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
@@ -1010,23 +1019,18 @@ ${css}
                 </div>`;
               }
 
-              // --- 6. KART HTML OLUŞTUR ---
+              // --- 7. KART HTML OLUŞTUR ---
               historyHTML += `
-          <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${
-            isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"
-          }">
-              <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${
-                isRefunded ? "#fff1f2" : "white"
-              };" 
+          <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
+              <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
                     onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
                   
                   <div style="display:flex; align-items:center; gap:10px;">
                       <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
                       <div>
-                          <div style="font-weight:bold; font-size:13px; color:#334155;">${desc} ${statusBadge}</div>
-                          <div style="font-size:10px; color:#94a3b8;">${
-                            tx.date
-                          }</div>
+                          <div style="font-weight:bold; font-size:13px; color:#334155;">
+                             ${desc} ${statusBadge} ${sourceBadge} </div>
+                          <div style="font-size:10px; color:#94a3b8;">${tx.date}</div>
                       </div>
                   </div>
                   
@@ -1044,11 +1048,7 @@ ${css}
                   </div>
                   <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
                       <span style="color:#64748b">Durum:</span>
-                      <span style="font-weight:bold;">${
-                        tx.status === "paid"
-                          ? "ÖDENDİ ✅"
-                          : tx.status.toUpperCase()
-                      }</span>
+                      <span style="font-weight:bold;">${tx.status === "paid" ? "ÖDENDİ ✅" : tx.status.toUpperCase()}</span>
                   </div>
                   ${productsHTML}
               </div>
@@ -1523,5 +1523,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
