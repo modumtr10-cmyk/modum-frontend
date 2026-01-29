@@ -68,45 +68,91 @@
     }
   }
 
-  // --- SOL BUTON ---
+  // --- SOL BUTON (RESPONSIVE & DİKEY TASARIM) ---
   function renderPartnerButton() {
     var oldBtn = document.getElementById("mdm-partner-btn");
     if (oldBtn) oldBtn.remove();
 
+    // CSS Stillerini JS içine gömüyoruz (Media Query için)
+    var style = document.createElement("style");
+    style.innerHTML = `
+        #mdm-partner-btn {
+            position: fixed;
+            z-index: 999999;
+            background: #0f172a;
+            color: #fbbf24;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            border: 1px solid #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- MASAÜSTÜ GÖRÜNÜMÜ (DİKEY SEKME) --- */
+        @media (min-width: 769px) {
+            #mdm-partner-btn {
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 40px;
+                height: 140px;
+                border-radius: 0 12px 12px 0;
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                padding: 10px 0;
+                font-family: 'Inter', sans-serif;
+                font-weight: 800;
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+            #mdm-partner-btn:hover {
+                width: 50px; /* Üzerine gelince biraz genişlesin */
+                background: #1e293b;
+            }
+            #mdm-partner-btn span.icon {
+                margin-bottom: 10px;
+                font-size: 20px;
+                transform: rotate(90deg); /* İkonu düzelt */
+            }
+            #mdm-partner-btn span.text {
+                transform: rotate(180deg); /* Yazıyı aşağıdan yukarı okut */
+            }
+        }
+
+        /* --- MOBİL GÖRÜNÜM (KÜÇÜK YUVARLAK) --- */
+        @media (max-width: 768px) {
+            #mdm-partner-btn {
+                left: 15px;
+                bottom: 150px; /* WhatsApp butonunun üstünde kalsın */
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                padding: 0;
+            }
+            #mdm-partner-btn span.text {
+                display: none; /* Mobilde yazıyı gizle */
+            }
+            #mdm-partner-btn span.icon {
+                font-size: 24px;
+            }
+            #mdm-partner-btn:active {
+                transform: scale(0.9);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
     var btn = document.createElement("div");
     btn.id = "mdm-partner-btn";
-    btn.innerHTML = `
-<div style="display:flex; align-items:center; gap:8px;">
-<span style="font-size:18px;">👑</span>
-<span style="font-weight:800; font-family:'Inter', sans-serif; font-size:12px; letter-spacing:0.5px;">ORTAK PANELİ</span>
-</div>
-`;
-    Object.assign(btn.style, {
-      position: "fixed",
-      left: "20px",
-      bottom: "100px",
-      zIndex: "999999",
-      background: "linear-gradient(135deg, #0f172a, #334155)",
-      color: "#fbbf24",
-      padding: "12px 20px",
-      borderRadius: "50px",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-      cursor: "pointer",
-      border: "2px solid #fbbf24",
-      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    });
 
-    btn.onmouseover = function () {
-      this.style.transform = "scale(1.05) translateY(-3px)";
-      this.style.boxShadow = "0 10px 30px rgba(251, 191, 36, 0.3)";
-    };
-    btn.onmouseout = function () {
-      this.style.transform = "scale(1) translateY(0)";
-      this.style.boxShadow = "0 4px 20px rgba(0,0,0,0.4)";
-    };
+    // İçerik: İkon ve Yazı
+    btn.innerHTML = `
+        <span class="icon">👑</span>
+        <span class="text">ORTAK PANELİ</span>
+    `;
+
     btn.onclick = function () {
       openPartnerDashboard();
     };
@@ -1684,7 +1730,7 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (THE STRIPE) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (RESPONSIVE) ---
   function renderSiteStripe() {
     // 1. Zaten varsa tekrar ekleme
     if (document.getElementById("mdm-stripe-bar")) return;
@@ -1698,52 +1744,84 @@ ${css}
 
     // 3. Şu anki sayfanın linkini al ve temizle
     var currentUrl = window.location.href;
-    // Eğer URL'de zaten ?ref= varsa temizle, yoksa ? veya & ekle
     currentUrl = currentUrl.split("?ref=")[0];
     currentUrl = currentUrl.split("&ref=")[0];
 
     var separator = currentUrl.includes("?") ? "&" : "?";
     var finalLink = currentUrl + separator + "ref=" + myRefCode;
 
-    // 4. WhatsApp Mesajı Hazırla
+    // 4. WhatsApp Mesajı
     var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
 
-    // 5. HTML Oluştur
+    // 5. HTML Oluştur (Mobil Uyumlu CSS ile)
     var stripeHTML = `
-    <div id="mdm-stripe-bar" style="
-        position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
-        background: #0f172a; color: white; z-index: 2147483647; 
-        display: flex; align-items: center; justify-content: space-between; 
-        padding: 0 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; box-sizing: border-box;">
+    <style>
+        #mdm-stripe-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
+            background: #0f172a; color: white; z-index: 2147483647; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            font-family: 'Inter', sans-serif; box-sizing: border-box;
+        }
+        .mdm-stripe-left { display: flex; align-items: center; gap: 10px; }
+        .mdm-stripe-logo { font-weight: 900; color: #fbbf24; font-size: 14px; letter-spacing: 0.5px; }
+        .mdm-stripe-info { font-size: 12px; color: #cbd5e1; display: block; }
         
-        <div style="display:flex; align-items:center; gap:15px;">
-            <div style="font-weight:900; color:#fbbf24; font-size:14px; letter-spacing:0.5px;">
-                👑 MODUM PARTNER
-            </div>
-            <div style="height:20px; width:1px; background:#334155;"></div>
-            <div style="font-size:12px; color:#cbd5e1; display:none; @media(min-width:768px){display:block;}">
-                Şu an bu sayfadasın: <b style="color:white;">${document.title.substring(0, 30)}...</b>
+        .mdm-stripe-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+        .mdm-stripe-input-box { 
+            background: #1e293b; padding: 5px 10px; border-radius: 4px; 
+            border: 1px solid #334155; display: flex; align-items: center; 
+            max-width: 200px; flex: 1; /* Esnek genişlik */
+        }
+        .mdm-stripe-label { color: #64748b; font-size: 10px; margin-right: 5px; white-space: nowrap; }
+        .mdm-stripe-input { 
+            background: transparent; border: none; color: #fbbf24; 
+            font-family: monospace; font-size: 12px; width: 100%; outline: none; 
+            text-overflow: ellipsis; /* Sığmazsa ... koy */
+        }
+
+        .mdm-btn {
+            background: #3b82f6; color: white; border: none; padding: 6px 12px; 
+            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; 
+            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+        }
+        
+        /* MOBİL İÇİN ÖZEL AYARLAR */
+        @media (max-width: 768px) {
+            .mdm-stripe-info { display: none; } /* Mobilde "Şu an bu sayfadasın" yazısını gizle */
+            .mdm-stripe-logo { display: none; } /* Mobilde Logoyu da gizle, yer kalsın */
+            .mdm-stripe-label { display: none; } /* "LİNKİN:" yazısını gizle */
+            .mdm-stripe-input-box { max-width: none; } /* İnput tüm boşluğu kaplasın */
+            .mdm-btn span { display: none; } /* Buton yazılarını gizle, sadece ikon kalsın */
+            .mdm-btn { padding: 6px 8px; } /* Butonları küçült */
+        }
+    </style>
+
+    <div id="mdm-stripe-bar">
+        
+        <div class="mdm-stripe-left">
+            <div class="mdm-stripe-logo">👑 MODUM</div>
+            <div class="mdm-stripe-info" style="border-left:1px solid #334155; padding-left:10px; height:20px; display:flex; align-items:center;">
+                ${document.title.substring(0, 25)}...
             </div>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="background:#1e293b; padding:5px 10px; border-radius:4px; border:1px solid #334155; display:flex; align-items:center;">
-                <span style="color:#64748b; font-size:10px; margin-right:5px;">LİNKİN:</span>
-                <input type="text" value="${finalLink}" readonly style="background:transparent; border:none; color:#fbbf24; font-family:monospace; font-size:12px; width:150px; outline:none;">
+        <div class="mdm-stripe-right">
+            <div class="mdm-stripe-input-box">
+                <span class="mdm-stripe-label">LİNK:</span>
+                <input type="text" value="${finalLink}" readonly class="mdm-stripe-input">
             </div>
 
-            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Link Kopyalandı!')" 
-                style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; display:flex; align-items:center; gap:5px;">
-                <i class="fas fa-link"></i> <span style="display:none; @media(min-width:768px){display:inline;}">Kopyala</span>
+            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Link Kopyalandı!')" class="mdm-btn">
+                <i class="fas fa-link"></i> <span>Kopyala</span>
             </button>
 
-            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank"
-                style="background:#25D366; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; text-decoration:none; display:flex; align-items:center; gap:5px;">
-                <i class="fab fa-whatsapp"></i> <span style="display:none; @media(min-width:768px){display:inline;}">Paylaş</span>
+            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366; text-decoration:none;">
+                <i class="fab fa-whatsapp"></i> <span>Paylaş</span>
             </a>
 
             <div onclick="document.getElementById('mdm-stripe-bar').remove(); document.body.style.marginTop='0px';" 
-                style="cursor:pointer; color:#94a3b8; font-size:16px; margin-left:10px;">&times;</div>
+                style="cursor:pointer; color:#94a3b8; font-size:16px; margin-left:5px; padding:5px;">&times;</div>
         </div>
     </div>
     `;
@@ -1758,5 +1836,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
