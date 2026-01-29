@@ -417,39 +417,78 @@ ${css}
             return;
           }
           const s = res.stats;
-
-          let myRate = s.commission_rate || 10;
-          let myLevel = s.level || "Bronz";
           let currentRev = parseFloat(s.totalRevenue || 0);
+          let myRate = parseFloat(s.commission_rate || 10); // Veritabanındaki güncel oran
 
-          // Seviye İlerleme Çubuğu Hesaplama
-          let nextLevel = "Gümüş";
-          let nextTarget = 10000;
-          if (currentRev >= 10000) {
-            nextLevel = "Altın";
-            nextTarget = 50000;
+          // OTOMATİK HEDEF HESAPLAMA MOTORU
+          let nextLevelName = "Maksimum";
+          let nextTargetAmount = 0;
+          let progressPercent = 0;
+          let barColor = "#fbbf24"; // Varsayılan Sarı
+
+          if (currentRev < 10000) {
+            nextLevelName = "Gümüş (%15)";
+            nextTargetAmount = 10000;
+            progressPercent = (currentRev / 10000) * 100;
+            barColor = "#94a3b8"; // Gümüşe gidiyor
+          } else if (currentRev < 50000) {
+            nextLevelName = "Altın (%20)";
+            nextTargetAmount = 50000;
+            progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100; // Aradaki farka göre yüzde
+            barColor = "#fbbf24"; // Altına gidiyor
+          } else {
+            // Zaten en üst seviyede
+            nextLevelName = "Efsane";
+            nextTargetAmount = currentRev; // Hedef yok
+            progressPercent = 100;
+            barColor = "#ef4444"; // Efsane Rengi
           }
-          if (currentRev >= 50000) {
-            nextLevel = "Max";
-            nextTarget = currentRev;
-          }
 
-          let progress =
-            nextTarget > 0 ? Math.min((currentRev / nextTarget) * 100, 100) : 0;
-
-          // HTML ÇIKTISI
-          container.innerHTML = `
-    <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <div>
-                <div style="font-size:11px; opacity:0.7;">MEVCUT SEVİYE</div>
-                <div style="font-size:18px; font-weight:800; color:#fbbf24;">${myLevel} (%${myRate})</div>
+          // İlerleme çubuğu HTML'i
+          let progressHTML = "";
+          if (progressPercent < 100) {
+            let remaining = (nextTargetAmount - currentRev).toLocaleString(
+              "tr-TR",
+            );
+            progressHTML = `
+        <div style="margin-top:15px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
+                <span>🚀 Sonraki: <b>${nextLevelName}</b></span>
+                <span>Kalan: <b>${remaining} ₺</b></span>
             </div>
-            <div style="text-align:right;">
-                <div style="font-size:11px; opacity:0.7;">BAKİYE</div>
-                <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString()} ₺</div>
+            <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                <div style="width:${progressPercent}%; height:100%; background:${barColor}; transition: width 1s ease-in-out;"></div>
+            </div>
+            <div style="font-size:10px; text-align:center; margin-top:3px; color:rgba(255,255,255,0.5);">
+                Hedef: ${nextTargetAmount.toLocaleString()} ₺
             </div>
         </div>
+    `;
+          } else {
+            progressHTML = `
+        <div style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.1); padding:5px; border-radius:8px;">
+            <span style="font-size:12px;">🏆 Zirvedesin! Maksimum oran geçerli.</span>
+        </div>
+    `;
+          }
+
+          // KART HTML (Güncellenmiş)
+          container.innerHTML = `
+    <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">MEVCUT SEVİYE</div>
+                <div style="font-size:22px; font-weight:800; color:${barColor}; text-shadow:0 0 10px ${barColor}40;">
+                    ${s.level || "Bronz"} <span style="font-size:14px; color:white; opacity:0.8;">(%${myRate})</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">BAKİYE</div>
+                <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
+            </div>
+        </div>
+        ${progressHTML}
+    </div>
         
         <div style="margin-top:10px;">
             <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
@@ -1363,5 +1402,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
