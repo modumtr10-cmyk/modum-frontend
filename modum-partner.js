@@ -566,7 +566,7 @@ ${css}
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        // İndirim Kodu HTML
+        // İndirim Kodu HTML (Aynı kalıyor)
         let couponHTML =
           myCoupon !== "Tanımlanmamış"
             ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
@@ -578,7 +578,13 @@ ${css}
             : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
         c.innerHTML = `
-        <h3 style="margin:0 0 15px 0;">🔗 Link ve QR Araçları</h3>
+        <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+            <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve QR Araçları</h3>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                Buradan kendinize özel takip linkleri oluşturabilirsiniz. Paylaştığınız linklerden gelen her satış size kazanç olarak döner.
+            </p>
+        </div>
+
         ${couponHTML}
         
         <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
@@ -1007,7 +1013,15 @@ ${css}
           let safeBalance = parseFloat(pStats.balance || 0);
           let pendingVal = parseFloat(pStats.pending_balance || 0);
 
+          // 🔥 YENİ BAŞLIK EKLENDİ
           container.innerHTML = `
+    <div style="background:#fff; border-left:4px solid #10b981; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+        <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">💰 Cüzdan ve Ödemeler</h3>
+        <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+            Kazançlarınız satış onaylandıktan 14 gün sonra (iade süresi bitince) çekilebilir bakiyeye aktarılır.
+        </p>
+    </div>
+
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
         <div class="p-card" style="text-align:center; padding:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2); margin:0;">
             <div style="font-size:10px; opacity:0.9; font-weight:bold;">ÇEKİLEBİLİR BAKİYE</div>
@@ -1021,7 +1035,7 @@ ${css}
             <div style="font-size:10px; color:#d97706; opacity:0.8;">İade süresi dolunca aktarılır</div>
         </div>
     </div>
-
+    
     <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
         <div style="font-size:20px;">🗓️</div>
         <div>
@@ -1075,7 +1089,17 @@ ${css}
           }).then((r) => r.json());
 
           if (res.success) {
-            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎓 Partner Akademisi</h3>`;
+            // 🔥 YENİ BAŞLIK
+            container.innerHTML = `
+            <div style="background:#fff; border-left:4px solid #8b5cf6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎓 Partner Akademisi</h3>
+                <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                    Satışlarınızı artırmak, daha çok kişiye ulaşmak ve sistemin inceliklerini öğrenmek için 
+                    hazırladığımız eğitimleri buradan takip edebilirsiniz.
+                </p>
+            </div>
+            <h3 style="margin:0 0 15px 0;">Dersler</h3>`;
+
             if (res.list.length === 0) {
               container.innerHTML +=
                 "<div style='text-align:center; color:#999; padding:20px;'>Henüz eğitim eklenmemiş.</div>";
@@ -1168,7 +1192,16 @@ ${css}
           const res = await response.json();
 
           if (res.success) {
-            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🎨 Pazarlama Kiti</h3>`;
+            // 🔥 YENİ BAŞLIK
+            container.innerHTML = `
+            <div style="background:#fff; border-left:4px solid #ef4444; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎨 Pazarlama Kiti</h3>
+                <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                    Sosyal medyada paylaşmak için hazırlanmış profesyonel görselleri buradan indirebilirsiniz. 
+                    Story ve Post boyutları hazırdır.
+                </p>
+            </div>
+            <h3 style="margin:0 0 15px 0;">Galeri</h3>`;
 
             if (!res.list || res.list.length === 0) {
               container.innerHTML += `<div style="text-align:center; color:#94a3b8; padding:20px;">Henüz görsel eklenmemiş.</div>`;
@@ -1297,10 +1330,19 @@ ${css}
           const data = await res.json();
 
           if (data.success && data.list.length > 0) {
+            // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
             container.innerHTML = `
+              <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                  <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
+                  <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                      Sistem her gece en çok satan ve popüler ürünleri analiz ederek buraya getirir. 
+                      Ne paylaşsam diye düşünme, buradan seç ve kazan!
+                  </p>
+              </div>
+
               <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:15px; color:white; display:flex; align-items:center; justify-content:space-between;">
                   <div>
-                      <h3 style="margin:0; font-size:16px;">🔥 Günün Fırsatları</h3>
+                      <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
                       <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
                   </div>
                   <div style="font-size:24px;">🚀</div>
@@ -1423,5 +1465,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
