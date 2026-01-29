@@ -15,6 +15,18 @@
     script.src = "https://cdn.jsdelivr.net/npm/chart.js";
     document.head.appendChild(script);
   }
+  // --- PDF KÜTÜPHANESİ YÜKLE (jsPDF) ---
+  if (typeof jspdf === "undefined") {
+    let s1 = document.createElement("script");
+    s1.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    document.head.appendChild(s1);
+
+    let s2 = document.createElement("script");
+    s2.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js";
+    document.head.appendChild(s2);
+  }
 
   // --- KULLANICI TESPİTİ ---
   function detectUser() {
@@ -1102,7 +1114,12 @@ ${css}
         </div>
     </div>
     
-    <h4 style="margin:20px 0 10px 0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0;">
+        <h4 style="margin:0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
+        <button onclick="PartnerApp.downloadPDFStatement()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#1e293b; color:white; border:none;">
+            <i class="fas fa-file-pdf"></i> Ekstre İndir (PDF)
+        </button>
+    </div>    
     ${historyHTML}
 `;
           // Son olarak güncel bakiyeyi tekrar çekip ekrana basalım (Garanti olsun)
@@ -1462,6 +1479,152 @@ ${css}
         } catch (e) {
           container.innerHTML = "Hata: " + e.message;
         }
+      }, // 🔥 YENİ: PDF HAKEDİŞ RAPORU OLUŞTURUCU
+      downloadPDFStatement: async function () {
+        var email = detectUser();
+        var pData = window.PartnerData || {};
+        var name = pData.name || "Sayın Ortağımız";
+
+        // Butona basıldığını hissettir
+        const btn = event.target;
+        const oldText = btn.innerHTML;
+        btn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...';
+        btn.disabled = true;
+
+        try {
+          // 1. Verileri Çek (Son 100 işlem)
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              islem: "get_partner_history",
+              email: email,
+            }),
+          });
+          const data = await res.json();
+
+          if (!data.success || data.list.length === 0) {
+            alert("Henüz raporlanacak işlem geçmişiniz yok.");
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+            return;
+          }
+
+          // 2. PDF Başlat
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+
+          // --- TASARIM BAŞLIYOR ---
+
+          // Logo & Başlık (Mavi Şerit)
+          doc.setFillColor(30, 41, 59); // Koyu Lacivert (#1e293b)
+          doc.rect(0, 0, 210, 40, "F"); // Üst şerit
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(22);
+          doc.setFont("helvetica", "bold");
+          doc.text("MODUMNET", 15, 20);
+
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.text("PARTNER HAKEDIS EKSTRESI", 15, 28);
+
+          // Sağ Üst Bilgi
+          doc.setFontSize(9);
+          doc.text(
+            "Tarih: " + new Date().toLocaleDateString("tr-TR"),
+            195,
+            20,
+            { align: "right" },
+          );
+          doc.text("Ortak: " + name, 195, 28, { align: "right" });
+          doc.text("E-Posta: " + email, 195, 33, { align: "right" });
+
+          // Özet Bilgi Kutusu
+          doc.setTextColor(50, 50, 50);
+          doc.setFontSize(10);
+          doc.text(
+            `Sayin ${name}, asagida ModumNet ortaklik programi kapsaminda gerceklesen`,
+            15,
+            50,
+          );
+          doc.text(
+            `satis ve hakedis islemlerinizin dokumu yer almaktadir.`,
+            15,
+            55,
+          );
+
+          // Tablo Verisini Hazırla
+          let tableRows = [];
+          data.list.forEach((tx) => {
+            let amount = parseFloat(tx.commission || tx.amount || 0).toFixed(2);
+            let type =
+              tx.type === "payout_request" ? "ODEME CIKISI" : "SATIS KAZANCI";
+            let status =
+              tx.status === "paid"
+                ? "ODENDI"
+                : tx.status === "pending"
+                  ? "BEKLIYOR"
+                  : "ONAYLANDI";
+            let sign = tx.type === "payout_request" ? "-" : "+";
+
+            // Türkçe karakter sorununu aşmak için basit replace (jsPDF default fontu TR karakter sevmez)
+            let desc = (tx.desc || "")
+              .replace(/İ/g, "I")
+              .replace(/ı/g, "i")
+              .replace(/Ş/g, "S")
+              .replace(/ş/g, "s")
+              .replace(/Ğ/g, "G")
+              .replace(/ğ/g, "g");
+
+            tableRows.push([
+              tx.date,
+              type,
+              desc,
+              status,
+              sign + amount + " TL",
+            ]);
+          });
+
+          // Tabloyu Çiz
+          doc.autoTable({
+            startY: 65,
+            head: [["Tarih", "Islem Tipi", "Aciklama", "Durum", "Tutar"]],
+            body: tableRows,
+            theme: "grid",
+            headStyles: {
+              fillColor: [67, 97, 238],
+              textColor: 255,
+              fontStyle: "bold",
+            }, // Mavi başlık
+            styles: { fontSize: 8, cellPadding: 3 },
+            alternateRowStyles: { fillColor: [241, 245, 249] }, // Açık gri satırlar
+          });
+
+          // Alt Bilgi (Footer)
+          let finalY = doc.lastAutoTable.finalY + 20;
+          doc.setFontSize(8);
+          doc.setTextColor(150);
+          doc.text(
+            "Bu belge bilgilendirme amaclidir. Resmi fatura yerine gecmez.",
+            105,
+            finalY,
+            { align: "center" },
+          );
+          doc.text("ModumNet E-Ticaret Sistemleri", 105, finalY + 5, {
+            align: "center",
+          });
+
+          // İndir
+          doc.save(`Modum_Ekstre_${new Date().toISOString().slice(0, 10)}.pdf`);
+        } catch (e) {
+          console.error("PDF Hatası:", e);
+          alert("PDF oluşturulurken bir hata oluştu.");
+        } finally {
+          btn.innerHTML = oldText;
+          btn.disabled = false;
+        }
       },
     };
 
@@ -1523,5 +1686,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
