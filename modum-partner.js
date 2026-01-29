@@ -401,7 +401,7 @@ ${css}
         try {
           // Yükleniyor...
           container.innerHTML =
-            '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
+            '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler analiz ediliyor...</div>';
 
           const response = await fetch(API_URL, {
             method: "POST",
@@ -418,12 +418,35 @@ ${css}
           }
 
           const s = res.stats;
+
+          // --- VERİ HAZIRLIĞI ---
           let currentRev = parseFloat(s.totalRevenue || 0);
           let myRate = parseFloat(s.commission_rate || 10);
+          let tClicks = parseInt(s.totalClicks || 0);
+          let tSales = parseInt(s.totalSales || 0);
 
-          // OTOMATİK HEDEF HESAPLAMA MOTORU
+          // 🔥 PRO ANALİZ HESAPLAMALARI (CR & EPC)
+
+          // 1. Dönüşüm Oranı (CR)
+          // Formül: (Satış / Tık) * 100
+          let conversionRate =
+            tClicks > 0 ? ((tSales / tClicks) * 100).toFixed(2) : "0.00";
+          let crColor =
+            conversionRate > 2.0
+              ? "#10b981"
+              : conversionRate > 1.0
+                ? "#f59e0b"
+                : "#ef4444"; // İyi: Yeşil, Orta: Sarı, Kötü: Kırmızı
+
+          // 2. Tık Başı Kazanç (EPC)
+          // Formül: (Toplam Tahmini Kazanç / Tık)
+          let estimatedEarnings = currentRev * (myRate / 100);
+          let epcVal =
+            tClicks > 0 ? (estimatedEarnings / tClicks).toFixed(2) : "0.00";
+
+          // --- TIER (SEVİYE) HESAPLAMA MOTORU ---
           let nextLevelName = "Maksimum";
-          let nextTargetAmount = 0; // Değişken ismimiz bu
+          let nextTargetAmount = 0;
           let progressPercent = 0;
           let barColor = "#fbbf24";
 
@@ -444,14 +467,11 @@ ${css}
             barColor = "#ef4444";
           }
 
-          // İlerleme çubuğu HTML'i (Kartın içine gömülecek)
           let progressHTML = "";
           if (progressPercent < 100) {
             let remaining = (nextTargetAmount - currentRev).toLocaleString(
               "tr-TR",
             );
-
-            // 🔥 DÜZELTME BURADA YAPILDI (nextTarget -> nextTargetAmount)
             progressHTML = `
                 <div style="margin-top:15px;">
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
@@ -474,7 +494,7 @@ ${css}
             `;
           }
 
-          // KART HTML (Temizlendi, çift bar kaldırıldı)
+          // --- HTML ÇIKTISI ---
           container.innerHTML = `
             <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -492,19 +512,41 @@ ${css}
                 ${progressHTML}
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
                 <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                    <div class="p-stat-val" style="font-size:18px;">${s.totalClicks || 0}</div>
+                    <div class="p-stat-val" style="font-size:18px;">${tClicks}</div>
                     <div class="p-stat-lbl">TIK</div>
                 </div>
                 <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                    <div class="p-stat-val" style="font-size:18px;">${s.totalSales || 0}</div>
+                    <div class="p-stat-val" style="font-size:18px;">${tSales}</div>
                     <div class="p-stat-lbl">SATIŞ</div>
                 </div>
                 <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
                     <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
                     <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
                 </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                
+                <div class="p-card" style="padding:15px; margin:0; background:#f0f9ff; border:1px solid #bae6fd;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="p-stat-lbl" style="color:#0369a1;">DÖNÜŞÜM (CR)</div>
+                        <i class="fas fa-percent" style="color:#0ea5e9; opacity:0.5;"></i>
+                    </div>
+                    <div class="p-stat-val" style="font-size:20px; color:${crColor}; margin-top:5px;">%${conversionRate}</div>
+                    <div style="font-size:9px; color:#64748b; margin-top:3px;">Her 100 tıkta satış</div>
+                </div>
+
+                <div class="p-card" style="padding:15px; margin:0; background:#f0fdf4; border:1px solid #bbf7d0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="p-stat-lbl" style="color:#15803d;">TIK DEĞERİ (EPC)</div>
+                        <i class="fas fa-coins" style="color:#22c55e; opacity:0.5;"></i>
+                    </div>
+                    <div class="p-stat-val" style="font-size:20px; color:#166534; margin-top:5px;">${epcVal} ₺</div>
+                    <div style="font-size:9px; color:#64748b; margin-top:3px;">Tıklama başı getiri</div>
+                </div>
+
             </div>
             
             <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
@@ -1465,5 +1507,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
