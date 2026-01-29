@@ -601,14 +601,14 @@ ${css}
         }
       },
 
-      // --- LİNKLER & QR KOD (GÜNCELLENMİŞ) ---
+      // --- LİNKLER & QR KOD (KAYNAK TAKİBİ EKLENDİ v3.2) ---
       renderLinks: function (c) {
         var pData = window.PartnerData || {};
         var myRefCode = pData.refCode || "REF-BEKLENIYOR";
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        // İndirim Kodu HTML (Aynı kalıyor)
+        // İndirim Kodu HTML
         let couponHTML =
           myCoupon !== "Tanımlanmamış"
             ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
@@ -634,25 +634,31 @@ ${css}
             <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
                 ${homeLink}
             </div>
-            <div style="display:flex; gap:10px;">
-                <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1;">
-                    <i class="fas fa-copy"></i> Kopyala
-                </button>
-                <button onclick="PartnerApp.toggleQR('${homeLink}')" class="p-btn" style="background:#334155; color:white; height:40px; font-size:13px; border:none; border-radius:8px; width:50px; display:flex; align-items:center; justify-content:center;">
-                    <i class="fas fa-qrcode" style="font-size:18px;"></i>
-                </button>
-            </div>
+            <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1; width:100%;">
+                <i class="fas fa-copy"></i> Kopyala
+            </button>
         </div>
 
         <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
 
-        <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Ürün Linki & QR Oluştur:</p>
+        <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Akıllı Link Oluşturucu:</p>
 
         <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
-            <label class="p-stat-lbl" style="display:block; margin-bottom:8px;">ÜRÜN LİNKİNİ YAPIŞTIR</label>
-            <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
             
-            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:15px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="p-stat-lbl" style="display:block; margin-bottom:5px;">1. ÜRÜN LİNKİ (Zorunlu)</label>
+                <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="p-stat-lbl" style="display:block; margin-bottom:5px; color:#8b5cf6;">2. KAYNAK ETİKETİ (İsteğe Bağlı)</label>
+                <input type="text" id="pl-source" placeholder="Örn: story_sabah, youtube_bio" style="width:100%; padding:12px; border:1px solid #ddd6fe; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px; background:#f5f3ff; color:#6d28d9;">
+                <div style="font-size:10px; color:#64748b; margin-top:3px;">
+                    <i class="fas fa-info-circle"></i> Buraya yazdığınız not (örn: 'instagram'), satış raporlarında görünür. Böylece hangi paylaşımın kazandırdığını takip edebilirsiniz.
+                </div>
+            </div>
+            
+            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:5px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
                 Link ve QR Oluştur ✨
             </button>
         </div>
@@ -687,10 +693,22 @@ ${css}
 
       createLink: function (refCode) {
         var val = document.getElementById("pl-input").value;
+        var sourceTag = document.getElementById("pl-source").value.trim(); // Kaynak etiketi
+
         if (!val) return alert("Lütfen bir ürün linki giriniz.");
 
-        // 🔥 REFERANS KODUNU EKLİYORUZ (ÇOK ÖNEMLİ)
-        var final = val + (val.includes("?") ? "&" : "?") + "ref=" + refCode;
+        // Link zaten parametre içeriyor mu?
+        var separator = val.includes("?") ? "&" : "?";
+        var final = val + separator + "ref=" + refCode;
+
+        // 🔥 Eğer kaynak etiketi varsa ekle
+        if (sourceTag) {
+          // Boşlukları tire yap, özel karakterleri temizle
+          sourceTag = sourceTag
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9_]/g, "");
+          final += "&source=" + sourceTag;
+        }
 
         // Linki Ekrana Bas
         document.getElementById("pl-final").innerText = final;
@@ -701,12 +719,10 @@ ${css}
         document.getElementById("btn-wa").href =
           "https://api.whatsapp.com/send?text=" + msgWA;
 
-        // 🔥 QR KOD OLUŞTURMA (API KULLANIYORUZ - HIZLI VE KESİN)
-        // qrserver.com ücretsiz ve güvenilir bir QR servisidir.
+        // QR Kod
         var qrUrl =
           "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
           encodeURIComponent(final);
-
         document.getElementById("pl-qr-img").src = qrUrl;
         document.getElementById("pl-qr-dl").href = qrUrl;
 
@@ -1507,5 +1523,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
