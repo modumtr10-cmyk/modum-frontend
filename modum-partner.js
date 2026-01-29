@@ -44,9 +44,8 @@
   // --- BAŞLATICI (API'den Gerçek Veriyi Çeker) ---
   async function initPartnerSystem() {
     var email = detectUser();
-    if (!email) return; // Giriş yapmamışsa butonu gösterme
+    if (!email) return; // Giriş yapmamışsa hiçbir şey gösterme
 
-    // 🔥 Backend'e soruyoruz: Bu kişi partner mi? Kodu ne?
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -55,11 +54,14 @@
       });
       const res = await response.json();
 
-      // Eğer veritabanında kaydı varsa (Success: true)
       if (res.success && res.stats) {
-        // Veriyi tarayıcı hafızasına alıyoruz ki her yerde kullanalım
         window.PartnerData = res.stats;
+
+        // 1. Yuvarlak Paneli Butonunu Göster
         renderPartnerButton();
+
+        // 2. 🔥 YENİ: Tepedeki Hızlı Link Çubuğunu Göster
+        renderSiteStripe();
       }
     } catch (e) {
       console.log("Partner kontrol hatası:", e);
@@ -1682,9 +1684,79 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (THE STRIPE) ---
+  function renderSiteStripe() {
+    // 1. Zaten varsa tekrar ekleme
+    if (document.getElementById("mdm-stripe-bar")) return;
+
+    // 2. Verileri Al
+    var pData = window.PartnerData || {};
+    var myRefCode = pData.refCode;
+
+    // Eğer ref kodu yoksa barı gösterme
+    if (!myRefCode) return;
+
+    // 3. Şu anki sayfanın linkini al ve temizle
+    var currentUrl = window.location.href;
+    // Eğer URL'de zaten ?ref= varsa temizle, yoksa ? veya & ekle
+    currentUrl = currentUrl.split("?ref=")[0];
+    currentUrl = currentUrl.split("&ref=")[0];
+
+    var separator = currentUrl.includes("?") ? "&" : "?";
+    var finalLink = currentUrl + separator + "ref=" + myRefCode;
+
+    // 4. WhatsApp Mesajı Hazırla
+    var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
+
+    // 5. HTML Oluştur
+    var stripeHTML = `
+    <div id="mdm-stripe-bar" style="
+        position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
+        background: #0f172a; color: white; z-index: 2147483647; 
+        display: flex; align-items: center; justify-content: space-between; 
+        padding: 0 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; box-sizing: border-box;">
+        
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div style="font-weight:900; color:#fbbf24; font-size:14px; letter-spacing:0.5px;">
+                👑 MODUM PARTNER
+            </div>
+            <div style="height:20px; width:1px; background:#334155;"></div>
+            <div style="font-size:12px; color:#cbd5e1; display:none; @media(min-width:768px){display:block;}">
+                Şu an bu sayfadasın: <b style="color:white;">${document.title.substring(0, 30)}...</b>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background:#1e293b; padding:5px 10px; border-radius:4px; border:1px solid #334155; display:flex; align-items:center;">
+                <span style="color:#64748b; font-size:10px; margin-right:5px;">LİNKİN:</span>
+                <input type="text" value="${finalLink}" readonly style="background:transparent; border:none; color:#fbbf24; font-family:monospace; font-size:12px; width:150px; outline:none;">
+            </div>
+
+            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Link Kopyalandı!')" 
+                style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; display:flex; align-items:center; gap:5px;">
+                <i class="fas fa-link"></i> <span style="display:none; @media(min-width:768px){display:inline;}">Kopyala</span>
+            </button>
+
+            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank"
+                style="background:#25D366; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; text-decoration:none; display:flex; align-items:center; gap:5px;">
+                <i class="fab fa-whatsapp"></i> <span style="display:none; @media(min-width:768px){display:inline;}">Paylaş</span>
+            </a>
+
+            <div onclick="document.getElementById('mdm-stripe-bar').remove(); document.body.style.marginTop='0px';" 
+                style="cursor:pointer; color:#94a3b8; font-size:16px; margin-left:10px;">&times;</div>
+        </div>
+    </div>
+    `;
+
+    // 6. Sayfaya Enjekte Et
+    document.body.insertAdjacentHTML("afterbegin", stripeHTML);
+
+    // 7. Siteyi aşağı ittir ki barın altında kalmasın
+    document.body.style.marginTop = "50px";
+  }
 
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
