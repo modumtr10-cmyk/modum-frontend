@@ -8470,7 +8470,7 @@ font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.4;
                 box-shadow: 0 0 100px rgba(0,0,0,0.8) !important; /* Gölge ekle */
                 border-left: 1px solid #334155 !important;
                 border-right: 1px solid #334155 !important;
-                top: 40px;
+                top: 40px !important;
              }
           }
         `;
@@ -12508,5 +12508,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
