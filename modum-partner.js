@@ -2153,14 +2153,14 @@ ${css}
     showStep3();
   };
 
-  // --- ADIM 3: ONAY VE GÖNDER (SÖZLEŞME MODAL'LI) ---
+  // --- ADIM 3: ONAY VE GÖNDER (AVUKAT MODU & YEŞİL EFEKT) ---
   function showStep3() {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
             <div class="form-left-text">
                 <h3 style="margin:0;">Tamamla</h3>
-                <p style="margin:5px 0 0; opacity:0.8;">Başvurunu bize gönder.</p>
+                <p style="margin:5px 0 0; opacity:0.8;">Son adım: Resmi işlemler.</p>
             </div>
         </div>
         <div class="form-right">
@@ -2168,61 +2168,78 @@ ${css}
                 <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot active"></div>
             </div>
             
-            <div style="text-align:center; padding:20px;">
-                <div style="font-size:40px; margin-bottom:10px;">🚀</div>
-                <h3 style="color:#1e293b;">Hazır mısın?</h3>
-                <p style="color:#64748b; font-size:13px;">Başvurunu inceledikten sonra seninle iletişime geçeceğiz.</p>
+            <div style="text-align:center; padding:10px;">
+                <div style="font-size:40px; margin-bottom:10px;">⚖️</div>
+                <h3 style="color:#1e293b; margin:0;">Resmi Başvuru Onayı</h3>
+                <p style="color:#64748b; font-size:13px; margin-top:5px;">Aşağıdaki yasal metni okuyup onaylamanız gerekmektedir.</p>
                 
-                <div style="text-align:left; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0;">
-                    <div style="font-size:12px; margin-bottom:10px; color:#334155;">
-                        <span onclick="openContractModal()" style="color:#3b82f6; text-decoration:underline; cursor:pointer; font-weight:bold;">📄 ModumNet Ortaklık Sözleşmesi</span>'ni okumak için tıklayınız.
+                <div id="contract-wrapper" style="text-align:left; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0; transition:all 0.3s ease;">
+                    <div style="font-size:12px; margin-bottom:10px; color:#334155; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-file-contract" style="font-size:16px;"></i>
+                        <div>
+                            <span onclick="openContractModal()" style="color:#3b82f6; text-decoration:underline; cursor:pointer; font-weight:bold;">📄 ModumNet Ortaklık Sözleşmesi</span>'ni okumak için tıklayınız.
+                        </div>
                     </div>
                     <label style="display:flex; gap:10px; font-size:12px; cursor:pointer; align-items:center;">
                         <input type="checkbox" id="app_terms">
-                        <span>Sözleşmeyi okudum, kurallara uymayı kabul ediyorum.</span>
+                        <span id="term-text">Sözleşme hükümlerini okudum, anladım ve kabul ediyorum.</span>
                     </label>
                 </div>
 
-                <button onclick="submitApplication()" class="btn-next" style="background:#10b981;">BAŞVURUYU GÖNDER ✨</button>
+                <button onclick="submitApplication()" class="btn-next" style="background:#10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                    BAŞVURUYU TAMAMLA 🚀
+                </button>
             </div>
         </div>
       `;
   }
 
-  // --- SÖZLEŞME MODALI AÇ ---
+  // --- SÖZLEŞME PENCERESİ (AVUKAT DİLİ) ---
   window.openContractModal = function () {
-    // Önce varsa eskisini sil
     let old = document.getElementById("mdm-contract-modal");
     if (old) old.remove();
 
+    // PROFESYONEL SÖZLEŞME METNİ
     let contractText = `
-        <h4>1. TARAFLAR VE AMAÇ</h4>
-        <p>İşbu sözleşme, ModumNet (Şirket) ile Başvuru Sahibi (Ortak) arasında, satış ortaklığı esaslarını belirlemek amacıyla düzenlenmiştir.</p>
-        
-        <h4>2. KOMİSYON VE ÖDEME</h4>
-        <p>Ortak, paylaştığı linkler üzerinden gerçekleşen ve iade edilmeyen her satıştan, bulunduğu seviyeye (Bronz, Gümüş, Altın) göre komisyon hak eder. Ödemeler, 14 günlük yasal iade süresi dolduktan sonra, bakiye 500 TL üzerindeyse Çarşamba günleri yapılır.</p>
-        
-        <h4>3. YASAKLI FAALİYETLER (KIRMIZI ÇİZGİLER)</h4>
-        <ul>
-            <li>Kendi referans linkiyle kendine ürün satın almak yasaktır.</li>
-            <li>Marka adını lekeleyecek, spam veya yanıltıcı paylaşımlar yapmak yasaktır.</li>
-            <li>Sahte sipariş oluşturup iptal etmek (sistemi manipüle etmek) yasaktır.</li>
-        </ul>
-        <p>Bu maddelerin ihlali durumunda Şirket, ortaklığı tek taraflı feshetme ve içerideki bakiyeyi ödememe hakkını saklı tutar.</p>
-        
-        <h4>4. GİZLİLİK VE KVKK</h4>
-        <p>Ortak, paylaştığı kişisel verilerin (Ad, Soyad, Telefon, IBAN) ödeme işlemleri için işlenmesine rıza gösterir.</p>
+        <div style="font-family: 'Times New Roman', serif; line-height:1.6;">
+            <h3 style="text-align:center; border-bottom:1px solid #ddd; padding-bottom:10px;">MODUMNET SATIŞ ORTAKLIĞI (AFFILIATE) SÖZLEŞMESİ</h3>
+            
+            <p><strong>MADDE 1: TARAFLAR VE KONU</strong><br>
+            İşbu sözleşme, ModumNet E-Ticaret Sistemleri ("Şirket") ile başvuru formunu dolduran gerçek/tüzel kişi ("Ortak") arasında, Şirket'in ürünlerinin dijital ortamda pazarlanması ve komisyon ödenmesi şartlarını düzenler.</p>
+            
+            <p><strong>MADDE 2: KOMİSYON VE HAKEDİŞ</strong><br>
+            2.1. Ortak, kendisine özel üretilen bağlantılar (linkler) üzerinden gerçekleşen, iptal/iade edilmeyen her satıştan, sistemde belirtilen "Bronz (%10), Gümüş (%15), Altın (%20)" oranlarında komisyon hak eder.<br>
+            2.2. Hakedişler, 6502 sayılı Tüketicinin Korunması Hakkında Kanun gereği 14 günlük yasal cayma süresi dolduktan sonra kesinleşir.<br>
+            2.3. Ödemeler, kesinleşmiş bakiye 500 TL (Beş Yüz Türk Lirası) limitine ulaştığında, Ortak tarafından bildirilen IBAN adresine haftalık periyotlarla (Çarşamba günü) yapılır.</p>
+            
+            <p><strong>MADDE 3: YASAKLI FAALİYETLER VE FESİH</strong><br>
+            Aşağıdaki durumların tespiti halinde Şirket, sözleşmeyi tek taraflı feshetme ve içerideki bakiyeyi bloke etme hakkını saklı tutar:<br>
+            a) Kendi referans linki üzerinden kişisel alışveriş yapmak (Self-Referral).<br>
+            b) Marka itibarını zedeleyici, yanıltıcı veya spam niteliğinde paylaşımlar yapmak.<br>
+            c) Sahte sipariş oluşturup iptal ederek sistemi manipüle etmek.</p>
+            
+            <p><strong>MADDE 4: GİZLİLİK VE KVKK</strong><br>
+            Ortak; Ad, Soyad, Telefon ve Banka bilgilerinin, 6698 sayılı KVKK kapsamında sadece ödeme ve iletişim süreçleri için işlenmesine açık rıza gösterir.</p>
+            
+            <p><strong>MADDE 5: YÜRÜRLÜK</strong><br>
+            İşbu sözleşme, Ortağın dijital ortamda "Okudum, Kabul Ediyorum" beyanı ile yürürlüğe girer.</p>
+        </div>
       `;
 
     let html = `
         <div id="mdm-contract-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
-            <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden;">
-                <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold; color:#1e293b;">📄 Ortaklık Sözleşmesi</div>
-                <div style="padding:20px; overflow-y:auto; font-size:13px; color:#334155; line-height:1.6;">
+            <div style="background:white; width:100%; max-width:700px; max-height:85vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+                <div style="padding:15px; border-bottom:1px solid #eee; background:#f8fafc; font-weight:bold; color:#1e293b; display:flex; justify-content:space-between;">
+                    <span>⚖️ Ortaklık Sözleşmesi</span>
+                    <span onclick="document.getElementById('mdm-contract-modal').remove()" style="cursor:pointer;">&times;</span>
+                </div>
+                <div style="padding:25px; overflow-y:auto; font-size:13px; color:#334155; background:white;">
                     ${contractText}
                 </div>
                 <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
-                    <button onclick="acceptContract()" class="p-btn" style="width:auto; padding:10px 20px; background:#10b981; color:white;">Okudum, Anladım</button>
+                    <button onclick="acceptContract()" class="p-btn" style="width:auto; padding:12px 30px; background:#1e293b; color:white; border-radius:6px; font-weight:bold;">
+                        <i class="fas fa-check-circle"></i> Okudum, Anlıyorum ve Kabul Ediyorum
+                    </button>
                 </div>
             </div>
         </div>
@@ -2230,14 +2247,94 @@ ${css}
     document.body.insertAdjacentHTML("beforeend", html);
   };
 
-  // --- SÖZLEŞMEYİ KABUL ET ---
+  // --- 🔥 SÖZLEŞMEYİ KABUL ET (YEŞİL EFEKT) ---
   window.acceptContract = function () {
-    document.getElementById("mdm-contract-modal").remove(); // Pencereyi kapat
-    document.getElementById("app_terms").checked = true; // Kutucuğu işaretle
+    // 1. Modalı Kapat
+    document.getElementById("mdm-contract-modal").remove();
+
+    // 2. Kutucuğu İşaretle
+    document.getElementById("app_terms").checked = true;
+
+    // 3. KUTUYU YEŞİLE ÇEVİR (Görsel Onay)
+    const wrapper = document.getElementById("contract-wrapper");
+    const text = document.getElementById("term-text");
+
+    wrapper.style.backgroundColor = "#dcfce7"; // Açık yeşil arka plan
+    wrapper.style.borderColor = "#22c55e"; // Yeşil kenarlık
+    wrapper.style.color = "#14532d"; // Koyu yeşil yazı
+
+    text.innerHTML = "<b>✅ Sözleşme Onaylandı.</b> Başvuruya hazırsınız.";
+
+    // Şık bir efekt
+    wrapper.style.transform = "scale(1.02)";
+    setTimeout(() => (wrapper.style.transform = "scale(1)"), 200);
   };
-  window.addEventListener("load", function () {
-    renderApplicationPage();
-  });
+
+  // --- 🔥 BAŞVURU GÖNDER (GLOBAL WINDOW FIX) ---
+  window.submitApplication = async function () {
+    if (!document.getElementById("app_terms").checked) {
+      alert("⚠️ Lütfen önce sözleşmeyi okuyup onaylayınız.");
+      return;
+    }
+
+    // Buton Efekti
+    const btn = event.target;
+    const oldText = btn.innerText;
+    btn.innerHTML =
+      '<i class="fas fa-circle-notch fa-spin"></i> Gönderiliyor...';
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
+
+    try {
+      // Backend'e Gönder
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "submit_application", // Backend fonksiyon adını kontrol et (submit_application olmalı)
+          email: window.appData.email,
+          name: window.appData.personal.name,
+          phone: window.appData.personal.phone,
+          reason: window.appData.personal.reason,
+          socialLinks: window.appData.social,
+          // Eğer özel kupon isteği varsa buraya ekleyebiliriz, şimdilik boş
+          customCoupon: "",
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const area = document.getElementById("app-form-area");
+        area.innerHTML = `
+                <div style="padding:50px; text-align:center; width:100%;">
+                    <div style="font-size:70px; color:#10b981; margin-bottom:20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🎉</div>
+                    <h2 style="color:#1e293b;">Başvurunuz Başarıyla Alındı!</h2>
+                    <p style="color:#64748b; max-width:400px; margin:10px auto; line-height:1.5;">
+                        Teşekkürler <b>${window.appData.personal.name}</b>.<br>
+                        Ekibimiz başvurunuzu en kısa sürede (genellikle 24 saat içinde) değerlendirip size dönüş yapacaktır.
+                    </p>
+                    <div style="margin-top:30px;">
+                        <a href="/" class="btn-next" style="display:inline-block; width:auto; padding:12px 30px; text-decoration:none; background:#3b82f6;">Ana Sayfaya Dön</a>
+                    </div>
+                </div>
+                <style>@keyframes popIn { from{transform:scale(0);} to{transform:scale(1);} }</style>
+              `;
+      } else {
+        alert("❌ Hata: " + data.message);
+        btn.innerHTML = oldText; // Eski haline dön
+        btn.style.opacity = "1";
+        btn.disabled = false;
+      }
+    } catch (e) {
+      console.error("Başvuru hatası:", e);
+      alert(
+        "Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
+      );
+      btn.innerHTML = oldText;
+      btn.style.opacity = "1";
+      btn.disabled = false;
+    }
+  };
 
   // --- SAYFA AÇILINCA ÇALIŞTIR ---
   // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
@@ -2247,5 +2344,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
