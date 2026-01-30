@@ -822,7 +822,7 @@ ${css}
         let myCoupon = pData.custom_coupon || "KOD YOK";
 
         let html = `
-<div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+<div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
     <div style="display:flex; justify-content:flex-end; width:100%; max-width:400px; margin-bottom:10px;">
         <span onclick="document.getElementById('p-story-modal').remove()" style="cursor:pointer; font-size:30px; color:white;">&times;</span>
     </div>
@@ -2214,14 +2214,14 @@ ${css}
     showStep2();
   };
 
-  // --- ADIM 2: KİŞİSEL BİLGİLER VE KUPON ---
+  // --- ADIM 2: KİŞİSEL BİLGİLER, KUPON VE BANKA ---
   window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
             <div class="form-left-text">
                 <h3 style="margin:0;">Adım 2/3</h3>
-                <p style="margin:5px 0 0; opacity:0.8;">Sana özel kodunu belirle.</p>
+                <p style="margin:5px 0 0; opacity:0.8;">Kimlik ve Ödeme Bilgileri.</p>
             </div>
         </div>
         <div class="form-right">
@@ -2230,7 +2230,7 @@ ${css}
             </div>
             
             <div class="inp-group">
-                <label>Adın Soyadın</label>
+                <label>Adın Soyadın (Hesap Sahibi)</label>
                 <input type="text" id="app_name" placeholder="Tam adınız">
             </div>
             <div class="inp-group">
@@ -2238,14 +2238,35 @@ ${css}
                 <input type="tel" id="app_phone" placeholder="0555 555 55 55">
             </div>
 
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="inp-group">
+                    <label>Banka Seçiniz</label>
+                    <select id="app_bank_name">
+                        <option value="">Seç...</option>
+                        <option value="Ziraat">Ziraat Bankası</option>
+                        <option value="Garanti">Garanti BBVA</option>
+                        <option value="IsBank">İş Bankası</option>
+                        <option value="Akbank">Akbank</option>
+                        <option value="Yapikredi">Yapı Kredi</option>
+                        <option value="Finansbank">QNB Finansbank</option>
+                        <option value="Halkbank">Halkbank</option>
+                        <option value="Vakifbank">Vakıfbank</option>
+                        <option value="Diger">Diğer / Papara</option>
+                    </select>
+                </div>
+                <div class="inp-group">
+                    <label>IBAN Numarası</label>
+                    <input type="text" id="app_iban" placeholder="TR..." maxlength="32" oninput="this.value = this.value.toUpperCase()">
+                </div>
+            </div>
+
             <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px;">
                 <label style="color:#c2410c;">İstediğin İndirim Kodu</label>
                 <input type="text" id="app_coupon" placeholder="Örn: AHMET15" style="font-weight:bold; color:#c2410c;">
-                <div style="font-size:10px; color:#9a3412; margin-top:3px;">Takipçilerin bu kodu kullanarak indirim kazanacak. (Harf ve Rakam)</div>
             </div>
 
             <div class="inp-group">
-                <label>Neden ModumNet? (Kısaca anlat)</label>
+                <label>Neden ModumNet?</label>
                 <textarea id="app_reason" rows="2" placeholder="Hedeflerin neler?"></textarea>
             </div>
 
@@ -2257,25 +2278,35 @@ ${css}
       `;
   };
 
-  // VALIDATION GÜNCELLEMESİ
+  // --- VALIDATION GÜNCELLEMESİ (IBAN KONTROLÜ) ---
   window.validateStep2 = function () {
     const name = document.getElementById("app_name").value;
     const phone = document.getElementById("app_phone").value;
     const coupon = document
       .getElementById("app_coupon")
       .value.toUpperCase()
-      .replace(/[^A-Z0-9]/g, ""); // Sadece harf rakam
+      .replace(/[^A-Z0-9]/g, "");
+
+    // Yeni Banka Verileri
+    const bankName = document.getElementById("app_bank_name").value;
+    let iban = document.getElementById("app_iban").value.trim();
 
     if (name.length < 3 || phone.length < 10)
       return alert("Ad ve telefon zorunludur.");
     if (coupon.length < 3)
-      return alert("Lütfen geçerli bir kupon kodu belirleyin (Örn: ADIN10).");
+      return alert("Lütfen geçerli bir kupon kodu belirleyin.");
+
+    // IBAN Kontrolü (Basit)
+    if (!bankName) return alert("Lütfen bankanızı seçiniz.");
+    if (!iban.startsWith("TR") || iban.length < 10)
+      return alert("Lütfen geçerli bir IBAN giriniz (TR ile başlamalı).");
 
     window.appData.personal = {
       name: name,
       phone: phone,
       reason: document.getElementById("app_reason").value,
-      customCoupon: coupon, // 🔥 Veriye ekledik
+      customCoupon: coupon,
+      bankInfo: `${bankName} - ${iban}`, // 🔥 Tek satırda birleştirip saklıyoruz
     };
     showStep3();
   };
@@ -2426,6 +2457,7 @@ ${css}
           socialLinks: window.appData.social,
           // Eğer özel kupon isteği varsa buraya ekleyebiliriz, şimdilik boş
           customCoupon: window.appData.personal.customCoupon,
+          bankInfo: window.appData.personal.bankInfo,
         }),
       });
       const data = await res.json();
@@ -2478,5 +2510,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
