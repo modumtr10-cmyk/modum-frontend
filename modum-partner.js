@@ -2022,9 +2022,44 @@ ${css}
       }, 100);
     }
 
-    // SENARYO 5: TEMİZ (Hiçbir şey yapma, form zaten açık)
+    // SENARYO 5: TEMİZ (İlk Kez Başvuruyor)
+    window.appData = { email: email };
+    showIntro(); // 🔥 ÖNCE TANITIM EKRANI AÇILSIN
   }
 
+  // --- ADIM 0: SİSTEM TANITIMI (YENİ) ---
+  function showIntro() {
+    const area = document.getElementById("app-form-area");
+    area.innerHTML = `
+        <div class="form-left">
+            <div class="form-left-text">
+                <h3 style="margin:0;">Hoş Geldin!</h3>
+                <p style="margin:5px 0 0; opacity:0.8;">Kazanmaya başlamadan önce...</p>
+            </div>
+        </div>
+        <div class="form-right">
+            <h2 style="color:#1e293b; margin-top:0;">ModumNet Partner Programı</h2>
+            <p style="color:#64748b; font-size:13px; line-height:1.6;">
+                Sosyal medya gücünü gelire dönüştürmeye hazır mısın? ModumNet Partner programı ile paylaştığın her linkten komisyon kazanabilirsin.
+            </p>
+
+            <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                <h4 style="margin:0 0 10px 0; color:#334155;">💎 Kazanç Oranları</h4>
+                <ul style="margin:0; padding-left:20px; font-size:12px; color:#475569; line-height:1.8;">
+                    <li><b>🥉 Bronz Seviye:</b> %10 Komisyon (Başlangıç)</li>
+                    <li><b>🥈 Gümüş Seviye:</b> %15 Komisyon (10.000 TL üzeri ciro)</li>
+                    <li><b>👑 Altın Seviye:</b> %20 Komisyon (50.000 TL üzeri ciro)</li>
+                </ul>
+            </div>
+
+            <div style="background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0; font-size:12px; color:#166534; margin-bottom:20px;">
+                <i class="fas fa-gift"></i> Ayrıca takipçilerine özel tanımlayacağın <b>İndirim Kuponu</b> ile satışlarını artırabilirsin!
+            </div>
+
+            <button onclick="showStep1()" class="btn-next">BAŞVURUYA BAŞLA &rarr;</button>
+        </div>
+      `;
+  }
   // --- YARDIMCI: FORMU KİLİTLEME FONKSİYONU ---
   function disableFormArea(message) {
     // 1. Uyarı Mesajını Ekle
@@ -2136,14 +2171,14 @@ ${css}
     showStep2();
   };
 
-  // --- ADIM 2: KİŞİSEL BİLGİLER ---
+  // --- ADIM 2: KİŞİSEL BİLGİLER VE KUPON ---
   function showStep2() {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
             <div class="form-left-text">
                 <h3 style="margin:0;">Adım 2/3</h3>
-                <p style="margin:5px 0 0; opacity:0.8;">Sana nasıl ulaşalım?</p>
+                <p style="margin:5px 0 0; opacity:0.8;">Sana özel kodunu belirle.</p>
             </div>
         </div>
         <div class="form-right">
@@ -2151,8 +2186,6 @@ ${css}
                 <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div>
             </div>
             
-            <h3 style="margin:0 0 20px 0; color:#1e293b;">Kişisel Bilgiler</h3>
-
             <div class="inp-group">
                 <label>Adın Soyadın</label>
                 <input type="text" id="app_name" placeholder="Tam adınız">
@@ -2161,9 +2194,16 @@ ${css}
                 <label>Telefon Numaran (WhatsApp)</label>
                 <input type="tel" id="app_phone" placeholder="0555 555 55 55">
             </div>
+
+            <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px;">
+                <label style="color:#c2410c;">İstediğin İndirim Kodu</label>
+                <input type="text" id="app_coupon" placeholder="Örn: AHMET15" style="font-weight:bold; color:#c2410c;">
+                <div style="font-size:10px; color:#9a3412; margin-top:3px;">Takipçilerin bu kodu kullanarak indirim kazanacak. (Harf ve Rakam)</div>
+            </div>
+
             <div class="inp-group">
                 <label>Neden ModumNet? (Kısaca anlat)</label>
-                <textarea id="app_reason" rows="3" placeholder="Hedeflerin neler? Nasıl içerikler üreteceksin?"></textarea>
+                <textarea id="app_reason" rows="2" placeholder="Hedeflerin neler?"></textarea>
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -2174,17 +2214,25 @@ ${css}
       `;
   }
 
+  // VALIDATION GÜNCELLEMESİ
   window.validateStep2 = function () {
     const name = document.getElementById("app_name").value;
     const phone = document.getElementById("app_phone").value;
+    const coupon = document
+      .getElementById("app_coupon")
+      .value.toUpperCase()
+      .replace(/[^A-Z0-9]/g, ""); // Sadece harf rakam
 
     if (name.length < 3 || phone.length < 10)
-      return alert("Lütfen adını ve telefonunu doğru gir.");
+      return alert("Ad ve telefon zorunludur.");
+    if (coupon.length < 3)
+      return alert("Lütfen geçerli bir kupon kodu belirleyin (Örn: ADIN10).");
 
     window.appData.personal = {
       name: name,
       phone: phone,
       reason: document.getElementById("app_reason").value,
+      customCoupon: coupon, // 🔥 Veriye ekledik
     };
     showStep3();
   };
@@ -2334,7 +2382,7 @@ ${css}
           reason: window.appData.personal.reason,
           socialLinks: window.appData.social,
           // Eğer özel kupon isteği varsa buraya ekleyebiliriz, şimdilik boş
-          customCoupon: "",
+          customCoupon: window.appData.personal.customCoupon,
         }),
       });
       const data = await res.json();
@@ -2387,5 +2435,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
