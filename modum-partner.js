@@ -1862,40 +1862,75 @@ ${css}
     const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
     const FORM_SIDE_IMG = "https://www.modum.tr/i/m/001/0016756.jpeg";
 
-    // --- CSS ---
+    // --- CSS STİLLERİ (MOBİL UYUMLU) ---
     const style = `
     <style>
+        /* GENEL MASAÜSTÜ AYARLARI */
         .app-hero { width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
-        .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
-        .app-hero-content { position:relative; z-index:2; text-align:center; color:white; }
+        .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
+        .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; }
         .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
         .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
-        .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; }
+        
+        .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; }
+        
+        /* KARTLAR */
         .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
         .b-card { background:white; padding:30px; border-radius:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05); transition:0.3s; }
         .b-card:hover { transform:translateY(-10px); }
-        .b-card img { width:80px; height:80px; border-radius:50%; margin-bottom:15px; }
+        .b-card img { width:80px; height:80px; border-radius:50%; margin-bottom:15px; object-fit:cover; }
         .b-card h4 { font-size:18px; color:#1e293b; margin:0 0 10px; }
         .b-card p { font-size:13px; color:#64748b; line-height:1.5; }
-        .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:500px; }
+
+        /* FORM KUTUSU */
+        .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:550px; }
         .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; }
         .form-left::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, #0f172a, transparent); }
         .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; }
+        
         .form-right { width:60%; padding:40px; display:flex; flex-direction:column; }
+        
+        /* ADIMLAR VE INPUTLAR */
         .step-indicator { display:flex; gap:10px; margin-bottom:30px; }
         .step-dot { flex:1; height:4px; background:#e2e8f0; border-radius:4px; }
         .step-dot.active { background:#3b82f6; }
+        
         .inp-group { margin-bottom:15px; }
         .inp-group label { display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:5px; }
-        .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; }
+        .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; }
         .inp-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
-        .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; }
-        .btn-next:hover { background:#1e293b; }
+
+        .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
+        .btn-next:hover { background:#1e293b; transform:scale(1.02); }
+
+        /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (EN ÖNEMLİ KISIM) */
         @media(max-width:768px) {
-            .benefit-grid { grid-template-columns:1fr; }
-            .form-box { flex-direction:column; }
-            .form-left { height:150px; width:100%; }
-            .form-right { width:100%; padding:20px; }
+            /* Bannerı küçült */
+            .app-hero { height: 200px; }
+            .app-hero h1 { font-size: 24px; }
+            .app-hero p { font-size: 14px; }
+            
+            /* Konteynırı yukarı çek */
+            .app-container { margin-top: -30px; padding: 0 15px; }
+
+            /* Kartları daha kompakt yap (Yatay Liste Gibi) */
+            .benefit-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+            .b-card { padding: 15px; display: flex; align-items: center; text-align: left; gap: 15px; }
+            .b-card img { width: 50px; height: 50px; margin-bottom: 0; }
+            .b-card h4 { font-size: 15px; margin-bottom: 2px; }
+            .b-card p { font-size: 11px; margin: 0; }
+
+            /* Form Yapısı */
+            .form-box { flex-direction: column; }
+            
+            /* 🔥 Yan resmi mobilde GİZLE (Yer kaplamasın, form odaklı olsun) */
+            .form-left { display: none; } 
+            
+            /* Sağ tarafı tam genişlik yap */
+            .form-right { width: 100%; padding: 25px 20px; }
+            
+            /* Inputları rahatlat */
+            .inp-group input, .btn-next { font-size: 16px; } /* Mobilde zoom yapmaması için */
         }
     </style>
     `;
@@ -2435,5 +2470,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
