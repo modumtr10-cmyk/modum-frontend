@@ -2359,29 +2359,79 @@ ${css}
 
     // PROFESYONEL SÖZLEŞME METNİ
     let contractText = `
-        <div style="font-family: 'Times New Roman', serif; line-height:1.6;">
-            <h3 style="text-align:center; border-bottom:1px solid #ddd; padding-bottom:10px;">MODUMNET SATIŞ ORTAKLIĞI (AFFILIATE) SÖZLEŞMESİ</h3>
-            
-            <p><strong>MADDE 1: TARAFLAR VE KONU</strong><br>
-            İşbu sözleşme, ModumNet E-Ticaret Sistemleri ("Şirket") ile başvuru formunu dolduran gerçek/tüzel kişi ("Ortak") arasında, Şirket'in ürünlerinin dijital ortamda pazarlanması ve komisyon ödenmesi şartlarını düzenler.</p>
-            
-            <p><strong>MADDE 2: KOMİSYON VE HAKEDİŞ</strong><br>
-            2.1. Ortak, kendisine özel üretilen bağlantılar (linkler) üzerinden gerçekleşen, iptal/iade edilmeyen her satıştan, sistemde belirtilen "Bronz (%10), Gümüş (%15), Altın (%20)" oranlarında komisyon hak eder.<br>
-            2.2. Hakedişler, 6502 sayılı Tüketicinin Korunması Hakkında Kanun gereği 14 günlük yasal cayma süresi dolduktan sonra kesinleşir.<br>
-            2.3. Ödemeler, kesinleşmiş bakiye 500 TL (Beş Yüz Türk Lirası) limitine ulaştığında, Ortak tarafından bildirilen IBAN adresine haftalık periyotlarla (Çarşamba günü) yapılır.</p>
-            
-            <p><strong>MADDE 3: YASAKLI FAALİYETLER VE FESİH</strong><br>
-            Aşağıdaki durumların tespiti halinde Şirket, sözleşmeyi tek taraflı feshetme ve içerideki bakiyeyi bloke etme hakkını saklı tutar:<br>
-            a) Kendi referans linki üzerinden kişisel alışveriş yapmak (Self-Referral).<br>
-            b) Marka itibarını zedeleyici, yanıltıcı veya spam niteliğinde paylaşımlar yapmak.<br>
-            c) Sahte sipariş oluşturup iptal ederek sistemi manipüle etmek.</p>
-            
-            <p><strong>MADDE 4: GİZLİLİK VE KVKK</strong><br>
-            Ortak; Ad, Soyad, Telefon ve Banka bilgilerinin, 6698 sayılı KVKK kapsamında sadece ödeme ve iletişim süreçleri için işlenmesine açık rıza gösterir.</p>
-            
-            <p><strong>MADDE 5: YÜRÜRLÜK</strong><br>
-            İşbu sözleşme, Ortağın dijital ortamda "Okudum, Kabul Ediyorum" beyanı ile yürürlüğe girer.</p>
-        </div>
+        <div style="font-family:'Times New Roman', serif; line-height:1.6; font-size:15px;">
+
+    <h3 style="text-align:center; border-bottom:1px solid #ccc; padding-bottom:10px;">
+        MODUMNET SATIŞ ORTAKLIĞI (AFFILIATE) SÖZLEŞMESİ
+    </h3>
+
+    <p>
+        <strong>MADDE 1 – TARAFLAR VE SÖZLEŞMENİN KONUSU</strong><br>
+        İşbu Satış Ortaklığı Sözleşmesi (“Sözleşme”); ModumNet E-Ticaret Sistemleri (“Şirket”) ile,
+        satış ortaklığı başvuru formunu dijital ortamda dolduran gerçek veya tüzel kişi (“Ortak”) arasında,
+        Şirket’e ait ürünlerin dijital kanallar aracılığıyla tanıtılması ve bu tanıtım sonucunda
+        gerçekleşen satışlar üzerinden komisyon ödenmesine ilişkin usul ve esasları düzenlemek amacıyla akdedilmiştir.
+    </p>
+
+    <p>
+        <strong>MADDE 2 – SATIŞ ORTAKLIĞI SİSTEMİ</strong><br>
+        2.1. Ortak, Şirket tarafından kendisine özel olarak tanımlanan bağlantılar (referans linkleri)
+        aracılığıyla Şirket ürünlerinin tanıtımını yapar.<br>
+        2.2. Satışların geçerli sayılabilmesi için; siparişin Ortak’a ait referans link üzerinden
+        gerçekleşmiş olması, siparişin iptal veya iade edilmemiş olması gerekmektedir.
+    </p>
+
+    <p>
+        <strong>MADDE 3 – KOMİSYON ORANLARI VE HAKEDİŞ</strong><br>
+        3.1. Ortak, gerçekleştirdiği satış hacmine göre aşağıda belirtilen komisyon oranlarından
+        faydalanır:<br>
+        • Bronz Seviye: %10<br>
+        • Gümüş Seviye: %15<br>
+        • Altın Seviye: %20<br>
+        3.2. Komisyon hakedişi, 6502 sayılı Tüketicinin Korunması Hakkında Kanun kapsamında
+        öngörülen 14 (on dört) günlük cayma süresinin sona ermesiyle kesinleşir.<br>
+        3.3. Kesinleşmiş komisyon bakiyesinin 500 TL (Beş Yüz Türk Lirası) tutarına ulaşması halinde,
+        ödemeler Ortak tarafından bildirilen IBAN numarasına haftalık olarak, Çarşamba günleri yapılır.
+    </p>
+
+    <p>
+        <strong>MADDE 4 – YASAKLI FAALİYETLER</strong><br>
+        Ortak aşağıda belirtilen fiilleri gerçekleştiremez:<br>
+        a) Kendi referans linki üzerinden doğrudan veya dolaylı olarak alışveriş yapmak
+        (Self-Referral).<br>
+        b) Yanıltıcı, gerçeğe aykırı, spam niteliğinde veya Şirket marka itibarını zedeleyici
+        tanıtımlar yapmak.<br>
+        c) Sahte sipariş oluşturmak, iptal veya iade süreçlerini manipüle etmeye yönelik girişimlerde bulunmak.
+    </p>
+
+    <p>
+        <strong>MADDE 5 – FESİH VE YAPTIRIMLAR</strong><br>
+        5.1. Ortak’ın işbu Sözleşme hükümlerine aykırı davrandığının tespiti halinde,
+        Şirket sözleşmeyi tek taraflı ve derhal feshetme hakkına sahiptir.<br>
+        5.2. Fesih halinde, usulsüzlük tespit edilen dönemlere ait komisyonlar iptal edilir ve
+        ödenmemiş bakiyeler bloke edilebilir.
+    </p>
+
+    <p>
+        <strong>MADDE 6 – GİZLİLİK VE KİŞİSEL VERİLERİN KORUNMASI</strong><br>
+        Ortak; ad, soyad, iletişim ve banka bilgilerinin 6698 sayılı Kişisel Verilerin Korunması Kanunu
+        (“KVKK”) kapsamında yalnızca ödeme, kimlik doğrulama ve iletişim amaçlarıyla işlenmesine
+        açık rıza gösterdiğini kabul eder.
+    </p>
+
+    <p>
+        <strong>MADDE 7 – YETKİLİ MAHKEME VE HUKUK</strong><br>
+        İşbu Sözleşme Türk Hukuku’na tabidir. Taraflar arasında doğabilecek uyuşmazlıklarda
+        Şirket merkezinin bulunduğu yer Mahkemeleri ve İcra Daireleri yetkilidir.
+    </p>
+
+    <p>
+        <strong>MADDE 8 – YÜRÜRLÜK</strong><br>
+        İşbu Sözleşme, Ortak’ın dijital ortamda “Okudum ve Kabul Ediyorum” beyanında bulunmasıyla
+        yürürlüğe girer.
+    </p>
+
+</div>
       `;
 
     let html = `
@@ -2510,5 +2560,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
