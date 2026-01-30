@@ -403,10 +403,10 @@ ${css}
         }, 300);
       },
 
-      // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ
+      // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ (Z-INDEX DÜZELTİLDİ)
       showTierInfo: function () {
         let infoHtml = `
-  <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
+  <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
     <div style="background:white; width:100%; max-width:350px; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
         <div style="padding:20px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="margin:0; font-size:16px;">💎 Kazanç Seviyeleri</h3>
@@ -430,7 +430,7 @@ ${css}
                     </tr>
                     <tr>
                         <td>🥈 <b style="color:#94a3b8">Gümüş</b></td>
-                        <td>10.000+ ₺</td>
+                        <td>10.000₺ - 49.999₺</td>
                         <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%15</span></td>
                     </tr>
                     <tr>
@@ -1850,5 +1850,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
