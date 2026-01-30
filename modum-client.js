@@ -1390,6 +1390,8 @@ margin-bottom: 0 !important;
 /* Header'a yapıştır */
 .page.topic-page {
 margin-top: 50px !important; 
+position: relative;
+z-index: 1;
 }
 
 /* Bizim Widget'ın üst çizgisini kaldır */
@@ -12506,5 +12508,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();

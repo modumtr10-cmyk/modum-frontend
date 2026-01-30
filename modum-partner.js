@@ -1730,7 +1730,7 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (FİNAL MOBİL UYUM) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (AKILLI HEADER KAYDIRMA) ---
   function renderSiteStripe() {
     // 1. Zaten varsa tekrar ekleme
     if (document.getElementById("mdm-stripe-bar")) return;
@@ -1742,130 +1742,88 @@ ${css}
     // Eğer ref kodu yoksa barı gösterme
     if (!myRefCode) return;
 
-    // 3. Şu anki sayfanın linkini al ve temizle
-    var currentUrl = window.location.href;
-    currentUrl = currentUrl.split("?ref=")[0];
-    currentUrl = currentUrl.split("&ref=")[0];
-
-    var separator = currentUrl.includes("?") ? "&" : "?";
-    var finalLink = currentUrl + separator + "ref=" + myRefCode;
-
-    // 4. WhatsApp Mesajı
+    // 3. Link Hazırlığı
+    var currentUrl = window.location.href.split("?")[0];
+    var finalLink = currentUrl + "?ref=" + myRefCode;
     var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
 
-    // 5. HTML Oluştur
-    // 🔥 ÖNEMLİ: CSS'te Media Query kullanarak PC'de üstte, Mobilde altta yaptık.
+    // 4. HTML (Sadeleştirilmiş ve Şık)
     var stripeHTML = `
     <style>
         #mdm-stripe-bar {
-            position: fixed; 
-            left: 0; 
-            width: 100%; 
-            height: 50px; 
-            background: #0f172a; 
-            color: white; 
-            z-index: 2147483647; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 10px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-            font-family: 'Inter', sans-serif; 
-            box-sizing: border-box;
-            transition: all 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 40px; 
+            background: #0f172a; color: white; z-index: 2147483647; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            font-family: 'Inter', sans-serif; box-sizing: border-box;
         }
-        
-        .mdm-stripe-left { display: flex; align-items: center; gap: 10px; }
-        .mdm-stripe-logo { font-weight: 900; color: #fbbf24; font-size: 14px; letter-spacing: 0.5px; }
-        .mdm-stripe-info { font-size: 12px; color: #cbd5e1; display: block; }
-        
-        .mdm-stripe-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
-        .mdm-stripe-input-box { 
-            background: #1e293b; padding: 5px 10px; border-radius: 4px; 
-            border: 1px solid #334155; display: flex; align-items: center; 
-            max-width: 250px; flex: 1; 
+        .mdm-bar-input {
+            background: #1e293b; border: 1px solid #334155; color: #fbbf24; 
+            padding: 4px 8px; border-radius: 4px; font-family: monospace; 
+            font-size: 11px; width: 100%; max-width: 180px; outline: none;
         }
-        .mdm-stripe-label { color: #64748b; font-size: 10px; margin-right: 5px; white-space: nowrap; }
-        .mdm-stripe-input { 
-            background: transparent; border: none; color: #fbbf24; 
-            font-family: monospace; font-size: 12px; width: 100%; outline: none; 
-            text-overflow: ellipsis; 
-        }
-
         .mdm-btn {
-            background: #3b82f6; color: white; border: none; padding: 6px 12px; 
-            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; 
-            display: flex; align-items: center; gap: 5px; white-space: nowrap;
-        }
-        
-        /* --- 💻 MASAÜSTÜ GÖRÜNÜMÜ --- */
-        @media (min-width: 769px) {
-            #mdm-stripe-bar { top: 0; bottom: auto; } /* PC'de Üstte */
-        }
-        
-        /* --- 📱 MOBİL GÖRÜNÜM --- */
-        @media (max-width: 768px) {
-            #mdm-stripe-bar { 
-                top: auto; 
-                bottom: 0; /* Mobilde Altta */
-                border-top: 1px solid #334155;
-                padding: 0 5px;
-            }
-            .mdm-stripe-logo { display: none; } /* Mobilde Logoyu gizle, yer aç */
-            .mdm-stripe-info { display: none; } 
-            .mdm-stripe-label { display: none; } 
-            
-            .mdm-stripe-right { width: 100%; justify-content: space-between; gap: 5px; }
-            .mdm-stripe-input-box { flex: 1; max-width: none; } /* İnput genişlesin */
-            
-            .mdm-btn span { display: none; } /* Buton yazılarını gizle */
-            .mdm-btn { padding: 8px 10px; font-size: 14px; } /* İkonları büyüt */
+            background: #3b82f6; color: white; border: none; padding: 5px 10px; 
+            border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
+            display: flex; align-items: center; gap: 4px; text-decoration: none;
         }
     </style>
-
     <div id="mdm-stripe-bar">
+        <div style="font-weight:900; color:#fbbf24; font-size:12px;">👑 MODUM</div>
         
-        <div class="mdm-stripe-left">
-            <div class="mdm-stripe-logo">👑 MODUM</div>
-            <div class="mdm-stripe-info" style="border-left:1px solid #334155; padding-left:10px; height:20px; display:flex; align-items:center;">
-                ${document.title.substring(0, 25)}...
-            </div>
-        </div>
-
-        <div class="mdm-stripe-right">
-            <div class="mdm-stripe-input-box">
-                <span class="mdm-stripe-label">LİNK:</span>
-                <input type="text" value="${finalLink}" readonly class="mdm-stripe-input">
-            </div>
-
-            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Link Kopyalandı!')" class="mdm-btn">
-                <i class="fas fa-link"></i> <span>Kopyala</span>
+        <div style="display:flex; gap:5px; align-items:center; flex:1; justify-content:flex-end;">
+            <input type="text" value="${finalLink}" readonly class="mdm-bar-input">
+            
+            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Kopyalandı!')" class="mdm-btn">
+                <i class="fas fa-link"></i> 
+                <span style="display:none; @media(min-width:400px){display:inline;}">Kopyala</span>
             </button>
-
-            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366; text-decoration:none;">
-                <i class="fab fa-whatsapp"></i> <span>Paylaş</span>
+            
+            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366;">
+                <i class="fab fa-whatsapp"></i>
             </a>
 
-            <div onclick="document.getElementById('mdm-stripe-bar').remove(); document.body.style.marginTop='0px'; document.body.style.marginBottom='0px';" 
-                style="cursor:pointer; color:#94a3b8; font-size:16px; margin-left:5px; padding:5px;">&times;</div>
+            <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#999;">&times;</div>
         </div>
     </div>
     `;
 
-    // 6. Sayfaya Enjekte Et
+    // 5. Sayfaya Ekle
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
-    // 7. Site Kaydırma Ayarı (Barın altında kalmasın diye)
-    // PC'de siteyi aşağı it, Mobilde siteyi yukarı it (Footer kapanmasın diye)
-    if (window.innerWidth > 768) {
-      document.body.style.marginTop = "50px";
-    } else {
-      document.body.style.marginBottom = "50px";
-    }
+    // 6. 🔥 AKILLI KAYDIRMA MOTORU (ÖNEMLİ KISIM)
+    var barHeight = 40;
+
+    // A. Body'yi aşağı it (Sayfa içeriği için)
+    document.body.style.marginTop = barHeight + "px";
+
+    // B. Faprika'nın Header'ını bul ve aşağı it
+    // Faprika genelde 'header' etiketini veya '.header-wrapper' class'ını kullanır.
+    // Garanti olsun diye yaygın kullanılan tüm header sınıflarını deniyoruz.
+    var headers = document.querySelectorAll(
+      "header, .header, #header, .header-container, .top-bar, .sticky-header",
+    );
+
+    headers.forEach(function (h) {
+      // Eğer header "fixed" veya "sticky" ise, onu aşağı itmemiz lazım
+      var style = window.getComputedStyle(h);
+      if (style.position === "fixed" || style.position === "sticky") {
+        h.style.top = barHeight + "px";
+      }
+    });
+
+    // 7. Kapatma Fonksiyonu
+    window.closeStripe = function () {
+      document.getElementById("mdm-stripe-bar").remove();
+      document.body.style.marginTop = "0px";
+      headers.forEach(function (h) {
+        h.style.top = "0px";
+      });
+    };
   }
 
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
