@@ -1277,11 +1277,19 @@ ${css}
         }
       },
 
-      // 🔥 YENİ: Makale Okuma Penceresi (Z-Index Düzeltildi)
-      openArticleModal: function (title, content) {
+      // 🔥 YENİ: Hafızadan Okuyan Güvenli Modal
+      openArticleModal: function (index) {
+        // Hafızadaki veriyi al
+        let lesson = window.AcademyData[index];
+        if (!lesson) return alert("İçerik bulunamadı.");
+
         // Varolan modal varsa sil
         let old = document.getElementById("p-article-modal");
         if (old) old.remove();
+
+        // İçeriği hazırla
+        let title = lesson.title;
+        let content = lesson.content;
 
         let html = `
 <div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
@@ -1842,5 +1850,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
