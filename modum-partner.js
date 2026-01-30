@@ -1276,26 +1276,26 @@ ${css}
         }
       },
 
-      // 🔥 YENİ: Makale Okuma Penceresi (Basit Modal)
+      // 🔥 YENİ: Makale Okuma Penceresi (Z-Index Düzeltildi)
       openArticleModal: function (title, content) {
         // Varolan modal varsa sil
         let old = document.getElementById("p-article-modal");
         if (old) old.remove();
 
         let html = `
-<div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999999; display:flex; justify-content:center; align-items:center; padding:20px;">
-<div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-    <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
-        <h3 style="margin:0; font-size:18px; color:#1e293b;">${title}</h3>
-        <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px; color:#94a3b8;">&times;</span>
+<div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
+    <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+        <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <h3 style="margin:0; font-size:18px; color:#1e293b;">${title}</h3>
+            <span onclick="document.getElementById('p-article-modal').remove()" style="cursor:pointer; font-size:24px; color:#94a3b8;">&times;</span>
+        </div>
+        <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155; font-size:14px;">
+            ${content}
+        </div>
+        <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
+            <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white; border-radius:8px;">Kapat</button>
+        </div>
     </div>
-    <div style="padding:20px; overflow-y:auto; line-height:1.6; color:#334155; font-size:14px;">
-        ${content}
-    </div>
-    <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
-        <button onclick="document.getElementById('p-article-modal').remove()" class="p-btn" style="width:auto; padding:8px 20px; background:#3b82f6; color:white; border-radius:8px;">Kapat</button>
-    </div>
-</div>
 </div>
 `;
         document.body.insertAdjacentHTML("beforeend", html);
@@ -1841,5 +1841,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
