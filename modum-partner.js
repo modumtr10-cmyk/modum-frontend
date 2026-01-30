@@ -1905,16 +1905,21 @@ ${css}
         .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
         .btn-next:hover { background:#1e293b; transform:scale(1.02); }
 
-        /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (EN ÖNEMLİ KISIM) */
+        /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (GÜNCELLENMİŞ) */
         @media(max-width:768px) {
-            /* Bannerı küçült */
-            .app-hero { height: 200px; }
-            .app-hero h1 { font-size: 24px; }
-            .app-hero p { font-size: 14px; }
-            .form-right { width: 100%; padding: 20px 15px; }
+            /* Bannerı Düzelt */
+            .app-hero { 
+                height: auto; 
+                min-height: 250px; /* Yüksekliği biraz artır */
+                background-position: top center; /* Görselin üst kısmını göster */
+                padding: 40px 15px; /* İçerik için boşluk */
+                align-items: flex-end; /* Yazıları alta it */
+            }
+            .app-hero h1 { font-size: 20px; line-height: 1.2; }
+            .app-hero p { font-size: 13px; margin-top: 5px; }
             
             /* Konteynırı yukarı çek */
-            .app-container { margin-top: -30px; padding: 0 15px; }
+            .app-container { margin-top: -20px; padding: 0 15px; }
 
             /* Kartları daha kompakt yap (Yatay Liste Gibi) */
             .benefit-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
@@ -1924,16 +1929,16 @@ ${css}
             .b-card p { font-size: 11px; margin: 0; }
 
             /* Form Yapısı */
-            .form-box { flex-direction: column; }
+            .form-box { flex-direction: column; min-height: auto; } /* Yüksekliği serbest bırak */
             
-            /* 🔥 Yan resmi mobilde GİZLE (Yer kaplamasın, form odaklı olsun) */
+            /* 🔥 Yan resmi mobilde GİZLE */
             .form-left { display: none; } 
             
             /* Sağ tarafı tam genişlik yap */
-            .form-right { width: 100%; padding: 25px 20px; }
+            .form-right { width: 100%; padding: 20px 15px; }
             
             /* Inputları rahatlat */
-            .inp-group input, .btn-next { font-size: 16px; } /* Mobilde zoom yapmaması için */
+            .inp-group input, .btn-next { font-size: 16px; } 
         }
     </style>
     `;
@@ -2473,5 +2478,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v1*/
 })();
