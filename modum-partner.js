@@ -1858,12 +1858,12 @@ ${css}
     // --- AYARLAR: GÖRSEL LİNKLERİ BURAYA ---
     // (Sen Canva'dan yaptıklarını buraya yapıştıracaksın)
     const BANNER_IMG =
-      "https://placehold.co/1920x600/0f172a/FFF?text=MODUMNET+PARTNER+PROGRAMI";
-    const ICON_1 = "https://placehold.co/200/10b981/FFF?text=%25";
-    const ICON_2 = "https://placehold.co/200/f59e0b/FFF?text=Hediye";
-    const ICON_3 = "https://placehold.co/200/3b82f6/FFF?text=Akademi";
+      "https://www.modum.tr/i/m/001/0016755.jpeg";
+    const ICON_1 = "https://www.modum.tr/i/m/001/0016754.jpeg";
+    const ICON_2 = "https://www.modum.tr/i/m/001/0016753.jpeg";
+    const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
     const FORM_SIDE_IMG =
-      "https://placehold.co/600x800/1e293b/FFF?text=Influencer";
+      "https://www.modum.tr/i/m/001/0016756.jpeg";
 
     // --- CSS STİLLERİ ---
     const style = `
@@ -2184,5 +2184,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
