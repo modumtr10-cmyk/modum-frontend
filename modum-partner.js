@@ -903,7 +903,7 @@ ${css}
         );
       },
 
-      // 🔥 MOTOR: GELİŞMİŞ CANVAS ÇİZİMİ (QR + FİYAT MANİPÜLASYONU)
+      // 🔥 MOTOR: GELİŞMİŞ CANVAS ÇİZİMİ (HATA DÜZELTİLMİŞ & İNDİRİM HESABI KALDIRILMIŞ)
       drawStoryV2: async function (
         canvasId,
         product,
@@ -916,8 +916,7 @@ ${css}
         const btn = document.getElementById("dl-story-btn");
 
         try {
-          // 1. GÖRSELLERİ PARALEL YÜKLE (Hız Kazandırır)
-          // Ürün Resmi + QR Kod (Proxy üzerinden)
+          // 1. GÖRSELLERİ YÜKLE
           const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(productUrl)}`;
 
           const [img, qrImg] = await Promise.all([
@@ -928,7 +927,7 @@ ${css}
           // 2. TEMİZLİK
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          // 3. ŞABLON AYARLARI
+          // 3. ŞABLON RENK AYARLARI
           let bgGradient, titleColor, priceColor, accentColor;
 
           if (template === "modern") {
@@ -941,15 +940,15 @@ ${css}
             accentColor = "#3b82f6";
           } else if (template === "sale") {
             let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grd.addColorStop(0, "#dc2626"); // Kırmızı
-            grd.addColorStop(1, "#991b1b");
+            grd.addColorStop(0, "#b91c1c"); // Koyu Kırmızı
+            grd.addColorStop(1, "#7f1d1d");
             bgGradient = grd;
             titleColor = "#ffffff";
             priceColor = "#ffffff";
-            accentColor = "#fcd34d"; // Sarı detaylar
+            accentColor = "#fcd34d"; // Sarı
           } else if (template === "minimal") {
-            bgGradient = "#f8fafc"; // Açık gri/beyaz
-            titleColor = "#1e293b"; // Koyu yazı
+            bgGradient = "#f8fafc"; // Beyaz/Gri
+            titleColor = "#1e293b";
             priceColor = "#1e293b";
             accentColor = "#cbd5e1";
           }
@@ -958,27 +957,26 @@ ${css}
           ctx.fillStyle = bgGradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // 4. LOGO / MARKA ADI
+          // 4. LOGO
           ctx.fillStyle =
             template === "minimal" ? "#94a3b8" : "rgba(255,255,255,0.5)";
           ctx.font = "bold 30px 'Inter', sans-serif";
           ctx.textAlign = "center";
           ctx.fillText("modum.tr", canvas.width / 2, 100);
 
-          // 5. ÜRÜN GÖRSELİ (Çerçeveli)
+          // 5. ÜRÜN GÖRSELİ
           const imgSize = 800;
           const imgX = (canvas.width - imgSize) / 2;
           const imgY = 200;
 
-          // Gölge
+          // Gölge ve Çerçeve
           ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
           ctx.shadowBlur = 40;
           ctx.shadowOffsetY = 20;
 
-          // Beyaz Çerçeve (Minimal'de ince gri)
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
-          ctx.shadowColor = "transparent"; // Gölgeyi kapat
+          ctx.shadowColor = "transparent";
 
           ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
 
@@ -987,61 +985,49 @@ ${css}
           ctx.font = "bold 50px 'Inter', sans-serif";
           ctx.textAlign = "center";
 
+          // Uzun başlıkları satırlara böl
+          let safeTitle = product.title
+            ? String(product.title).toUpperCase()
+            : "ÜRÜN";
           let nextY = wrapText(
             ctx,
-            product.title.toUpperCase(),
+            safeTitle,
             canvas.width / 2,
             imgY + imgSize + 120,
             900,
             70,
           );
 
-          // 7. FİYAT MANİPÜLASYONU (İndirim Gösterimi)
-          // Fiyatı parse et (Örn: "1.250,00 TL" -> 1250)
-          let currentPriceStr = product.price; // "1.250 TL" gibi gelir
+          // 7. FİYAT GÖSTERİMİ (SABİT)
+          // Fiyat verisini string'e çevirip güvenli hale getiriyoruz (HATA ÇÖZÜMÜ BURADA)
+          let finalPriceStr = String(product.price);
 
-          // Eğer "Sale" şablonuysa ve indirim yoksa bile sahte indirim efekti (Opsiyonel)
-          // Burada basitçe: Eğer şablon 'sale' ise, mevcut fiyatın %20 fazlasını "Eski Fiyat" olarak gösterip üstünü çizeceğiz.
-
-          if (template === "sale") {
-            // Fiyatı sayıya çevir
-            let numPrice = parseFloat(
-              currentPriceStr.replace(/[^0-9,]/g, "").replace(",", "."),
-            );
-            if (!isNaN(numPrice)) {
-              let oldPrice = (numPrice * 1.25).toLocaleString("tr-TR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              });
-
-              // Eski Fiyat (Üstü Çizili)
-              ctx.fillStyle = "rgba(255,255,255,0.7)";
-              ctx.font = "bold 50px 'Inter', sans-serif";
-              ctx.fillText(oldPrice + " TL", canvas.width / 2, nextY + 60);
-
-              // Çizgi
-              let textWidth = ctx.measureText(oldPrice + " TL").width;
-              ctx.beginPath();
-              ctx.strokeStyle = "rgba(255,255,255,0.8)";
-              ctx.lineWidth = 4;
-              ctx.moveTo(canvas.width / 2 - textWidth / 2, nextY + 45);
-              ctx.lineTo(canvas.width / 2 + textWidth / 2, nextY + 45);
-              ctx.stroke();
-
-              nextY += 70; // Aşağı it
-            }
+          // Eğer sonunda TL yoksa ekleyelim
+          if (
+            !finalPriceStr.includes("TL") &&
+            !finalPriceStr.includes("$") &&
+            !finalPriceStr.includes("€")
+          ) {
+            finalPriceStr += " TL";
           }
 
-          // Ana Fiyat
+          // İndirim modundaysak "FIRSAT ÜRÜNÜ" yazısı ekle
+          if (template === "sale") {
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "bold 40px 'Inter', sans-serif";
+            ctx.fillText("🔥 FIRSAT ÜRÜNÜ", canvas.width / 2, nextY + 60);
+            nextY += 70; // Fiyatı biraz aşağı it
+          }
+
+          // Ana Fiyatı Çiz
           ctx.fillStyle = priceColor;
           ctx.font = "900 110px 'Inter', sans-serif";
-          ctx.fillText(currentPriceStr, canvas.width / 2, nextY + 80);
+          ctx.fillText(finalPriceStr, canvas.width / 2, nextY + 80);
 
-          // 8. KUPON ALANI (Varsa)
+          // 8. KUPON KUTUSU
           let bottomY = nextY + 180;
 
-          if (coupon && coupon !== "KOD YOK") {
-            // Kupon Kapsayıcısı
+          if (coupon && coupon !== "KOD YOK" && coupon !== "") {
             const boxW = 600;
             const boxH = 180;
             const boxX = (canvas.width - boxW) / 2;
@@ -1063,14 +1049,13 @@ ${css}
             ctx.font = "900 70px monospace";
             ctx.fillText(coupon, canvas.width / 2, bottomY + 130);
           } else {
-            // Kupon yoksa "FIRSATI KAÇIRMA" yaz
+            // Kupon yoksa genel mesaj
             ctx.fillStyle = accentColor;
             ctx.font = "bold 40px 'Inter', sans-serif";
-            ctx.fillText("FIRSATI KAÇIRMA!", canvas.width / 2, bottomY + 100);
+            ctx.fillText("TÜKENMEDEN AL!", canvas.width / 2, bottomY + 100);
           }
 
-          // 9. OTOMATİK QR KOD (SAĞ ALT KÖŞE) 🚀
-          // QR Arkaplanı (Beyaz Kutu)
+          // 9. QR KOD
           const qrSize = 220;
           const qrX = canvas.width - qrSize - 40;
           const qrY = canvas.height - qrSize - 40;
@@ -1081,30 +1066,30 @@ ${css}
           ctx.fillRect(qrX, qrY, qrSize, qrSize);
           ctx.shadowColor = "transparent";
 
-          // QR Resmini Çiz
           ctx.drawImage(qrImg, qrX + 10, qrY + 10, qrSize - 20, qrSize - 20);
 
           // "Tıkla & Al" yazısı
           ctx.fillStyle = "#000";
           ctx.font = "bold 16px sans-serif";
+          ctx.textAlign = "center";
           ctx.fillText("TARAT & GİT", qrX + qrSize / 2, qrY + qrSize + 25);
 
           // --- Çizim Bitti ---
 
-          // Butonu aktif et
           btn.style.opacity = "1";
           btn.style.pointerEvents = "all";
           btn.style.background = "#10b981";
           btn.innerHTML = '<i class="fas fa-download"></i> GÖRSELİ İNDİR';
 
-          // Tıklanınca indir
+          // İndirme olayını bağla
           btn.onclick = () =>
             this.downloadStory(canvasId, "modum-story-" + Date.now());
         } catch (e) {
           console.error("Story Hatası:", e);
           btn.innerHTML = "Hata Oluştu";
           btn.style.background = "#ef4444";
-          alert("Görsel oluşturulamadı. Lütfen tekrar deneyin.");
+          // Hata detayını konsola bas ki görebilelim
+          console.log("Hata Detayı:", e.message);
         }
       },
 
@@ -2701,5 +2686,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
