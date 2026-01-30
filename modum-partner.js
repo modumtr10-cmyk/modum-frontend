@@ -1212,7 +1212,9 @@ ${css}
           }).then((r) => r.json());
 
           if (res.success) {
-            // 🔥 YENİ BAŞLIK
+            // 🔥 KRİTİK: Veriyi Hafızaya Alıyoruz (Bozulmayı önlemek için)
+            window.AcademyData = res.list || [];
+
             container.innerHTML = `
             <div style="background:#fff; border-left:4px solid #8b5cf6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
                 <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎓 Partner Akademisi</h3>
@@ -1229,30 +1231,29 @@ ${css}
               return;
             }
 
-            res.list.forEach((l) => {
-              let icon = "🎥"; // Varsayılan Video
+            // 🔥 DÖNGÜDE ARTIK (index) KULLANIYORUZ
+            res.list.forEach((l, index) => {
+              let icon = "🎥";
               let actionText = "İZLE";
-              // Tırnak işaretlerini kaçırmak için güvenli hale getir
-              let safeLink = (l.link || "").replace(/'/g, "\\'");
-              let clickAction = `window.open('${safeLink}', '_blank')`;
-              let badgeColor = "#ef4444"; // Kırmızı (YouTube rengi)
+              let badgeColor = "#ef4444";
+
+              // Tıklama aksiyonunu basitleştirdik: Sadece index gönderiyoruz
+              let clickAction = "";
 
               if (l.type === "article") {
                 icon = "📝";
                 actionText = "OKU";
                 badgeColor = "#3b82f6"; // Mavi
-
-                // Makale içeriğini güvenli hale getir (Satır sonları ve tırnaklar)
-                const safeContent = (l.content || "")
-                  .replace(/'/g, "\\'")
-                  .replace(/"/g, "&quot;")
-                  .replace(/\n/g, "<br>");
-
-                clickAction = `PartnerApp.openArticleModal('${l.title.replace(/'/g, "\\'")}', '${safeContent}')`;
+                // 🔥 Sadece sıra numarasını gönderiyoruz (index)
+                clickAction = `PartnerApp.openArticleModal(${index})`;
               } else if (l.type === "pdf") {
                 icon = "📄";
                 actionText = "İNDİR";
                 badgeColor = "#f59e0b"; // Turuncu
+                clickAction = `window.open('${l.link}', '_blank')`;
+              } else {
+                // Video vb.
+                clickAction = `window.open('${l.link}', '_blank')`;
               }
 
               container.innerHTML += `
@@ -1841,5 +1842,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
