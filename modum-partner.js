@@ -1847,68 +1847,50 @@ ${css}
     document.head.appendChild(styleFix);
   }
   // ============================================================
-  // 🚀 PARTNER BAŞVURU SİHİRBAZI (LANDING PAGE + FORM)
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI (LANDING PAGE + FORM) - FİNAL SÜRÜM
   // ============================================================
   async function renderApplicationPage() {
     const root = document.getElementById("mdm-application-page");
     if (!root) return; // Bu sayfada değilsek çalışma
 
-    var email = detectUser(); // Kullanıcı giriş yapmış mı?
+    var email = detectUser();
 
-    // --- AYARLAR: GÖRSEL LİNKLERİ BURAYA ---
-    // (Sen Canva'dan yaptıklarını buraya yapıştıracaksın)
-    const BANNER_IMG =
-      "https://www.modum.tr/i/m/001/0016755.jpeg";
+    // --- GÖRSEL LİNKLERİ ---
+    const BANNER_IMG = "https://www.modum.tr/i/m/001/0016755.jpeg";
     const ICON_1 = "https://www.modum.tr/i/m/001/0016754.jpeg";
     const ICON_2 = "https://www.modum.tr/i/m/001/0016753.jpeg";
     const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
-    const FORM_SIDE_IMG =
-      "https://www.modum.tr/i/m/001/0016756.jpeg";
+    const FORM_SIDE_IMG = "https://www.modum.tr/i/m/001/0016756.jpeg";
 
-    // --- CSS STİLLERİ ---
+    // --- CSS ---
     const style = `
     <style>
-        .app-hero { 
-            width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; 
-            position:relative; display:flex; align-items:center; justify-content:center;
-        }
+        .app-hero { width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
         .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
         .app-hero-content { position:relative; z-index:2; text-align:center; color:white; }
         .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
         .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
-
         .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; }
-        
-        /* Kartlar */
         .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
         .b-card { background:white; padding:30px; border-radius:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05); transition:0.3s; }
         .b-card:hover { transform:translateY(-10px); }
         .b-card img { width:80px; height:80px; border-radius:50%; margin-bottom:15px; }
         .b-card h4 { font-size:18px; color:#1e293b; margin:0 0 10px; }
         .b-card p { font-size:13px; color:#64748b; line-height:1.5; }
-
-        /* Form Alanı */
         .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:500px; }
         .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; }
         .form-left::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, #0f172a, transparent); }
         .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; }
-        
         .form-right { width:60%; padding:40px; display:flex; flex-direction:column; }
-        
-        /* Adımlar */
         .step-indicator { display:flex; gap:10px; margin-bottom:30px; }
         .step-dot { flex:1; height:4px; background:#e2e8f0; border-radius:4px; }
         .step-dot.active { background:#3b82f6; }
-        
         .inp-group { margin-bottom:15px; }
         .inp-group label { display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:5px; }
         .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; }
         .inp-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
-
         .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; }
         .btn-next:hover { background:#1e293b; }
-
-        /* Mobil */
         @media(max-width:768px) {
             .benefit-grid { grid-template-columns:1fr; }
             .form-box { flex-direction:column; }
@@ -1918,7 +1900,30 @@ ${css}
     </style>
     `;
 
-    // 1. HTML İSKELETİ
+    // --- 1. DURUM KONTROLÜ (Backend'e Sor) ---
+    let appStatus = "none";
+    if (email) {
+      try {
+        root.innerHTML =
+          '<div style="text-align:center; padding:100px;"><i class="fas fa-spinner fa-spin fa-3x"></i><br>Durum kontrol ediliyor...</div>';
+
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // check_application_status fonksiyonunu backend'e eklemiştik
+          body: JSON.stringify({
+            islem: "check_application_status",
+            email: email,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) appStatus = data.status;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    // --- 2. HTML İSKELETİNİ KUR ---
     var html = `
     ${style}
     <div class="app-hero">
@@ -1927,37 +1932,89 @@ ${css}
             <p>Sosyal medya gücünü kazanca dönüştür.</p>
         </div>
     </div>
-
     <div class="app-container">
-        
         <div class="benefit-grid">
-            <div class="b-card">
-                <img src="${ICON_1}">
-                <h4>Yüksek Komisyon</h4>
-                <p>Bronz, Gümüş ve Altın seviyeleriyle satış yaptıkça artan oranlarla kazan.</p>
-            </div>
-            <div class="b-card">
-                <img src="${ICON_2}">
-                <h4>Özel Hediyeler</h4>
-                <p>Sadece para değil; ürün hediyeleri, özel kutular ve sürprizler seni bekliyor.</p>
-            </div>
-            <div class="b-card">
-                <img src="${ICON_3}">
-                <h4>Partner Akademisi</h4>
-                <p>Satış taktikleri, içerik üretimi ve pazarlama eğitimleriyle kendini geliştir.</p>
-            </div>
+            <div class="b-card"><img src="${ICON_1}"><h4>Yüksek Komisyon</h4><p>Satış yaptıkça artan oranlar.</p></div>
+            <div class="b-card"><img src="${ICON_2}"><h4>Özel Hediyeler</h4><p>Sürpriz kutular ve ürünler.</p></div>
+            <div class="b-card"><img src="${ICON_3}"><h4>Partner Akademisi</h4><p>Ücretsiz eğitimlerle geliş.</p></div>
         </div>
-
         <div class="form-box" id="app-form-area">
             </div>
-
     </div>
     `;
-
     root.innerHTML = html;
 
-    // 2. FORM MANTIĞI
-    renderFormLogic(email);
+    // --- 3. DURUMA GÖRE İÇERİĞİ DOLDUR ---
+    renderFormContent(appStatus, email);
+  }
+
+  // --- İÇERİK YÖNETİCİSİ ---
+  function renderFormContent(status, email) {
+    const area = document.getElementById("app-form-area");
+
+    // SENARYO 1: GİRİŞ YAPMAMIŞ
+    if (!email) {
+      area.innerHTML = `
+            <div class="form-left"><div class="form-left-text"><h3 style="margin:0;">Aramıza Katıl</h3></div></div>
+            <div class="form-right" style="justify-content:center; text-align:center;">
+                <div style="font-size:50px; margin-bottom:20px;">🔒</div>
+                <h2 style="margin:0; color:#1e293b;">Önce Giriş Yapmalısın</h2>
+                <p style="color:#64748b; margin:10px 0 30px;">Başvuru yapabilmek için üye olmalısınız.</p>
+                <a href="/uyelik-girisi" class="btn-next" style="text-decoration:none; display:block; line-height:20px;">GİRİŞ YAP / KAYIT OL</a>
+            </div>`;
+      return;
+    }
+
+    // SENARYO 2: ZATEN PARTNER (Aktif)
+    if (status === "active") {
+      area.innerHTML = `
+            <div class="form-left"></div>
+            <div class="form-right" style="justify-content:center; text-align:center;">
+                <div style="font-size:60px; margin-bottom:20px;">👑</div>
+                <h2 style="color:#1e293b;">Zaten Ortaksınız!</h2>
+                <p style="color:#64748b;">Hesabınız zaten onaylı. Başvuru yapmanıza gerek yok.</p>
+                <button onclick="PartnerApp.openPartnerDashboard()" class="btn-next" style="background:#3b82f6;">PANELİ AÇ</button>
+            </div>`;
+      return;
+    }
+
+    // SENARYO 3: BAŞVURMUŞ AMA BEKLİYOR (Pending)
+    if (status === "pending") {
+      area.innerHTML = `
+            <div class="form-left"></div>
+            <div class="form-right" style="justify-content:center; text-align:center;">
+                <div style="font-size:60px; margin-bottom:20px;">⏳</div>
+                <h2 style="color:#1e293b;">Başvurunuz İnceleniyor</h2>
+                <p style="color:#64748b;">Başvurunuzu aldık, değerlendiriyoruz. Sonuçlandığında size haber vereceğiz.</p>
+            </div>`;
+      return;
+    }
+
+    // SENARYO 4: REDDEDİLMİŞ (Rejected) - Tekrar başvurabilir ama uyarılır
+    if (status === "rejected") {
+      window.appData = { email: email };
+      showStep1(); // Formu başlat
+
+      // Formun tepesine uyarıyı ekle
+      setTimeout(() => {
+        const warningHTML = `
+              <div style="background:#fee2e2; color:#b91c1c; padding:15px; border-radius:8px; border:1px solid #fca5a5; margin-bottom:20px; font-size:13px; display:flex; align-items:center; gap:10px;">
+                  <i class="fas fa-exclamation-circle" style="font-size:18px;"></i>
+                  <div>
+                      <b>Önceki Başvurunuz Onaylanmadı</b><br>
+                      Lütfen bilgilerinizi daha detaylı doldurarak tekrar deneyiniz.
+                  </div>
+              </div>`;
+        const rightPanel = document.querySelector(".form-right");
+        if (rightPanel)
+          rightPanel.insertAdjacentHTML("afterbegin", warningHTML);
+      }, 500);
+      return;
+    }
+
+    // SENARYO 5: TEMİZ (İlk Kez Başvuruyor)
+    window.appData = { email: email };
+    showStep1();
   }
 
   function renderFormLogic(email) {
@@ -2012,8 +2069,9 @@ ${css}
                 <input type="text" id="app_insta" placeholder="@kullaniciadi">
             </div>
             <div class="inp-group">
-                <label>TikTok / YouTube (Varsa)</label>
-                <input type="text" id="app_other" placeholder="@digerhesap">
+                <label>TikTok, YouTube veya Diğerleri (Varsa)</label>
+                <input type="text" id="app_other" placeholder="Örn: TikTok: @modum, YouTube: ModumKanal (Hepsini yazabilirsiniz)">
+                <div style="font-size:10px; color:#94a3b8; margin-top:3px;">Birden fazla hesabınız varsa araya virgül koyarak yazabilirsiniz.</div>
             </div>
             <div class="inp-group">
                 <label>Toplam Takipçi Sayın (Tahmini)</label>
@@ -2095,7 +2153,7 @@ ${css}
     showStep3();
   };
 
-  // --- ADIM 3: ONAY VE GÖNDER ---
+  // --- ADIM 3: ONAY VE GÖNDER (SÖZLEŞME MODAL'LI) ---
   function showStep3() {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
@@ -2113,12 +2171,15 @@ ${css}
             <div style="text-align:center; padding:20px;">
                 <div style="font-size:40px; margin-bottom:10px;">🚀</div>
                 <h3 style="color:#1e293b;">Hazır mısın?</h3>
-                <p style="color:#64748b; font-size:13px;">Başvurunu inceledikten sonra seninle iletişime geçeceğiz. Bu süreçte üyeliğin aktif kalmalı.</p>
+                <p style="color:#64748b; font-size:13px;">Başvurunu inceledikten sonra seninle iletişime geçeceğiz.</p>
                 
                 <div style="text-align:left; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0;">
-                    <label style="display:flex; gap:10px; font-size:12px; cursor:pointer;">
+                    <div style="font-size:12px; margin-bottom:10px; color:#334155;">
+                        <span onclick="openContractModal()" style="color:#3b82f6; text-decoration:underline; cursor:pointer; font-weight:bold;">📄 ModumNet Ortaklık Sözleşmesi</span>'ni okumak için tıklayınız.
+                    </div>
+                    <label style="display:flex; gap:10px; font-size:12px; cursor:pointer; align-items:center;">
                         <input type="checkbox" id="app_terms">
-                        <span>ModumNet Ortaklık Sözleşmesi'ni ve KVKK metnini okudum, kurallara uymayı kabul ediyorum.</span>
+                        <span>Sözleşmeyi okudum, kurallara uymayı kabul ediyorum.</span>
                     </label>
                 </div>
 
@@ -2128,49 +2189,51 @@ ${css}
       `;
   }
 
-  window.submitApplication = async function () {
-    if (!document.getElementById("app_terms").checked)
-      return alert("Lütfen sözleşmeyi onayla.");
+  // --- SÖZLEŞME MODALI AÇ ---
+  window.openContractModal = function () {
+    // Önce varsa eskisini sil
+    let old = document.getElementById("mdm-contract-modal");
+    if (old) old.remove();
 
-    const btn = event.target;
-    btn.innerText = "Gönderiliyor...";
-    btn.disabled = true;
+    let contractText = `
+        <h4>1. TARAFLAR VE AMAÇ</h4>
+        <p>İşbu sözleşme, ModumNet (Şirket) ile Başvuru Sahibi (Ortak) arasında, satış ortaklığı esaslarını belirlemek amacıyla düzenlenmiştir.</p>
+        
+        <h4>2. KOMİSYON VE ÖDEME</h4>
+        <p>Ortak, paylaştığı linkler üzerinden gerçekleşen ve iade edilmeyen her satıştan, bulunduğu seviyeye (Bronz, Gümüş, Altın) göre komisyon hak eder. Ödemeler, 14 günlük yasal iade süresi dolduktan sonra, bakiye 500 TL üzerindeyse Çarşamba günleri yapılır.</p>
+        
+        <h4>3. YASAKLI FAALİYETLER (KIRMIZI ÇİZGİLER)</h4>
+        <ul>
+            <li>Kendi referans linkiyle kendine ürün satın almak yasaktır.</li>
+            <li>Marka adını lekeleyecek, spam veya yanıltıcı paylaşımlar yapmak yasaktır.</li>
+            <li>Sahte sipariş oluşturup iptal etmek (sistemi manipüle etmek) yasaktır.</li>
+        </ul>
+        <p>Bu maddelerin ihlali durumunda Şirket, ortaklığı tek taraflı feshetme ve içerideki bakiyeyi ödememe hakkını saklı tutar.</p>
+        
+        <h4>4. GİZLİLİK VE KVKK</h4>
+        <p>Ortak, paylaştığı kişisel verilerin (Ad, Soyad, Telefon, IBAN) ödeme işlemleri için işlenmesine rıza gösterir.</p>
+      `;
 
-    try {
-      // Backend'e Gönder
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          islem: "save_application",
-          email: window.appData.email,
-          name: window.appData.personal.name,
-          phone: window.appData.personal.phone,
-          reason: window.appData.personal.reason,
-          socialLinks: window.appData.social,
-        }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        const area = document.getElementById("app-form-area");
-        area.innerHTML = `
-                <div style="padding:50px; text-align:center; width:100%;">
-                    <div style="font-size:60px; color:#10b981; margin-bottom:20px;">🎉</div>
-                    <h2>Başvurunu Aldık!</h2>
-                    <p style="color:#64748b; max-width:400px; margin:0 auto;">Teşekkürler ${window.appData.personal.name}. Ekibimiz başvurunu en kısa sürede inceleyip sana dönüş yapacak. Panelini kontrol etmeyi unutma.</p>
-                    <a href="/" class="btn-next" style="margin-top:30px; display:inline-block; width:auto; padding:10px 30px; text-decoration:none;">Ana Sayfaya Dön</a>
+    let html = `
+        <div id="mdm-contract-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
+            <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:12px; display:flex; flex-direction:column; overflow:hidden;">
+                <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold; color:#1e293b;">📄 Ortaklık Sözleşmesi</div>
+                <div style="padding:20px; overflow-y:auto; font-size:13px; color:#334155; line-height:1.6;">
+                    ${contractText}
                 </div>
-              `;
-      } else {
-        alert("Hata: " + data.message);
-        btn.innerText = "Tekrar Dene";
-        btn.disabled = false;
-      }
-    } catch (e) {
-      alert("Bağlantı hatası.");
-      btn.disabled = false;
-    }
+                <div style="padding:15px; border-top:1px solid #eee; text-align:right; background:#f8fafc;">
+                    <button onclick="acceptContract()" class="p-btn" style="width:auto; padding:10px 20px; background:#10b981; color:white;">Okudum, Anladım</button>
+                </div>
+            </div>
+        </div>
+      `;
+    document.body.insertAdjacentHTML("beforeend", html);
+  };
+
+  // --- SÖZLEŞMEYİ KABUL ET ---
+  window.acceptContract = function () {
+    document.getElementById("mdm-contract-modal").remove(); // Pencereyi kapat
+    document.getElementById("app_terms").checked = true; // Kutucuğu işaretle
   };
   window.addEventListener("load", function () {
     renderApplicationPage();
@@ -2184,5 +2247,5 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
