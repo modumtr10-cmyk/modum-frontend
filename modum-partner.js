@@ -810,160 +810,301 @@ ${css}
           </div>
         </div>`;
         document.body.insertAdjacentHTML("beforeend", html);
-      }, // 🔥 YENİ: STORY EDİTÖR MODALI AÇ
+      }, // 🔥 YENİ: STORY EDİTÖR v2.0 (MODUM CREATIVE STUDIO)
       openStoryEditor: function (encodedProductData) {
-        // Eski modal varsa sil
+        // Eski modal varsa temizle
         let old = document.getElementById("p-story-modal");
         if (old) old.remove();
 
-        // Veriyi geri al
+        // Veriyi güvenli şekilde al
         let product = JSON.parse(decodeURIComponent(encodedProductData));
         let pData = window.PartnerData || {};
-        let myCoupon = pData.custom_coupon || "KOD YOK";
+        let myRefCode = pData.refCode || "REF-YOK";
+        let myCoupon = pData.custom_coupon || "";
 
+        // Ürün Linkini Hazırla (QR İçin)
+        let productUrl =
+          product.url +
+          (product.url.includes("?") ? "&" : "?") +
+          "ref=" +
+          myRefCode +
+          "&source=story_qr";
+
+        // Modal HTML (Şablon Seçici Eklendi)
         let html = `
-<div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-    <div style="display:flex; justify-content:flex-end; width:100%; max-width:400px; margin-bottom:10px;">
-        <span onclick="document.getElementById('p-story-modal').remove()" style="cursor:pointer; font-size:30px; color:white;">&times;</span>
-    </div>
-    
-    <div style="box-shadow:0 20px 50px rgba(0,0,0,0.5); border-radius:12px; overflow:hidden; max-height:70vh; aspect-ratio: 9 / 16;">
-        <canvas id="story-canvas" width="1080" height="1920" style="width:100%; height:100%; object-fit:contain;"></canvas>
-    </div>
+        <div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;">
+            
+            <div style="width:100%; max-width:400px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="color:white; margin:0; font-size:18px;">🎨 Story Tasarımcısı</h3>
+                <span onclick="document.getElementById('p-story-modal').remove()" style="cursor:pointer; font-size:30px; color:white; line-height:0.5;">&times;</span>
+            </div>
+            
+            <div style="background:#1e293b; padding:10px; border-radius:10px; display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; width:100%; max-width:400px; box-sizing:border-box;">
+                <button onclick="PartnerApp.changeTemplate('modern')" class="p-btn-tmpl" style="flex:1; background:#3b82f6; color:white; border:none; padding:8px; border-radius:6px; font-size:11px; cursor:pointer;">Modern</button>
+                <button onclick="PartnerApp.changeTemplate('sale')" class="p-btn-tmpl" style="flex:1; background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:8px; border-radius:6px; font-size:11px; cursor:pointer;">🔥 İndirim</button>
+                <button onclick="PartnerApp.changeTemplate('minimal')" class="p-btn-tmpl" style="flex:1; background:#1e293b; color:#cbd5e1; border:1px solid #334155; padding:8px; border-radius:6px; font-size:11px; cursor:pointer;">Minimal</button>
+            </div>
 
-    <div style="margin-top:20px; display:flex; gap:10px;">
-        <button id="dl-story-btn" class="p-btn" style="background:#f59e0b; color:white; font-size:16px; padding:12px 30px; opacity:0.5; pointer-events:none;">
-            <i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...
-        </button>
-    </div>
-    <div style="color:rgba(255,255,255,0.6); font-size:12px; margin-top:10px;">Hikayende paylaşmak için indir! 👆</div>
-</div>
-`;
+            <div style="box-shadow:0 20px 50px rgba(0,0,0,0.5); border-radius:12px; overflow:hidden; max-height:65vh; aspect-ratio: 9 / 16;">
+                <canvas id="story-canvas" width="1080" height="1920" style="width:100%; height:100%; object-fit:contain;"></canvas>
+            </div>
+
+            <div style="margin-top:20px;">
+                <button id="dl-story-btn" class="p-btn" style="background:#10b981; color:white; font-size:16px; padding:12px 40px; border:none; border-radius:50px; font-weight:bold; cursor:pointer; box-shadow:0 5px 20px rgba(16,185,129,0.4); opacity:0.5; pointer-events:none;">
+                    <i class="fas fa-spinner fa-spin"></i> Oluşturuluyor...
+                </button>
+            </div>
+        </div>
+        `;
         document.body.insertAdjacentHTML("beforeend", html);
 
-        // Çizim işlemini başlat
-        this.drawStory("story-canvas", product, myCoupon);
+        // Global değişkenlere ata (Yeniden çizim için)
+        this.activeProduct = product;
+        this.activeCoupon = myCoupon;
+        this.activeUrl = productUrl;
+
+        // Varsayılan şablonla başlat
+        this.changeTemplate("modern");
       },
 
-      // 🔥 YENİ: CANVAS ÇİZİM MOTORU (EN ÖNEMLİ KISIM)
-      drawStory: async function (canvasId, product, coupon) {
+      // Şablon Değiştirme Fonksiyonu
+      changeTemplate: function (tmplName) {
+        // Butonların stilini güncelle
+        document.querySelectorAll(".p-btn-tmpl").forEach((btn) => {
+          if (
+            btn.innerText
+              .toLowerCase()
+              .includes(tmplName.includes("sale") ? "indirim" : tmplName)
+          ) {
+            btn.style.background = "#3b82f6";
+            btn.style.color = "white";
+            btn.style.border = "none";
+          } else {
+            btn.style.background = "#1e293b";
+            btn.style.color = "#cbd5e1";
+            btn.style.border = "1px solid #334155";
+          }
+        });
+
+        // Çizimi Yeniden Başlat
+        const btn = document.getElementById("dl-story-btn");
+        if (btn) {
+          btn.style.opacity = "0.5";
+          btn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Güncelleniyor...';
+        }
+
+        this.drawStoryV2(
+          "story-canvas",
+          this.activeProduct,
+          this.activeCoupon,
+          this.activeUrl,
+          tmplName,
+        );
+      },
+
+      // 🔥 MOTOR: GELİŞMİŞ CANVAS ÇİZİMİ (QR + FİYAT MANİPÜLASYONU)
+      drawStoryV2: async function (
+        canvasId,
+        product,
+        coupon,
+        productUrl,
+        template,
+      ) {
         const canvas = document.getElementById(canvasId);
         const ctx = canvas.getContext("2d");
         const btn = document.getElementById("dl-story-btn");
 
         try {
-          // 1. Görseli yükle (Bekle)
-          const img = await loadCanvasImage(product.image);
+          // 1. GÖRSELLERİ PARALEL YÜKLE (Hız Kazandırır)
+          // Ürün Resmi + QR Kod (Proxy üzerinden)
+          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(productUrl)}`;
 
-          // 2. Arka Planı Temizle ve Boya (Şık bir koyu degrade)
+          const [img, qrImg] = await Promise.all([
+            loadCanvasImage(product.image),
+            loadCanvasImage(qrApiUrl),
+          ]);
+
+          // 2. TEMİZLİK
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grd.addColorStop(0, "#1e293b"); // Koyu lacivert üst
-          grd.addColorStop(1, "#0f172a"); // Daha koyu alt
-          ctx.fillStyle = grd;
+
+          // 3. ŞABLON AYARLARI
+          let bgGradient, titleColor, priceColor, accentColor;
+
+          if (template === "modern") {
+            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grd.addColorStop(0, "#1e293b");
+            grd.addColorStop(1, "#0f172a");
+            bgGradient = grd;
+            titleColor = "#ffffff";
+            priceColor = "#fbbf24";
+            accentColor = "#3b82f6";
+          } else if (template === "sale") {
+            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grd.addColorStop(0, "#dc2626"); // Kırmızı
+            grd.addColorStop(1, "#991b1b");
+            bgGradient = grd;
+            titleColor = "#ffffff";
+            priceColor = "#ffffff";
+            accentColor = "#fcd34d"; // Sarı detaylar
+          } else if (template === "minimal") {
+            bgGradient = "#f8fafc"; // Açık gri/beyaz
+            titleColor = "#1e293b"; // Koyu yazı
+            priceColor = "#1e293b";
+            accentColor = "#cbd5e1";
+          }
+
+          // Arka Planı Boya
+          ctx.fillStyle = bgGradient;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // 3. Üst Başlık (Marka Adı)
-          ctx.fillStyle = "rgba(255,255,255,0.5)";
+          // 4. LOGO / MARKA ADI
+          ctx.fillStyle =
+            template === "minimal" ? "#94a3b8" : "rgba(255,255,255,0.5)";
           ctx.font = "bold 30px 'Inter', sans-serif";
           ctx.textAlign = "center";
           ctx.fillText("modum.tr", canvas.width / 2, 100);
 
-          // 4. Ürün Görselini Çiz
-          // Görseli kare yapıp ortalayalım.
+          // 5. ÜRÜN GÖRSELİ (Çerçeveli)
           const imgSize = 800;
           const imgX = (canvas.width - imgSize) / 2;
           const imgY = 200;
 
-          // Görselin altına hafif bir gölge efekti için
-          ctx.fillStyle = "rgba(0,0,0,0.3)";
-          ctx.fillRect(imgX + 20, imgY + 20, imgSize, imgSize);
-          // Beyaz çerçeve
+          // Gölge
+          ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+          ctx.shadowBlur = 40;
+          ctx.shadowOffsetY = 20;
+
+          // Beyaz Çerçeve (Minimal'de ince gri)
           ctx.fillStyle = "#ffffff";
-          ctx.fillRect(imgX - 10, imgY - 10, imgSize + 20, imgSize + 20);
-          // Resmi çiz (Eğer resim kare değilse sündürmemek için object-fit benzeri bir hesaplama yapılabilir ama şimdilik basit tutalım)
+          ctx.fillRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
+          ctx.shadowColor = "transparent"; // Gölgeyi kapat
+
           ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
 
-          // 5. Ürün Başlığı (Satır atlamalı)
-          ctx.fillStyle = "#ffffff";
+          // 6. ÜRÜN BAŞLIĞI
+          ctx.fillStyle = titleColor;
           ctx.font = "bold 50px 'Inter', sans-serif";
           ctx.textAlign = "center";
-          // wrapText(context, text, x, y, maxWidth, lineHeight)
+
           let nextY = wrapText(
             ctx,
             product.title.toUpperCase(),
             canvas.width / 2,
-            imgY + imgSize + 100,
+            imgY + imgSize + 120,
             900,
             70,
           );
 
-          // 6. Fiyat
-          ctx.fillStyle = "#fbbf24"; // Sarı renk
-          ctx.font = "900 120px 'Inter', sans-serif";
-          ctx.fillText(product.price, canvas.width / 2, nextY + 80);
+          // 7. FİYAT MANİPÜLASYONU (İndirim Gösterimi)
+          // Fiyatı parse et (Örn: "1.250,00 TL" -> 1250)
+          let currentPriceStr = product.price; // "1.250 TL" gibi gelir
 
-          // 7. Kupon Kutusu Tasarımı
-          if (coupon && coupon !== "KOD YOK") {
-            const couponBoxY = nextY + 180;
-            const boxWidth = 700;
-            const boxHeight = 250;
-            const boxX = (canvas.width - boxWidth) / 2;
+          // Eğer "Sale" şablonuysa ve indirim yoksa bile sahte indirim efekti (Opsiyonel)
+          // Burada basitçe: Eğer şablon 'sale' ise, mevcut fiyatın %20 fazlasını "Eski Fiyat" olarak gösterip üstünü çizeceğiz.
 
-            // Kutunun kendisi (Mor degrade)
-            let cGrd = ctx.createLinearGradient(
-              boxX,
-              couponBoxY,
-              boxX + boxWidth,
-              couponBoxY + boxHeight,
+          if (template === "sale") {
+            // Fiyatı sayıya çevir
+            let numPrice = parseFloat(
+              currentPriceStr.replace(/[^0-9,]/g, "").replace(",", "."),
             );
-            cGrd.addColorStop(0, "#8b5cf6");
-            cGrd.addColorStop(1, "#6d28d9");
-            ctx.fillStyle = cGrd;
-            // Basit dikdörtgen yerine köşeleri yuvarlak yapmak için (Basit tutalım şimdilik)
-            ctx.fillRect(boxX, couponBoxY, boxWidth, boxHeight);
+            if (!isNaN(numPrice)) {
+              let oldPrice = (numPrice * 1.25).toLocaleString("tr-TR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
 
-            // Kutunun kenarlığı
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = "rgba(255,255,255,0.3)";
-            ctx.strokeRect(
-              boxX + 5,
-              couponBoxY + 5,
-              boxWidth - 10,
-              boxHeight - 10,
-            );
+              // Eski Fiyat (Üstü Çizili)
+              ctx.fillStyle = "rgba(255,255,255,0.7)";
+              ctx.font = "bold 50px 'Inter', sans-serif";
+              ctx.fillText(oldPrice + " TL", canvas.width / 2, nextY + 60);
 
-            // Üst yazı
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            ctx.font = "bold 30px 'Inter', sans-serif";
-            ctx.fillText(
-              "BU KODU KULLAN, İNDİRİMİ KAP!",
-              canvas.width / 2,
-              couponBoxY + 60,
-            );
+              // Çizgi
+              let textWidth = ctx.measureText(oldPrice + " TL").width;
+              ctx.beginPath();
+              ctx.strokeStyle = "rgba(255,255,255,0.8)";
+              ctx.lineWidth = 4;
+              ctx.moveTo(canvas.width / 2 - textWidth / 2, nextY + 45);
+              ctx.lineTo(canvas.width / 2 + textWidth / 2, nextY + 45);
+              ctx.stroke();
 
-            // Kupon Kodu (Devasa)
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "900 100px monospace";
-            ctx.letterSpacing = "5px";
-            ctx.fillText(coupon, canvas.width / 2, couponBoxY + 180);
+              nextY += 70; // Aşağı it
+            }
           }
+
+          // Ana Fiyat
+          ctx.fillStyle = priceColor;
+          ctx.font = "900 110px 'Inter', sans-serif";
+          ctx.fillText(currentPriceStr, canvas.width / 2, nextY + 80);
+
+          // 8. KUPON ALANI (Varsa)
+          let bottomY = nextY + 180;
+
+          if (coupon && coupon !== "KOD YOK") {
+            // Kupon Kapsayıcısı
+            const boxW = 600;
+            const boxH = 180;
+            const boxX = (canvas.width - boxW) / 2;
+
+            // Kesikli Çizgi Çerçeve
+            ctx.setLineDash([15, 15]);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = accentColor;
+            ctx.strokeRect(boxX, bottomY, boxW, boxH);
+            ctx.setLineDash([]);
+
+            // Metinler
+            ctx.fillStyle =
+              template === "minimal" ? "#64748b" : "rgba(255,255,255,0.8)";
+            ctx.font = "bold 24px 'Inter', sans-serif";
+            ctx.fillText("ÖZEL İNDİRİM KODUN", canvas.width / 2, bottomY + 50);
+
+            ctx.fillStyle = template === "minimal" ? "#1e293b" : "#ffffff";
+            ctx.font = "900 70px monospace";
+            ctx.fillText(coupon, canvas.width / 2, bottomY + 130);
+          } else {
+            // Kupon yoksa "FIRSATI KAÇIRMA" yaz
+            ctx.fillStyle = accentColor;
+            ctx.font = "bold 40px 'Inter', sans-serif";
+            ctx.fillText("FIRSATI KAÇIRMA!", canvas.width / 2, bottomY + 100);
+          }
+
+          // 9. OTOMATİK QR KOD (SAĞ ALT KÖŞE) 🚀
+          // QR Arkaplanı (Beyaz Kutu)
+          const qrSize = 220;
+          const qrX = canvas.width - qrSize - 40;
+          const qrY = canvas.height - qrSize - 40;
+
+          ctx.fillStyle = "white";
+          ctx.shadowColor = "rgba(0,0,0,0.2)";
+          ctx.shadowBlur = 20;
+          ctx.fillRect(qrX, qrY, qrSize, qrSize);
+          ctx.shadowColor = "transparent";
+
+          // QR Resmini Çiz
+          ctx.drawImage(qrImg, qrX + 10, qrY + 10, qrSize - 20, qrSize - 20);
+
+          // "Tıkla & Al" yazısı
+          ctx.fillStyle = "#000";
+          ctx.font = "bold 16px sans-serif";
+          ctx.fillText("TARAT & GİT", qrX + qrSize / 2, qrY + qrSize + 25);
 
           // --- Çizim Bitti ---
 
-          // Butonu aktif et ve indirme fonksiyonunu bağla
+          // Butonu aktif et
           btn.style.opacity = "1";
           btn.style.pointerEvents = "all";
-          btn.innerHTML = '<i class="fas fa-download"></i> Görseli İndir';
+          btn.style.background = "#10b981";
+          btn.innerHTML = '<i class="fas fa-download"></i> GÖRSELİ İNDİR';
+
+          // Tıklanınca indir
           btn.onclick = () =>
-            this.downloadStory(canvasId, "modum-firsat-" + coupon);
+            this.downloadStory(canvasId, "modum-story-" + Date.now());
         } catch (e) {
-          console.error("Story çizim hatası:", e);
+          console.error("Story Hatası:", e);
           btn.innerHTML = "Hata Oluştu";
-          btn.style.background = "red";
-          alert(
-            "Görsel oluşturulurken bir hata oluştu. Ürün görseli farklı bir sunucudan geliyor olabilir.",
-          );
+          btn.style.background = "#ef4444";
+          alert("Görsel oluşturulamadı. Lütfen tekrar deneyin.");
         }
       },
 
@@ -2560,5 +2701,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
