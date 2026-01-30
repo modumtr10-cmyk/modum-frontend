@@ -1872,7 +1872,9 @@ ${css}
         .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
         .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
         
-        .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; }
+        /* Kutuların taşmasını önleyen sihirli kod */
+        .app-container * { box-sizing: border-box; }
+        .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; width:100%; overflow:hidden; }
         
         /* KARTLAR */
         .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
@@ -1909,6 +1911,7 @@ ${css}
             .app-hero { height: 200px; }
             .app-hero h1 { font-size: 24px; }
             .app-hero p { font-size: 14px; }
+            .form-right { width: 100%; padding: 20px 15px; }
             
             /* Konteynırı yukarı çek */
             .app-container { margin-top: -30px; padding: 0 15px; }
@@ -2063,7 +2066,7 @@ ${css}
   }
 
   // --- ADIM 0: SİSTEM TANITIMI (YENİ) ---
-  function showIntro() {
+  window.showIntro = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
@@ -2094,7 +2097,7 @@ ${css}
             <button onclick="showStep1()" class="btn-next">BAŞVURUYA BAŞLA &rarr;</button>
         </div>
       `;
-  }
+  };
   // --- YARDIMCI: FORMU KİLİTLEME FONKSİYONU ---
   function disableFormArea(message) {
     // 1. Uyarı Mesajını Ekle
@@ -2154,7 +2157,7 @@ ${css}
   }
 
   // --- ADIM 1: SOSYAL MEDYA ---
-  function showStep1() {
+  window.showStep1 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
@@ -2192,7 +2195,7 @@ ${css}
             <button onclick="validateStep1()" class="btn-next">DEVAM ET &rarr;</button>
         </div>
       `;
-  }
+  };
 
   window.validateStep1 = function () {
     const insta = document.getElementById("app_insta").value;
@@ -2207,7 +2210,7 @@ ${css}
   };
 
   // --- ADIM 2: KİŞİSEL BİLGİLER VE KUPON ---
-  function showStep2() {
+  window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
         <div class="form-left">
@@ -2247,7 +2250,7 @@ ${css}
             </div>
         </div>
       `;
-  }
+  };
 
   // VALIDATION GÜNCELLEMESİ
   window.validateStep2 = function () {
@@ -2470,5 +2473,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
