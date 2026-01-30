@@ -1948,11 +1948,17 @@ ${css}
     renderFormContent(appStatus, email);
   }
 
-  // --- İÇERİK YÖNETİCİSİ ---
+  // --- İÇERİK YÖNETİCİSİ (GÜNCELLENMİŞ: GÖR AMA DOKUNMA) ---
   function renderFormContent(status, email) {
     const area = document.getElementById("app-form-area");
 
-    // SENARYO 1: GİRİŞ YAPMAMIŞ
+    // 1. ÖNCE HER DURUMDA FORMU YÜKLE (Böylece herkes sayfayı görür)
+    window.appData = { email: email };
+    showStep1(); // Formu ekrana basar
+
+    // 2. ŞİMDİ DURUMA GÖRE KISITLAMA GETİR (Inputları Kilitle)
+
+    // SENARYO 1: GİRİŞ YAPMAMIŞ (Formu gizle, Giriş butonu koy)
     if (!email) {
       area.innerHTML = `
             <div class="form-left"><div class="form-left-text"><h3 style="margin:0;">Aramıza Katıl</h3></div></div>
@@ -1965,56 +1971,86 @@ ${css}
       return;
     }
 
-    // SENARYO 2: ZATEN PARTNER (Aktif)
+    // SENARYO 2: ZATEN PARTNER (Formu Kilitle + Panele Git Butonu)
     if (status === "active") {
-      area.innerHTML = `
-            <div class="form-left"></div>
-            <div class="form-right" style="justify-content:center; text-align:center;">
-                <div style="font-size:60px; margin-bottom:20px;">👑</div>
-                <h2 style="color:#1e293b;">Zaten Ortaksınız!</h2>
-                <p style="color:#64748b;">Hesabınız zaten onaylı. Başvuru yapmanıza gerek yok.</p>
-                <button onclick="PartnerApp.openPartnerDashboard()" class="btn-next" style="background:#3b82f6;">PANELİ AÇ</button>
-            </div>`;
-      return;
+      disableFormArea("👑 Tebrikler! Zaten onaylı bir iş ortağımızsınız.");
+
+      // Butonu Değiştir
+      setTimeout(() => {
+        const btn = area.querySelector(".btn-next");
+        if (btn) {
+          btn.innerText = "ORTAKLIK PANELİNE GİT ➔";
+          btn.style.background = "#3b82f6"; // Mavi
+          btn.onclick = function () {
+            PartnerApp.openPartnerDashboard();
+          }; // Panele yönlendir
+        }
+      }, 100);
     }
 
-    // SENARYO 3: BAŞVURMUŞ AMA BEKLİYOR (Pending)
-    if (status === "pending") {
-      area.innerHTML = `
-            <div class="form-left"></div>
-            <div class="form-right" style="justify-content:center; text-align:center;">
-                <div style="font-size:60px; margin-bottom:20px;">⏳</div>
-                <h2 style="color:#1e293b;">Başvurunuz İnceleniyor</h2>
-                <p style="color:#64748b;">Başvurunuzu aldık, değerlendiriyoruz. Sonuçlandığında size haber vereceğiz.</p>
-            </div>`;
-      return;
+    // SENARYO 3: BEKLEMEDE (Formu Kilitle + Bilgi Ver)
+    else if (status === "pending") {
+      disableFormArea("⏳ Başvurunuz alındı ve şu an inceleme aşamasında.");
+
+      // Butonu Pasif Yap
+      setTimeout(() => {
+        const btn = area.querySelector(".btn-next");
+        if (btn) {
+          btn.innerText = "SONUÇ BEKLENİYOR...";
+          btn.style.background = "#94a3b8"; // Gri
+          btn.style.cursor = "default";
+          btn.onclick = null; // Tıklamayı iptal et
+        }
+      }, 100);
     }
 
-    // SENARYO 4: REDDEDİLMİŞ (Rejected) - Tekrar başvurabilir ama uyarılır
-    if (status === "rejected") {
-      window.appData = { email: email };
-      showStep1(); // Formu başlat
-
-      // Formun tepesine uyarıyı ekle
+    // SENARYO 4: REDDEDİLMİŞ (Form Açık + Uyarı Ver)
+    else if (status === "rejected") {
+      // Inputları kilitlemiyoruz, sadece uyarı ekliyoruz
       setTimeout(() => {
         const warningHTML = `
               <div style="background:#fee2e2; color:#b91c1c; padding:15px; border-radius:8px; border:1px solid #fca5a5; margin-bottom:20px; font-size:13px; display:flex; align-items:center; gap:10px;">
                   <i class="fas fa-exclamation-circle" style="font-size:18px;"></i>
                   <div>
                       <b>Önceki Başvurunuz Onaylanmadı</b><br>
-                      Lütfen bilgilerinizi daha detaylı doldurarak tekrar deneyiniz.
+                      Bilgilerinizi güncelleyerek tekrar şansınızı deneyebilirsiniz.
                   </div>
               </div>`;
         const rightPanel = document.querySelector(".form-right");
         if (rightPanel)
           rightPanel.insertAdjacentHTML("afterbegin", warningHTML);
-      }, 500);
-      return;
+      }, 100);
     }
 
-    // SENARYO 5: TEMİZ (İlk Kez Başvuruyor)
-    window.appData = { email: email };
-    showStep1();
+    // SENARYO 5: TEMİZ (Hiçbir şey yapma, form zaten açık)
+  }
+
+  // --- YARDIMCI: FORMU KİLİTLEME FONKSİYONU ---
+  function disableFormArea(message) {
+    // 1. Uyarı Mesajını Ekle
+    const rightPanel = document.querySelector(".form-right");
+    if (rightPanel) {
+      rightPanel.insertAdjacentHTML(
+        "afterbegin",
+        `
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-check-circle" style="font-size:20px;"></i>
+                <span style="font-weight:bold;">${message}</span>
+            </div>
+          `,
+      );
+    }
+
+    // 2. Tüm Inputları Bul ve Kilitle (Disabled)
+    const inputs = document.querySelectorAll(
+      "#app-form-area input, #app-form-area select, #app-form-area textarea",
+    );
+    inputs.forEach((el) => {
+      el.disabled = true;
+      el.style.backgroundColor = "#f1f5f9"; // Gri arka plan
+      el.style.color = "#94a3b8"; // Soluk yazı
+      el.style.cursor = "not-allowed";
+    });
   }
 
   function renderFormLogic(email) {
@@ -2344,5 +2380,12 @@ ${css}
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v2*/
+  // --- 🔥 KRİTİK DÜZELTME: BAŞVURU SAYFASINI TETİKLE ---
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", renderApplicationPage);
+  } else {
+    renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
+  }
+
+  /*sistem güncellendi v3*/
 })();
