@@ -177,7 +177,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 /* --- 1. ANA KAPLAYICI (Overlay) --- */
-.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:9999999; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
+.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2147483647; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
 
 /* --- 2. UYGULAMA KUTUSU --- */
 .p-app { width:100%; height:100%; background:#f1f5f9; position:relative; display:flex; flex-direction:row; overflow:hidden; }
@@ -1752,7 +1752,7 @@ ${css}
     <style>
         #mdm-stripe-bar {
             position: fixed; top: 0; left: 0; width: 100%; height: 40px; 
-            background: #0f172a; color: white; z-index: 2147483647; 
+            background: #0f172a; color: white; z-index: 999990; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
             font-family: 'Inter', sans-serif; box-sizing: border-box;
@@ -1820,10 +1820,26 @@ ${css}
         h.style.top = "0px";
       });
     };
+    var styleFix = document.createElement("style");
+    styleFix.innerHTML = `
+        /* Partner Paneli açıldığında her şeyin üstünde olsun */
+        #mdm-partner-modal { z-index: 2147483647 !important; }
+        
+        /* Link Çubuğu bir tık altta olsun */
+        #mdm-stripe-bar { z-index: 2147483640 !important; }
+        
+        /* Eğer mobildeysek, link çubuğu altta olduğu için, 
+           Faprika'nın "Sepete Ekle" veya "WhatsApp" butonlarını kapatmasın diye 
+           sayfanın altına boşluk ekle */
+        @media (max-width: 768px) {
+            body { padding-bottom: 50px !important; }
+        }
+    `;
+    document.head.appendChild(styleFix);
   }
 
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
