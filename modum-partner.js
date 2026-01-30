@@ -661,14 +661,14 @@ ${css}
         }
       },
 
-      // --- LİNKLER & QR KOD (KAYNAK TAKİBİ EKLENDİ v3.2) ---
+      // --- LİNKLER & QR ARAÇLARI (AKILLI KAYNAK SEÇİCİ v2.0) ---
       renderLinks: function (c) {
         var pData = window.PartnerData || {};
         var myRefCode = pData.refCode || "REF-BEKLENIYOR";
         var myCoupon = pData.custom_coupon || "Tanımlanmamış";
         var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        // İndirim Kodu HTML
+        // İndirim Kodu HTML (Aynı kalıyor)
         let couponHTML =
           myCoupon !== "Tanımlanmamış"
             ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
@@ -681,44 +681,48 @@ ${css}
 
         c.innerHTML = `
         <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-            <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve QR Araçları</h3>
+            <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
             <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-                Buradan kendinize özel takip linkleri oluşturabilirsiniz. Paylaştığınız linklerden gelen her satış size kazanç olarak döner.
+                Hangi platformda daha güçlü olduğunu görmek için paylaşım yapacağın yeri seç.
             </p>
         </div>
 
         ${couponHTML}
         
-        <div class="p-card" style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; margin-bottom:20px;">
-            <label class="p-stat-lbl" style="color:#0284c7; display:block; margin-bottom:5px;">🏠 ANA SAYFA LİNKİN</label>
-            <div style="background:white; padding:12px; border-radius:8px; font-family:monospace; color:#0369a1; border:1px dashed #0ea5e9; word-break:break-all; font-size:12px; margin-bottom:10px;">
-                ${homeLink}
-            </div>
-            <button onclick="navigator.clipboard.writeText('${homeLink}'); alert('Kopyalandı!')" class="p-btn" style="background:#0ea5e9; color:white; height:40px; font-size:13px; border:none; border-radius:8px; flex:1; width:100%;">
-                <i class="fas fa-copy"></i> Kopyala
-            </button>
-        </div>
-
-        <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
-
         <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Akıllı Link Oluşturucu:</p>
 
         <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
             
-            <div class="form-group" style="margin-bottom:15px;">
+            <div class="form-group" style="margin-bottom:20px;">
                 <label class="p-stat-lbl" style="display:block; margin-bottom:5px;">1. ÜRÜN LİNKİ (Zorunlu)</label>
                 <input type="text" id="pl-input" placeholder="https://www.modum.tr/urun/..." style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px;">
             </div>
 
-            <div class="form-group" style="margin-bottom:15px;">
-                <label class="p-stat-lbl" style="display:block; margin-bottom:5px; color:#8b5cf6;">2. KAYNAK ETİKETİ (İsteğe Bağlı)</label>
-                <input type="text" id="pl-source" placeholder="Örn: story_sabah, youtube_bio" style="width:100%; padding:12px; border:1px solid #ddd6fe; border-radius:8px; box-sizing:border-box; outline:none; font-size:13px; background:#f5f3ff; color:#6d28d9;">
-                <div style="font-size:10px; color:#64748b; margin-top:3px;">
-                    <i class="fas fa-info-circle"></i> Buraya yazdığınız not (örn: 'instagram'), satış raporlarında görünür. Böylece hangi paylaşımın kazandırdığını takip edebilirsiniz.
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="p-stat-lbl" style="display:block; margin-bottom:10px; color:#8b5cf6;">2. NEREDE PAYLAŞACAKSIN?</label>
+                
+                <div id="source-selector" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <div onclick="PartnerApp.selectSource(this, 'instagram_story')" class="source-pill active" style="border:1px solid #e2e8f0; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; background:#3b82f6; color:white; transition:0.2s;">
+                        <i class="fab fa-instagram"></i> Story
+                    </div>
+                    <div onclick="PartnerApp.selectSource(this, 'instagram_bio')" class="source-pill" style="border:1px solid #e2e8f0; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; background:white; color:#64748b; transition:0.2s;">
+                        <i class="fas fa-link"></i> Bio
+                    </div>
+                    <div onclick="PartnerApp.selectSource(this, 'whatsapp')" class="source-pill" style="border:1px solid #e2e8f0; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; background:white; color:#64748b; transition:0.2s;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </div>
+                    <div onclick="PartnerApp.selectSource(this, 'telegram')" class="source-pill" style="border:1px solid #e2e8f0; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; background:white; color:#64748b; transition:0.2s;">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </div>
+                    <div onclick="PartnerApp.selectSource(this, 'youtube')" class="source-pill" style="border:1px solid #e2e8f0; padding:8px 15px; border-radius:20px; font-size:12px; cursor:pointer; background:white; color:#64748b; transition:0.2s;">
+                        <i class="fab fa-youtube"></i> YouTube
+                    </div>
                 </div>
+                
+                <input type="hidden" id="pl-source" value="instagram_story">
             </div>
             
-            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:5px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
+            <button onclick="PartnerApp.createLink('${myRefCode}')" class="p-btn p-btn-primary" style="margin-top:5px; background:#1e293b; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;">
                 Link ve QR Oluştur ✨
             </button>
         </div>
@@ -736,19 +740,31 @@ ${css}
                 </button>
             </div>
             
-            <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#1e293b; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">
+            <button onclick="navigator.clipboard.writeText(document.getElementById('pl-final').innerText); alert('Kopyalandı!')" class="p-btn" style="background:#3b82f6; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">
                 <i class="fas fa-copy"></i> Linki Kopyala
             </button>
 
             <div id="pl-qr-box" style="display:none; margin-top:15px; background:white; padding:15px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
-                <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Bu QR kodu okutan, senin referansınla ürüne gider! 👇</div>
                 <img id="pl-qr-img" src="" style="width:200px; height:200px; margin:0 auto; display:block; border:1px solid #eee; padding:5px;">
-                <a id="pl-qr-dl" href="#" target="_blank" class="p-btn" style="margin-top:10px; background:#f59e0b; color:white; font-size:12px; width:auto; display:inline-flex; text-decoration:none;">
-                    📥 Resmi İndir
-                </a>
             </div>
         </div>
       `;
+      },
+
+      // SEÇİM FONKSİYONU
+      selectSource: function (el, val) {
+        // Görsel Değişim
+        document.querySelectorAll(".source-pill").forEach((p) => {
+          p.style.background = "white";
+          p.style.color = "#64748b";
+          p.classList.remove("active");
+        });
+        el.style.background = "#3b82f6";
+        el.style.color = "white";
+        el.classList.add("active");
+
+        // Değeri Kaydet
+        document.getElementById("pl-source").value = val;
       },
 
       createLink: function (refCode) {
@@ -1637,9 +1653,9 @@ ${css}
                   <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>
                   
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                      <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px;" onclick="navigator.clipboard.writeText('${shareLink}'); alert('✅ Link Kopyalandı!')">
-                          <i class="fas fa-link"></i> Link
-                      </button>
+                      <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
+          <i class="fas fa-link"></i> Link
+      </button>
                       <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
                           <i class="fas fa-paint-brush"></i> Story Yap
                       </button>
@@ -1808,6 +1824,43 @@ ${css}
           btn.innerHTML = oldText;
           btn.disabled = false;
         }
+      }, // 🔥 VİTRİN İÇİN HIZLI LİNK OLUŞTURUCU (MODAL)
+      openQuickLink: function (url, refCode) {
+        // Eski modal varsa sil
+        let old = document.getElementById("p-quick-link-modal");
+        if (old) old.remove();
+
+        let html = `
+          <div id="p-quick-link-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
+              <div style="background:white; width:100%; max-width:300px; border-radius:12px; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center;">
+                  <h4 style="margin:0 0 15px 0; color:#1e293b;">Nerede Paylaşacaksın?</h4>
+                  
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                      <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'instagram_story')" class="p-btn" style="background:#e1306c; color:white; font-size:12px;"><i class="fab fa-instagram"></i> Story</button>
+                      <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'whatsapp')" class="p-btn" style="background:#25D366; color:white; font-size:12px;"><i class="fab fa-whatsapp"></i> WP</button>
+                      <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'telegram')" class="p-btn" style="background:#229ED9; color:white; font-size:12px;"><i class="fab fa-telegram"></i> TG</button>
+                      <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'other')" class="p-btn" style="background:#334155; color:white; font-size:12px;">Diğer</button>
+                  </div>
+
+                  <div onclick="document.getElementById('p-quick-link-modal').remove()" style="font-size:12px; color:#94a3b8; cursor:pointer;">İptal</div>
+              </div>
+          </div>
+          `;
+        document.body.insertAdjacentHTML("beforeend", html);
+      },
+
+      // Son Aşamada Kopyalama Yapan Fonksiyon
+      copyFinalLink: function (url, refCode, source) {
+        // Linke Source Ekle
+        let separator = url.includes("?") ? "&" : "?";
+        let finalLink =
+          url + separator + "ref=" + refCode + "&source=" + source;
+
+        // Kopyala
+        navigator.clipboard.writeText(finalLink).then(() => {
+          alert("✅ Link Kopyalandı! (" + source + ")");
+          document.getElementById("p-quick-link-modal").remove();
+        });
       },
     };
 
@@ -2686,5 +2739,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v1*/
 })();
