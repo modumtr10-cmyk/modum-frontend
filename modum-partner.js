@@ -1846,9 +1846,343 @@ ${css}
     `;
     document.head.appendChild(styleFix);
   }
+  // ============================================================
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI (LANDING PAGE + FORM)
+  // ============================================================
+  async function renderApplicationPage() {
+    const root = document.getElementById("mdm-application-page");
+    if (!root) return; // Bu sayfada değilsek çalışma
+
+    var email = detectUser(); // Kullanıcı giriş yapmış mı?
+
+    // --- AYARLAR: GÖRSEL LİNKLERİ BURAYA ---
+    // (Sen Canva'dan yaptıklarını buraya yapıştıracaksın)
+    const BANNER_IMG =
+      "https://placehold.co/1920x600/0f172a/FFF?text=MODUMNET+PARTNER+PROGRAMI";
+    const ICON_1 = "https://placehold.co/200/10b981/FFF?text=%25";
+    const ICON_2 = "https://placehold.co/200/f59e0b/FFF?text=Hediye";
+    const ICON_3 = "https://placehold.co/200/3b82f6/FFF?text=Akademi";
+    const FORM_SIDE_IMG =
+      "https://placehold.co/600x800/1e293b/FFF?text=Influencer";
+
+    // --- CSS STİLLERİ ---
+    const style = `
+    <style>
+        .app-hero { 
+            width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; 
+            position:relative; display:flex; align-items:center; justify-content:center;
+        }
+        .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
+        .app-hero-content { position:relative; z-index:2; text-align:center; color:white; }
+        .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
+        .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
+
+        .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; }
+        
+        /* Kartlar */
+        .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
+        .b-card { background:white; padding:30px; border-radius:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05); transition:0.3s; }
+        .b-card:hover { transform:translateY(-10px); }
+        .b-card img { width:80px; height:80px; border-radius:50%; margin-bottom:15px; }
+        .b-card h4 { font-size:18px; color:#1e293b; margin:0 0 10px; }
+        .b-card p { font-size:13px; color:#64748b; line-height:1.5; }
+
+        /* Form Alanı */
+        .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:500px; }
+        .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; }
+        .form-left::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, #0f172a, transparent); }
+        .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; }
+        
+        .form-right { width:60%; padding:40px; display:flex; flex-direction:column; }
+        
+        /* Adımlar */
+        .step-indicator { display:flex; gap:10px; margin-bottom:30px; }
+        .step-dot { flex:1; height:4px; background:#e2e8f0; border-radius:4px; }
+        .step-dot.active { background:#3b82f6; }
+        
+        .inp-group { margin-bottom:15px; }
+        .inp-group label { display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:5px; }
+        .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; }
+        .inp-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+
+        .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; }
+        .btn-next:hover { background:#1e293b; }
+
+        /* Mobil */
+        @media(max-width:768px) {
+            .benefit-grid { grid-template-columns:1fr; }
+            .form-box { flex-direction:column; }
+            .form-left { height:150px; width:100%; }
+            .form-right { width:100%; padding:20px; }
+        }
+    </style>
+    `;
+
+    // 1. HTML İSKELETİ
+    var html = `
+    ${style}
+    <div class="app-hero">
+        <div class="app-hero-content">
+            <h1>MODUMNET PARTNER</h1>
+            <p>Sosyal medya gücünü kazanca dönüştür.</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <div class="benefit-grid">
+            <div class="b-card">
+                <img src="${ICON_1}">
+                <h4>Yüksek Komisyon</h4>
+                <p>Bronz, Gümüş ve Altın seviyeleriyle satış yaptıkça artan oranlarla kazan.</p>
+            </div>
+            <div class="b-card">
+                <img src="${ICON_2}">
+                <h4>Özel Hediyeler</h4>
+                <p>Sadece para değil; ürün hediyeleri, özel kutular ve sürprizler seni bekliyor.</p>
+            </div>
+            <div class="b-card">
+                <img src="${ICON_3}">
+                <h4>Partner Akademisi</h4>
+                <p>Satış taktikleri, içerik üretimi ve pazarlama eğitimleriyle kendini geliştir.</p>
+            </div>
+        </div>
+
+        <div class="form-box" id="app-form-area">
+            </div>
+
+    </div>
+    `;
+
+    root.innerHTML = html;
+
+    // 2. FORM MANTIĞI
+    renderFormLogic(email);
+  }
+
+  function renderFormLogic(email) {
+    const area = document.getElementById("app-form-area");
+
+    // SENARYO A: GİRİŞ YAPMAMIŞ
+    if (!email) {
+      area.innerHTML = `
+            <div class="form-left">
+                <div class="form-left-text">
+                    <h3 style="margin:0;">Aramıza Katıl</h3>
+                    <p style="margin:5px 0 0; opacity:0.8;">ModumNet ailesinin bir parçası ol.</p>
+                </div>
+            </div>
+            <div class="form-right" style="justify-content:center; text-align:center;">
+                <div style="font-size:50px; margin-bottom:20px;">🔒</div>
+                <h2 style="margin:0; color:#1e293b;">Önce Giriş Yapmalısın</h2>
+                <p style="color:#64748b; margin:10px 0 30px;">Partner başvurusu yapabilmek için ModumNet üyesi olman gerekiyor. Hesabın varsa giriş yap, yoksa hemen ücretsiz oluştur.</p>
+                
+                <a href="/uyelik-girisi" class="btn-next" style="text-decoration:none; display:block; line-height:20px;">
+                    GİRİŞ YAP / KAYIT OL
+                </a>
+            </div>
+          `;
+      return;
+    }
+
+    // SENARYO B: GİRİŞ YAPMIŞ -> BAŞVURU FORMU (ADIM 1)
+    window.appData = { email: email }; // Verileri toplamak için
+    showStep1();
+  }
+
+  // --- ADIM 1: SOSYAL MEDYA ---
+  function showStep1() {
+    const area = document.getElementById("app-form-area");
+    area.innerHTML = `
+        <div class="form-left">
+            <div class="form-left-text">
+                <h3 style="margin:0;">Adım 1/3</h3>
+                <p style="margin:5px 0 0; opacity:0.8;">Sosyal medya gücünü tanıyalım.</p>
+            </div>
+        </div>
+        <div class="form-right">
+            <div class="step-indicator">
+                <div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div>
+            </div>
+            
+            <h3 style="margin:0 0 20px 0; color:#1e293b;">Sosyal Medya Hesapların</h3>
+
+            <div class="inp-group">
+                <label>Instagram Kullanıcı Adın (Zorunlu)</label>
+                <input type="text" id="app_insta" placeholder="@kullaniciadi">
+            </div>
+            <div class="inp-group">
+                <label>TikTok / YouTube (Varsa)</label>
+                <input type="text" id="app_other" placeholder="@digerhesap">
+            </div>
+            <div class="inp-group">
+                <label>Toplam Takipçi Sayın (Tahmini)</label>
+                <select id="app_followers">
+                    <option value="1k-5k">1.000 - 5.000</option>
+                    <option value="5k-10k">5.000 - 10.000</option>
+                    <option value="10k-50k">10.000 - 50.000</option>
+                    <option value="50k+">50.000+</option>
+                </select>
+            </div>
+
+            <button onclick="validateStep1()" class="btn-next">DEVAM ET &rarr;</button>
+        </div>
+      `;
+  }
+
+  window.validateStep1 = function () {
+    const insta = document.getElementById("app_insta").value;
+    if (insta.length < 3) return alert("Lütfen Instagram kullanıcı adını gir.");
+
+    window.appData.social = {
+      instagram: insta,
+      other: document.getElementById("app_other").value,
+      followers: document.getElementById("app_followers").value,
+    };
+    showStep2();
+  };
+
+  // --- ADIM 2: KİŞİSEL BİLGİLER ---
+  function showStep2() {
+    const area = document.getElementById("app-form-area");
+    area.innerHTML = `
+        <div class="form-left">
+            <div class="form-left-text">
+                <h3 style="margin:0;">Adım 2/3</h3>
+                <p style="margin:5px 0 0; opacity:0.8;">Sana nasıl ulaşalım?</p>
+            </div>
+        </div>
+        <div class="form-right">
+            <div class="step-indicator">
+                <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div>
+            </div>
+            
+            <h3 style="margin:0 0 20px 0; color:#1e293b;">Kişisel Bilgiler</h3>
+
+            <div class="inp-group">
+                <label>Adın Soyadın</label>
+                <input type="text" id="app_name" placeholder="Tam adınız">
+            </div>
+            <div class="inp-group">
+                <label>Telefon Numaran (WhatsApp)</label>
+                <input type="tel" id="app_phone" placeholder="0555 555 55 55">
+            </div>
+            <div class="inp-group">
+                <label>Neden ModumNet? (Kısaca anlat)</label>
+                <textarea id="app_reason" rows="3" placeholder="Hedeflerin neler? Nasıl içerikler üreteceksin?"></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="showStep1()" class="btn-next" style="background:#e2e8f0; color:#334155;">&larr; Geri</button>
+                <button onclick="validateStep2()" class="btn-next">SON ADIM &rarr;</button>
+            </div>
+        </div>
+      `;
+  }
+
+  window.validateStep2 = function () {
+    const name = document.getElementById("app_name").value;
+    const phone = document.getElementById("app_phone").value;
+
+    if (name.length < 3 || phone.length < 10)
+      return alert("Lütfen adını ve telefonunu doğru gir.");
+
+    window.appData.personal = {
+      name: name,
+      phone: phone,
+      reason: document.getElementById("app_reason").value,
+    };
+    showStep3();
+  };
+
+  // --- ADIM 3: ONAY VE GÖNDER ---
+  function showStep3() {
+    const area = document.getElementById("app-form-area");
+    area.innerHTML = `
+        <div class="form-left">
+            <div class="form-left-text">
+                <h3 style="margin:0;">Tamamla</h3>
+                <p style="margin:5px 0 0; opacity:0.8;">Başvurunu bize gönder.</p>
+            </div>
+        </div>
+        <div class="form-right">
+            <div class="step-indicator">
+                <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot active"></div>
+            </div>
+            
+            <div style="text-align:center; padding:20px;">
+                <div style="font-size:40px; margin-bottom:10px;">🚀</div>
+                <h3 style="color:#1e293b;">Hazır mısın?</h3>
+                <p style="color:#64748b; font-size:13px;">Başvurunu inceledikten sonra seninle iletişime geçeceğiz. Bu süreçte üyeliğin aktif kalmalı.</p>
+                
+                <div style="text-align:left; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin:20px 0;">
+                    <label style="display:flex; gap:10px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" id="app_terms">
+                        <span>ModumNet Ortaklık Sözleşmesi'ni ve KVKK metnini okudum, kurallara uymayı kabul ediyorum.</span>
+                    </label>
+                </div>
+
+                <button onclick="submitApplication()" class="btn-next" style="background:#10b981;">BAŞVURUYU GÖNDER ✨</button>
+            </div>
+        </div>
+      `;
+  }
+
+  window.submitApplication = async function () {
+    if (!document.getElementById("app_terms").checked)
+      return alert("Lütfen sözleşmeyi onayla.");
+
+    const btn = event.target;
+    btn.innerText = "Gönderiliyor...";
+    btn.disabled = true;
+
+    try {
+      // Backend'e Gönder
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "save_application",
+          email: window.appData.email,
+          name: window.appData.personal.name,
+          phone: window.appData.personal.phone,
+          reason: window.appData.personal.reason,
+          socialLinks: window.appData.social,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const area = document.getElementById("app-form-area");
+        area.innerHTML = `
+                <div style="padding:50px; text-align:center; width:100%;">
+                    <div style="font-size:60px; color:#10b981; margin-bottom:20px;">🎉</div>
+                    <h2>Başvurunu Aldık!</h2>
+                    <p style="color:#64748b; max-width:400px; margin:0 auto;">Teşekkürler ${window.appData.personal.name}. Ekibimiz başvurunu en kısa sürede inceleyip sana dönüş yapacak. Panelini kontrol etmeyi unutma.</p>
+                    <a href="/" class="btn-next" style="margin-top:30px; display:inline-block; width:auto; padding:10px 30px; text-decoration:none;">Ana Sayfaya Dön</a>
+                </div>
+              `;
+      } else {
+        alert("Hata: " + data.message);
+        btn.innerText = "Tekrar Dene";
+        btn.disabled = false;
+      }
+    } catch (e) {
+      alert("Bağlantı hatası.");
+      btn.disabled = false;
+    }
+  };
+  window.addEventListener("load", function () {
+    renderApplicationPage();
+  });
+
+  // --- SAYFA AÇILINCA ÇALIŞTIR ---
+  // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
+  // setTimeout(renderApplicationPage, 500);
+  // (Ama en sağlıklısı aşağıya yazdığım koddur)
 
   // Başlat
   setTimeout(initPartnerSystem, 1000);
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
