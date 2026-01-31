@@ -659,6 +659,13 @@ ${css}
             <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
                 <canvas id="p-chart" height="150"></canvas>
             </div>
+
+            <div style="margin-top:20px;">
+                <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">TRAFİK KAYNAKLARI</h4>
+                <div style="background:white; border-radius:12px; padding:15px; border:1px solid #e2e8f0;">
+                    ${sourceHTML}
+                </div>
+            </div>
           `;
 
           // GRAFİK ÇİZİMİ
@@ -2785,5 +2792,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
