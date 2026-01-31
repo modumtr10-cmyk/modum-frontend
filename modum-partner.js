@@ -246,7 +246,7 @@
     display:flex; align-items:center; justify-content:space-between; padding:0 20px; 
     flex-shrink:0; 
 }
-.p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:80px; }
+.p-body { flex:1; overflow-y:auto; padding:20px; padding-bottom:215px; }
 
 /* Mobil Hamburger Menü Butonu */
 .mobile-menu-btn { display:none; font-size:24px; color:#334155; cursor:pointer; margin-right:10px; }
@@ -2739,5 +2739,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v6*/
 })();
