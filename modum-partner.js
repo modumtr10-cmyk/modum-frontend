@@ -162,7 +162,7 @@
                 <div style="width:70px; height:70px; background:white; color:#333; font-size:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; border:4px solid rgba(255,255,255,0.2);">🛍️</div>
                 <h1 style="margin:0; font-size:20px; font-weight:800;">${partnerName}'in Seçtikleri</h1>
                 <p style="opacity:0.8; margin:5px 0 0; font-size:12px; max-width:400px; margin:5px auto;">
-                    Beğendiğin ürüne tıkla, numaranı seç ve sepete ekle.
+                    Beğendiğin ürüne tıkla, numaranı seç ve sepete ekle. (Beğendiğiniz ürüne tıklayın. Ürün yeni sekmede açılır; koleksiyon sayfanız açık kalır. Dilediğinizde geri dönebilirsiniz.)
                 </p>
             </div>
 
@@ -479,54 +479,108 @@ ${css}
 
     document.body.insertAdjacentHTML("beforeend", html);
 
-    window.PartnerApp = {
-      toggleSidebar: function () {
-        var sb = document.getElementById("p-nav-container");
-        var icon = document.getElementById("p-toggle-icon");
-        var isMobile = window.innerWidth <= 768;
+    // Açılış
+    window.PartnerApp.loadTab("home");
+  }
+  // --- CANVAS YARDIMCISI: RESİM YÜKLEME ---
+  // Bir görselin canvas'a çizilebilmesi için tamamen yüklenmiş olması gerekir.
+  function loadCanvasImage(src) {
+    return new Promise((resolve, reject) => {
+      // 1. Resim linkindeki "https://" kısmını temizleyip temiz URL alalım
+      let cleanUrl = src.replace(/^https?:\/\//, "");
 
-        if (isMobile) {
-          // Mobilde class 'mobile-open'
-          if (sb.classList.contains("mobile-open")) {
-            sb.classList.remove("mobile-open");
-          } else {
-            sb.classList.add("mobile-open");
-          }
+      // 2. Güvenli Proxy Servisi (wsrv.nl) üzerinden geçir
+      // Bu servis resmi alır, güvenlik izinlerini (CORS) ekler ve bize geri verir.
+      // Ayrıca &w=800 diyerek resmi optimize ediyoruz, çok daha hızlı çalışır.
+      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&output=png&w=800&n=-1`;
+
+      const img = new Image();
+      img.crossOrigin = "Anonymous"; // Artık bu çalışacak çünkü proxy izin veriyor
+      img.onload = () => resolve(img);
+      img.onerror = (e) => {
+        console.error("Resim yükleme hatası:", e);
+        // Proxy başarısız olursa orijinali dene (Yedek plan)
+        const backupImg = new Image();
+        backupImg.crossOrigin = "Anonymous";
+        backupImg.onload = () => resolve(backupImg);
+        backupImg.onerror = () => reject(new Error("Resim yüklenemedi"));
+        backupImg.src = src;
+      };
+      img.src = proxyUrl;
+    });
+  }
+
+  // --- CANVAS YARDIMCISI: UZUN METİNLERİ SATIRLARA BÖLME ---
+  // Canvas, uzun metinleri otomatik olarak alt satıra geçirmez. Bunu elle yapıyoruz.
+  function wrapText(context, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(" ");
+    var line = "";
+    var currentY = y;
+
+    for (var n = 0; n < words.length; n++) {
+      var testLine = line + words[n] + " ";
+      var metrics = context.measureText(testLine);
+      var testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        context.fillText(line, x, currentY);
+        line = words[n] + " ";
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line, x, currentY);
+    // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
+    return currentY + lineHeight;
+  }
+  window.PartnerApp = {
+    toggleSidebar: function () {
+      var sb = document.getElementById("p-nav-container");
+      var icon = document.getElementById("p-toggle-icon");
+      var isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        // Mobilde class 'mobile-open'
+        if (sb.classList.contains("mobile-open")) {
+          sb.classList.remove("mobile-open");
         } else {
-          // PC'de class 'expanded'
-          if (sb.classList.contains("expanded")) {
-            sb.classList.remove("expanded");
-            if (icon) icon.className = "fas fa-angle-double-right";
-          } else {
-            sb.classList.add("expanded");
-            if (icon) icon.className = "fas fa-angle-double-left";
-          }
+          sb.classList.add("mobile-open");
         }
-      },
-      loadTab: function (tab, el) {
-        document
-          .querySelectorAll(".p-nav-item")
-          .forEach((i) => i.classList.remove("active"));
-        if (el) el.classList.add("active");
+      } else {
+        // PC'de class 'expanded'
+        if (sb.classList.contains("expanded")) {
+          sb.classList.remove("expanded");
+          if (icon) icon.className = "fas fa-angle-double-right";
+        } else {
+          sb.classList.add("expanded");
+          if (icon) icon.className = "fas fa-angle-double-left";
+        }
+      }
+    },
+    loadTab: function (tab, el) {
+      document
+        .querySelectorAll(".p-nav-item")
+        .forEach((i) => i.classList.remove("active"));
+      if (el) el.classList.add("active");
 
-        var area = document.getElementById("p-content-area");
-        area.innerHTML =
-          '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-circle-notch fa-spin" style="font-size:30px;"></i></div>';
+      var area = document.getElementById("p-content-area");
+      area.innerHTML =
+        '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-circle-notch fa-spin" style="font-size:30px;"></i></div>';
 
-        setTimeout(() => {
-          if (tab === "home") this.renderHome(area);
-          if (tab === "links") this.renderLinks(area);
-          if (tab === "wallet") this.renderWallet(area);
-          if (tab === "marketing") this.renderMarketing(area);
-          if (tab === "academy") this.renderAcademy(area);
-          if (tab === "showcase") this.renderShowcase(area);
-          if (tab === "my_collection") this.renderMyCollection(area);
-        }, 300);
-      },
+      setTimeout(() => {
+        if (tab === "home") this.renderHome(area);
+        if (tab === "links") this.renderLinks(area);
+        if (tab === "wallet") this.renderWallet(area);
+        if (tab === "marketing") this.renderMarketing(area);
+        if (tab === "academy") this.renderAcademy(area);
+        if (tab === "showcase") this.renderShowcase(area);
+        if (tab === "my_collection") this.renderMyCollection(area);
+      }, 300);
+    },
 
-      // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ (Z-INDEX DÜZELTİLDİ)
-      showTierInfo: function () {
-        let infoHtml = `
+    // 🔥 YENİ: SEVİYE BİLGİ PENCERESİ (Z-INDEX DÜZELTİLDİ)
+    showTierInfo: function () {
+      let infoHtml = `
 <div id="p-tier-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
   <div style="background:white; width:100%; max-width:350px; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
       <div style="padding:20px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center;">
@@ -568,92 +622,92 @@ ${css}
   </div>
 </div>
 `;
-        document.body.insertAdjacentHTML("beforeend", infoHtml);
-      },
+      document.body.insertAdjacentHTML("beforeend", infoHtml);
+    },
 
-      renderHome: async function (container) {
-        var email = detectUser();
-        if (!email) {
+    renderHome: async function (container) {
+      var email = detectUser();
+      if (!email) {
+        container.innerHTML =
+          "<div style='padding:20px; text-align:center'>Giriş yapmalısınız.</div>";
+        return;
+      }
+
+      try {
+        // Yükleniyor...
+        container.innerHTML =
+          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler analiz ediliyor...</div>';
+
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+        });
+        const res = await response.json();
+        if (!res.success) {
           container.innerHTML =
-            "<div style='padding:20px; text-align:center'>Giriş yapmalısınız.</div>";
+            "<div style='padding:20px; color:red; text-align:center'>Hata: " +
+            res.message +
+            "</div>";
           return;
         }
 
-        try {
-          // Yükleniyor...
-          container.innerHTML =
-            '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler analiz ediliyor...</div>';
+        const s = res.stats;
 
-          const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_partner_stats", email: email }),
-          });
-          const res = await response.json();
-          if (!res.success) {
-            container.innerHTML =
-              "<div style='padding:20px; color:red; text-align:center'>Hata: " +
-              res.message +
-              "</div>";
-            return;
-          }
+        // --- VERİ HAZIRLIĞI ---
+        let currentRev = parseFloat(s.totalRevenue || 0);
+        let myRate = parseFloat(s.commission_rate || 10);
+        let tClicks = parseInt(s.totalClicks || 0);
+        let tSales = parseInt(s.totalSales || 0);
 
-          const s = res.stats;
+        // 🔥 PRO ANALİZ HESAPLAMALARI (CR & EPC)
 
-          // --- VERİ HAZIRLIĞI ---
-          let currentRev = parseFloat(s.totalRevenue || 0);
-          let myRate = parseFloat(s.commission_rate || 10);
-          let tClicks = parseInt(s.totalClicks || 0);
-          let tSales = parseInt(s.totalSales || 0);
+        // 1. Dönüşüm Oranı (CR)
+        // Formül: (Satış / Tık) * 100
+        let conversionRate =
+          tClicks > 0 ? ((tSales / tClicks) * 100).toFixed(2) : "0.00";
+        let crColor =
+          conversionRate > 2.0
+            ? "#10b981"
+            : conversionRate > 1.0
+              ? "#f59e0b"
+              : "#ef4444"; // İyi: Yeşil, Orta: Sarı, Kötü: Kırmızı
 
-          // 🔥 PRO ANALİZ HESAPLAMALARI (CR & EPC)
+        // 2. Tık Başı Kazanç (EPC)
+        // Formül: (Toplam Tahmini Kazanç / Tık)
+        let estimatedEarnings = currentRev * (myRate / 100);
+        let epcVal =
+          tClicks > 0 ? (estimatedEarnings / tClicks).toFixed(2) : "0.00";
 
-          // 1. Dönüşüm Oranı (CR)
-          // Formül: (Satış / Tık) * 100
-          let conversionRate =
-            tClicks > 0 ? ((tSales / tClicks) * 100).toFixed(2) : "0.00";
-          let crColor =
-            conversionRate > 2.0
-              ? "#10b981"
-              : conversionRate > 1.0
-                ? "#f59e0b"
-                : "#ef4444"; // İyi: Yeşil, Orta: Sarı, Kötü: Kırmızı
+        // --- TIER (SEVİYE) HESAPLAMA MOTORU ---
+        let nextLevelName = "Maksimum";
+        let nextTargetAmount = 0;
+        let progressPercent = 0;
+        let barColor = "#fbbf24";
 
-          // 2. Tık Başı Kazanç (EPC)
-          // Formül: (Toplam Tahmini Kazanç / Tık)
-          let estimatedEarnings = currentRev * (myRate / 100);
-          let epcVal =
-            tClicks > 0 ? (estimatedEarnings / tClicks).toFixed(2) : "0.00";
+        if (currentRev < 10000) {
+          nextLevelName = "Gümüş (%15)";
+          nextTargetAmount = 10000;
+          progressPercent = (currentRev / 10000) * 100;
+          barColor = "#94a3b8";
+        } else if (currentRev < 50000) {
+          nextLevelName = "Altın (%20)";
+          nextTargetAmount = 50000;
+          progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100;
+          barColor = "#fbbf24";
+        } else {
+          nextLevelName = "Efsane";
+          nextTargetAmount = currentRev;
+          progressPercent = 100;
+          barColor = "#ef4444";
+        }
 
-          // --- TIER (SEVİYE) HESAPLAMA MOTORU ---
-          let nextLevelName = "Maksimum";
-          let nextTargetAmount = 0;
-          let progressPercent = 0;
-          let barColor = "#fbbf24";
-
-          if (currentRev < 10000) {
-            nextLevelName = "Gümüş (%15)";
-            nextTargetAmount = 10000;
-            progressPercent = (currentRev / 10000) * 100;
-            barColor = "#94a3b8";
-          } else if (currentRev < 50000) {
-            nextLevelName = "Altın (%20)";
-            nextTargetAmount = 50000;
-            progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100;
-            barColor = "#fbbf24";
-          } else {
-            nextLevelName = "Efsane";
-            nextTargetAmount = currentRev;
-            progressPercent = 100;
-            barColor = "#ef4444";
-          }
-
-          let progressHTML = "";
-          if (progressPercent < 100) {
-            let remaining = (nextTargetAmount - currentRev).toLocaleString(
-              "tr-TR",
-            );
-            progressHTML = `
+        let progressHTML = "";
+        if (progressPercent < 100) {
+          let remaining = (nextTargetAmount - currentRev).toLocaleString(
+            "tr-TR",
+          );
+          progressHTML = `
               <div style="margin-top:15px;">
                   <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
                       <span>🚀 Sonraki: <b>${nextLevelName}</b></span>
@@ -667,16 +721,16 @@ ${css}
                   </div>
               </div>
           `;
-          } else {
-            progressHTML = `
+        } else {
+          progressHTML = `
               <div style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.1); padding:5px; border-radius:8px;">
                   <span style="font-size:12px;">🏆 Zirvedesin! Maksimum oran geçerli.</span>
               </div>
           `;
-          }
+        }
 
-          // --- HTML ÇIKTISI ---
-          container.innerHTML = `
+        // --- HTML ÇIKTISI ---
+        container.innerHTML = `
           <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
@@ -736,59 +790,59 @@ ${css}
           </div>
         `;
 
-          // GRAFİK ÇİZİMİ
-          try {
-            if (s.chart && s.chart.labels && s.chart.data) {
-              new Chart(document.getElementById("p-chart"), {
-                type: "line",
-                data: {
-                  labels: s.chart.labels,
-                  datasets: [
-                    {
-                      label: "Kazanç",
-                      data: s.chart.data,
-                      borderColor: "#10b981",
-                      tension: 0.4,
-                      pointRadius: 3,
-                      fill: true,
-                      backgroundColor: "rgba(16, 185, 129, 0.1)",
-                    },
-                  ],
-                },
-                options: {
-                  plugins: { legend: { display: false } },
-                  scales: {
-                    x: { display: false, grid: { display: false } },
-                    y: { display: false, grid: { display: false } },
+        // GRAFİK ÇİZİMİ
+        try {
+          if (s.chart && s.chart.labels && s.chart.data) {
+            new Chart(document.getElementById("p-chart"), {
+              type: "line",
+              data: {
+                labels: s.chart.labels,
+                datasets: [
+                  {
+                    label: "Kazanç",
+                    data: s.chart.data,
+                    borderColor: "#10b981",
+                    tension: 0.4,
+                    pointRadius: 3,
+                    fill: true,
+                    backgroundColor: "rgba(16, 185, 129, 0.1)",
                   },
-                  responsive: true,
-                  maintainAspectRatio: false,
+                ],
+              },
+              options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                  x: { display: false, grid: { display: false } },
+                  y: { display: false, grid: { display: false } },
                 },
-              });
-            } else {
-              document.getElementById("p-chart").parentElement.innerHTML =
-                "<div style='text-align:center; padding:20px; font-size:11px; color:#999;'>Grafik verisi yok.</div>";
-            }
-          } catch (err) {
-            console.log("Grafik hatası:", err);
-            document.getElementById("p-chart").parentElement.style.display =
-              "none";
+                responsive: true,
+                maintainAspectRatio: false,
+              },
+            });
+          } else {
+            document.getElementById("p-chart").parentElement.innerHTML =
+              "<div style='text-align:center; padding:20px; font-size:11px; color:#999;'>Grafik verisi yok.</div>";
           }
-        } catch (e) {
-          container.innerHTML =
-            "<div style='padding:20px; text-align:center; color:red;'>Bağlantı Hatası: " +
-            e.message +
-            "</div>";
+        } catch (err) {
+          console.log("Grafik hatası:", err);
+          document.getElementById("p-chart").parentElement.style.display =
+            "none";
         }
-      }, // --- 1. AKILLI PAYLAŞIM MENÜSÜ ---
-      openShareMenu: function (baseUrl, isCollection = false) {
-        // Eski modal varsa sil
-        let old = document.getElementById("mdm-share-modal");
-        if (old) old.remove();
+      } catch (e) {
+        container.innerHTML =
+          "<div style='padding:20px; text-align:center; color:red;'>Bağlantı Hatası: " +
+          e.message +
+          "</div>";
+      }
+    }, // --- 1. AKILLI PAYLAŞIM MENÜSÜ ---
+    openShareMenu: function (baseUrl, isCollection = false) {
+      // Eski modal varsa sil
+      let old = document.getElementById("mdm-share-modal");
+      if (old) old.remove();
 
-        let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
+      let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
 
-        let html = `
+      let html = `
         <div id="mdm-share-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
             <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 
@@ -827,51 +881,51 @@ ${css}
             </div>
         </div>
         `;
-        document.body.insertAdjacentHTML("beforeend", html);
-      },
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
 
-      // --- 2. LİNKİ OLUŞTUR VE KOPYALA ---
-      copySmartLink: function (url, source) {
-        var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode;
+    // --- 2. LİNKİ OLUŞTUR VE KOPYALA ---
+    copySmartLink: function (url, source) {
+      var pData = window.PartnerData || {};
+      var myRefCode = pData.refCode;
 
-        var separator = url.includes("?") ? "&" : "?";
-        var finalLink = url;
+      var separator = url.includes("?") ? "&" : "?";
+      var finalLink = url;
 
-        if (!url.includes("ref=")) {
-          finalLink += separator + "ref=" + myRefCode;
-          separator = "&";
-        }
+      if (!url.includes("ref=")) {
+        finalLink += separator + "ref=" + myRefCode;
+        separator = "&";
+      }
 
-        finalLink += separator + "source=" + source;
+      finalLink += separator + "source=" + source;
 
-        navigator.clipboard.writeText(finalLink).then(() => {
-          document.getElementById("mdm-share-modal").remove();
-          alert(
-            `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
-          );
-        });
-      },
+      navigator.clipboard.writeText(finalLink).then(() => {
+        document.getElementById("mdm-share-modal").remove();
+        alert(
+          `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
+        );
+      });
+    },
 
-      // --- LİNKLER & QR ARAÇLARI (AKILLI KAYNAK SEÇİCİ v2.0) ---
-      renderLinks: function (c) {
-        var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode || "REF-BEKLENIYOR";
-        var myCoupon = pData.custom_coupon || "Tanımlanmamış";
-        var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
+    // --- LİNKLER & QR ARAÇLARI (AKILLI KAYNAK SEÇİCİ v2.0) ---
+    renderLinks: function (c) {
+      var pData = window.PartnerData || {};
+      var myRefCode = pData.refCode || "REF-BEKLENIYOR";
+      var myCoupon = pData.custom_coupon || "Tanımlanmamış";
+      var homeLink = "https://www.modum.tr/?ref=" + myRefCode;
 
-        // İndirim Kodu HTML (Aynı kalıyor)
-        let couponHTML =
-          myCoupon !== "Tanımlanmamış"
-            ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
+      // İndirim Kodu HTML (Aynı kalıyor)
+      let couponHTML =
+        myCoupon !== "Tanımlanmamış"
+          ? `<div class="p-card" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); color:white; border:none; padding:15px; margin-bottom:20px; position:relative; overflow:hidden;">
               <div style="position:absolute; top:-10px; right:-10px; font-size:60px; opacity:0.1;">🎟️</div>
               <label style="font-size:10px; opacity:0.8; font-weight:bold; display:block;">İNDİRİM KODUN</label>
               <div style="font-family:monospace; font-size:28px; font-weight:900; margin-top:5px; letter-spacing:1px;">${myCoupon}</div>
               <button onclick="navigator.clipboard.writeText('${myCoupon}'); alert('Kupon Kopyalandı!')" class="p-btn" style="background:white; color:#6d28d9; margin-top:10px; height:36px; font-size:12px;">Kopyala</button>
             </div>`
-            : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
+          : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
-        c.innerHTML = `
+      c.innerHTML = `
       <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
           <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
           <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -941,74 +995,73 @@ ${css}
           </div>
       </div>
     `;
-      },
+    },
 
-      // SEÇİM FONKSİYONU
-      selectSource: function (el, val) {
-        // Görsel Değişim
-        document.querySelectorAll(".source-pill").forEach((p) => {
-          p.style.background = "white";
-          p.style.color = "#64748b";
-          p.classList.remove("active");
-        });
-        el.style.background = "#3b82f6";
-        el.style.color = "white";
-        el.classList.add("active");
+    // SEÇİM FONKSİYONU
+    selectSource: function (el, val) {
+      // Görsel Değişim
+      document.querySelectorAll(".source-pill").forEach((p) => {
+        p.style.background = "white";
+        p.style.color = "#64748b";
+        p.classList.remove("active");
+      });
+      el.style.background = "#3b82f6";
+      el.style.color = "white";
+      el.classList.add("active");
 
-        // Değeri Kaydet
-        document.getElementById("pl-source").value = val;
-      },
+      // Değeri Kaydet
+      document.getElementById("pl-source").value = val;
+    },
 
-      createLink: function (refCode) {
-        var val = document.getElementById("pl-input").value;
-        var sourceTag = document.getElementById("pl-source").value.trim(); // Kaynak etiketi
+    createLink: function (refCode) {
+      var val = document.getElementById("pl-input").value;
+      var sourceTag = document.getElementById("pl-source").value.trim(); // Kaynak etiketi
 
-        if (!val) return alert("Lütfen bir ürün linki giriniz.");
+      if (!val) return alert("Lütfen bir ürün linki giriniz.");
 
-        // Link zaten parametre içeriyor mu?
-        var separator = val.includes("?") ? "&" : "?";
-        var final = val + separator + "ref=" + refCode;
+      // Link zaten parametre içeriyor mu?
+      var separator = val.includes("?") ? "&" : "?";
+      var final = val + separator + "ref=" + refCode;
 
-        // 🔥 Eğer kaynak etiketi varsa ekle
-        if (sourceTag) {
-          // Boşlukları tire yap, özel karakterleri temizle
-          sourceTag = sourceTag
-            .replace(/\s+/g, "_")
-            .replace(/[^a-zA-Z0-9_]/g, "");
-          final += "&source=" + sourceTag;
-        }
+      // 🔥 Eğer kaynak etiketi varsa ekle
+      if (sourceTag) {
+        // Boşlukları tire yap, özel karakterleri temizle
+        sourceTag = sourceTag
+          .replace(/\s+/g, "_")
+          .replace(/[^a-zA-Z0-9_]/g, "");
+        final += "&source=" + sourceTag;
+      }
 
-        // Linki Ekrana Bas
-        document.getElementById("pl-final").innerText = final;
-        document.getElementById("pl-result").style.display = "block";
+      // Linki Ekrana Bas
+      document.getElementById("pl-final").innerText = final;
+      document.getElementById("pl-result").style.display = "block";
 
-        // WhatsApp Linki
-        var msgWA = encodeURIComponent("Bu ürüne bayıldım! Link: " + final);
-        document.getElementById("btn-wa").href =
-          "https://api.whatsapp.com/send?text=" + msgWA;
+      // WhatsApp Linki
+      var msgWA = encodeURIComponent("Bu ürüne bayıldım! Link: " + final);
+      document.getElementById("btn-wa").href =
+        "https://api.whatsapp.com/send?text=" + msgWA;
 
-        // QR Kod
-        var qrUrl =
-          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
-          encodeURIComponent(final);
-        document.getElementById("pl-qr-img").src = qrUrl;
-        document.getElementById("pl-qr-dl").href = qrUrl;
+      // QR Kod
+      var qrUrl =
+        "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
+        encodeURIComponent(final);
+      document.getElementById("pl-qr-img").src = qrUrl;
+      document.getElementById("pl-qr-dl").href = qrUrl;
 
-        // QR Butonuna Tıklama Olayı
-        document.getElementById("btn-qr-show").onclick = function () {
-          var qrBox = document.getElementById("pl-qr-box");
-          qrBox.style.display =
-            qrBox.style.display === "none" ? "block" : "none";
-        };
-      },
+      // QR Butonuna Tıklama Olayı
+      document.getElementById("btn-qr-show").onclick = function () {
+        var qrBox = document.getElementById("pl-qr-box");
+        qrBox.style.display = qrBox.style.display === "none" ? "block" : "none";
+      };
+    },
 
-      // Ana Sayfa QR Kodu İçin Helper
-      toggleQR: function (url) {
-        // Hızlıca bir modal ile gösterelim
-        var qrApi =
-          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
-          encodeURIComponent(url);
-        var html = `
+    // Ana Sayfa QR Kodu İçin Helper
+    toggleQR: function (url) {
+      // Hızlıca bir modal ile gösterelim
+      var qrApi =
+        "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" +
+        encodeURIComponent(url);
+      var html = `
       <div id="p-qr-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999999999; display:flex; justify-content:center; align-items:center;" onclick="this.remove()">
         <div style="background:white; padding:20px; border-radius:16px; text-align:center; max-width:300px;" onclick="event.stopPropagation()">
             <h3 style="margin:0 0 10px 0; color:#333;">📱 QR KODUN</h3>
@@ -1017,29 +1070,29 @@ ${css}
             <div style="margin-top:10px; font-size:11px; color:#999;">Kapatmak için boşluğa tıkla</div>
         </div>
       </div>`;
-        document.body.insertAdjacentHTML("beforeend", html);
-      }, // 🔥 YENİ: STORY EDİTÖR v2.0 (MODUM CREATIVE STUDIO)
-      openStoryEditor: function (encodedProductData) {
-        // Eski modal varsa temizle
-        let old = document.getElementById("p-story-modal");
-        if (old) old.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+    }, // 🔥 YENİ: STORY EDİTÖR v2.0 (MODUM CREATIVE STUDIO)
+    openStoryEditor: function (encodedProductData) {
+      // Eski modal varsa temizle
+      let old = document.getElementById("p-story-modal");
+      if (old) old.remove();
 
-        // Veriyi güvenli şekilde al
-        let product = JSON.parse(decodeURIComponent(encodedProductData));
-        let pData = window.PartnerData || {};
-        let myRefCode = pData.refCode || "REF-YOK";
-        let myCoupon = pData.custom_coupon || "";
+      // Veriyi güvenli şekilde al
+      let product = JSON.parse(decodeURIComponent(encodedProductData));
+      let pData = window.PartnerData || {};
+      let myRefCode = pData.refCode || "REF-YOK";
+      let myCoupon = pData.custom_coupon || "";
 
-        // Ürün Linkini Hazırla (QR İçin)
-        let productUrl =
-          product.url +
-          (product.url.includes("?") ? "&" : "?") +
-          "ref=" +
-          myRefCode +
-          "&source=story_qr";
+      // Ürün Linkini Hazırla (QR İçin)
+      let productUrl =
+        product.url +
+        (product.url.includes("?") ? "&" : "?") +
+        "ref=" +
+        myRefCode +
+        "&source=story_qr";
 
-        // Modal HTML (Şablon Seçici Eklendi)
-        let html = `
+      // Modal HTML (Şablon Seçici Eklendi)
+      let html = `
       <div id="p-story-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;">
           
           <div style="width:100%; max-width:400px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -1064,357 +1117,356 @@ ${css}
           </div>
       </div>
       `;
-        document.body.insertAdjacentHTML("beforeend", html);
+      document.body.insertAdjacentHTML("beforeend", html);
 
-        // Global değişkenlere ata (Yeniden çizim için)
-        this.activeProduct = product;
-        this.activeCoupon = myCoupon;
-        this.activeUrl = productUrl;
+      // Global değişkenlere ata (Yeniden çizim için)
+      this.activeProduct = product;
+      this.activeCoupon = myCoupon;
+      this.activeUrl = productUrl;
 
-        // Varsayılan şablonla başlat
-        this.changeTemplate("modern");
-      },
+      // Varsayılan şablonla başlat
+      this.changeTemplate("modern");
+    },
 
-      // Şablon Değiştirme Fonksiyonu
-      changeTemplate: function (tmplName) {
-        // Butonların stilini güncelle
-        document.querySelectorAll(".p-btn-tmpl").forEach((btn) => {
-          if (
-            btn.innerText
-              .toLowerCase()
-              .includes(tmplName.includes("sale") ? "indirim" : tmplName)
-          ) {
-            btn.style.background = "#3b82f6";
-            btn.style.color = "white";
-            btn.style.border = "none";
-          } else {
-            btn.style.background = "#1e293b";
-            btn.style.color = "#cbd5e1";
-            btn.style.border = "1px solid #334155";
-          }
-        });
+    // Şablon Değiştirme Fonksiyonu
+    changeTemplate: function (tmplName) {
+      // Butonların stilini güncelle
+      document.querySelectorAll(".p-btn-tmpl").forEach((btn) => {
+        if (
+          btn.innerText
+            .toLowerCase()
+            .includes(tmplName.includes("sale") ? "indirim" : tmplName)
+        ) {
+          btn.style.background = "#3b82f6";
+          btn.style.color = "white";
+          btn.style.border = "none";
+        } else {
+          btn.style.background = "#1e293b";
+          btn.style.color = "#cbd5e1";
+          btn.style.border = "1px solid #334155";
+        }
+      });
 
-        // Çizimi Yeniden Başlat
-        const btn = document.getElementById("dl-story-btn");
-        if (btn) {
-          btn.style.opacity = "0.5";
-          btn.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Güncelleniyor...';
+      // Çizimi Yeniden Başlat
+      const btn = document.getElementById("dl-story-btn");
+      if (btn) {
+        btn.style.opacity = "0.5";
+        btn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Güncelleniyor...';
+      }
+
+      this.drawStoryV2(
+        "story-canvas",
+        this.activeProduct,
+        this.activeCoupon,
+        this.activeUrl,
+        tmplName,
+      );
+    },
+
+    // 🔥 MOTOR: GELİŞMİŞ CANVAS ÇİZİMİ (HATA DÜZELTİLMİŞ & İNDİRİM HESABI KALDIRILMIŞ)
+    drawStoryV2: async function (
+      canvasId,
+      product,
+      coupon,
+      productUrl,
+      template,
+    ) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      const btn = document.getElementById("dl-story-btn");
+
+      try {
+        // 1. GÖRSELLERİ YÜKLE
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(productUrl)}`;
+
+        const [img, qrImg] = await Promise.all([
+          loadCanvasImage(product.image),
+          loadCanvasImage(qrApiUrl),
+        ]);
+
+        // 2. TEMİZLİK
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 3. ŞABLON RENK AYARLARI
+        let bgGradient, titleColor, priceColor, accentColor;
+
+        if (template === "modern") {
+          let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          grd.addColorStop(0, "#1e293b");
+          grd.addColorStop(1, "#0f172a");
+          bgGradient = grd;
+          titleColor = "#ffffff";
+          priceColor = "#fbbf24";
+          accentColor = "#3b82f6";
+        } else if (template === "sale") {
+          let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          grd.addColorStop(0, "#b91c1c"); // Koyu Kırmızı
+          grd.addColorStop(1, "#7f1d1d");
+          bgGradient = grd;
+          titleColor = "#ffffff";
+          priceColor = "#ffffff";
+          accentColor = "#fcd34d"; // Sarı
+        } else if (template === "minimal") {
+          bgGradient = "#f8fafc"; // Beyaz/Gri
+          titleColor = "#1e293b";
+          priceColor = "#1e293b";
+          accentColor = "#cbd5e1";
         }
 
-        this.drawStoryV2(
-          "story-canvas",
-          this.activeProduct,
-          this.activeCoupon,
-          this.activeUrl,
-          tmplName,
+        // Arka Planı Boya
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 4. LOGO
+        ctx.fillStyle =
+          template === "minimal" ? "#94a3b8" : "rgba(255,255,255,0.5)";
+        ctx.font = "bold 30px 'Inter', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("modum.tr", canvas.width / 2, 100);
+
+        // 5. ÜRÜN GÖRSELİ
+        const imgSize = 800;
+        const imgX = (canvas.width - imgSize) / 2;
+        const imgY = 200;
+
+        // Gölge ve Çerçeve
+        ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetY = 20;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
+        ctx.shadowColor = "transparent";
+
+        ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+
+        // 6. ÜRÜN BAŞLIĞI
+        ctx.fillStyle = titleColor;
+        ctx.font = "bold 50px 'Inter', sans-serif";
+        ctx.textAlign = "center";
+
+        // Uzun başlıkları satırlara böl
+        let safeTitle = product.title
+          ? String(product.title).toUpperCase()
+          : "ÜRÜN";
+        let nextY = wrapText(
+          ctx,
+          safeTitle,
+          canvas.width / 2,
+          imgY + imgSize + 120,
+          900,
+          70,
         );
-      },
 
-      // 🔥 MOTOR: GELİŞMİŞ CANVAS ÇİZİMİ (HATA DÜZELTİLMİŞ & İNDİRİM HESABI KALDIRILMIŞ)
-      drawStoryV2: async function (
-        canvasId,
-        product,
-        coupon,
-        productUrl,
-        template,
-      ) {
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext("2d");
-        const btn = document.getElementById("dl-story-btn");
+        // 7. FİYAT GÖSTERİMİ (SABİT)
+        // Fiyat verisini string'e çevirip güvenli hale getiriyoruz (HATA ÇÖZÜMÜ BURADA)
+        let finalPriceStr = String(product.price);
 
-        try {
-          // 1. GÖRSELLERİ YÜKLE
-          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(productUrl)}`;
-
-          const [img, qrImg] = await Promise.all([
-            loadCanvasImage(product.image),
-            loadCanvasImage(qrApiUrl),
-          ]);
-
-          // 2. TEMİZLİK
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          // 3. ŞABLON RENK AYARLARI
-          let bgGradient, titleColor, priceColor, accentColor;
-
-          if (template === "modern") {
-            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grd.addColorStop(0, "#1e293b");
-            grd.addColorStop(1, "#0f172a");
-            bgGradient = grd;
-            titleColor = "#ffffff";
-            priceColor = "#fbbf24";
-            accentColor = "#3b82f6";
-          } else if (template === "sale") {
-            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grd.addColorStop(0, "#b91c1c"); // Koyu Kırmızı
-            grd.addColorStop(1, "#7f1d1d");
-            bgGradient = grd;
-            titleColor = "#ffffff";
-            priceColor = "#ffffff";
-            accentColor = "#fcd34d"; // Sarı
-          } else if (template === "minimal") {
-            bgGradient = "#f8fafc"; // Beyaz/Gri
-            titleColor = "#1e293b";
-            priceColor = "#1e293b";
-            accentColor = "#cbd5e1";
-          }
-
-          // Arka Planı Boya
-          ctx.fillStyle = bgGradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // 4. LOGO
-          ctx.fillStyle =
-            template === "minimal" ? "#94a3b8" : "rgba(255,255,255,0.5)";
-          ctx.font = "bold 30px 'Inter', sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("modum.tr", canvas.width / 2, 100);
-
-          // 5. ÜRÜN GÖRSELİ
-          const imgSize = 800;
-          const imgX = (canvas.width - imgSize) / 2;
-          const imgY = 200;
-
-          // Gölge ve Çerçeve
-          ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
-          ctx.shadowBlur = 40;
-          ctx.shadowOffsetY = 20;
-
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
-          ctx.shadowColor = "transparent";
-
-          ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
-
-          // 6. ÜRÜN BAŞLIĞI
-          ctx.fillStyle = titleColor;
-          ctx.font = "bold 50px 'Inter', sans-serif";
-          ctx.textAlign = "center";
-
-          // Uzun başlıkları satırlara böl
-          let safeTitle = product.title
-            ? String(product.title).toUpperCase()
-            : "ÜRÜN";
-          let nextY = wrapText(
-            ctx,
-            safeTitle,
-            canvas.width / 2,
-            imgY + imgSize + 120,
-            900,
-            70,
-          );
-
-          // 7. FİYAT GÖSTERİMİ (SABİT)
-          // Fiyat verisini string'e çevirip güvenli hale getiriyoruz (HATA ÇÖZÜMÜ BURADA)
-          let finalPriceStr = String(product.price);
-
-          // Eğer sonunda TL yoksa ekleyelim
-          if (
-            !finalPriceStr.includes("TL") &&
-            !finalPriceStr.includes("$") &&
-            !finalPriceStr.includes("€")
-          ) {
-            finalPriceStr += " TL";
-          }
-
-          // İndirim modundaysak "FIRSAT ÜRÜNÜ" yazısı ekle
-          if (template === "sale") {
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            ctx.font = "bold 40px 'Inter', sans-serif";
-            ctx.fillText("🔥 FIRSAT ÜRÜNÜ", canvas.width / 2, nextY + 60);
-            nextY += 70; // Fiyatı biraz aşağı it
-          }
-
-          // Ana Fiyatı Çiz
-          ctx.fillStyle = priceColor;
-          ctx.font = "900 110px 'Inter', sans-serif";
-          ctx.fillText(finalPriceStr, canvas.width / 2, nextY + 80);
-
-          // 8. KUPON KUTUSU
-          let bottomY = nextY + 180;
-
-          if (coupon && coupon !== "KOD YOK" && coupon !== "") {
-            const boxW = 600;
-            const boxH = 180;
-            const boxX = (canvas.width - boxW) / 2;
-
-            // Kesikli Çizgi Çerçeve
-            ctx.setLineDash([15, 15]);
-            ctx.lineWidth = 6;
-            ctx.strokeStyle = accentColor;
-            ctx.strokeRect(boxX, bottomY, boxW, boxH);
-            ctx.setLineDash([]);
-
-            // Metinler
-            ctx.fillStyle =
-              template === "minimal" ? "#64748b" : "rgba(255,255,255,0.8)";
-            ctx.font = "bold 24px 'Inter', sans-serif";
-            ctx.fillText("ÖZEL İNDİRİM KODUN", canvas.width / 2, bottomY + 50);
-
-            ctx.fillStyle = template === "minimal" ? "#1e293b" : "#ffffff";
-            ctx.font = "900 70px monospace";
-            ctx.fillText(coupon, canvas.width / 2, bottomY + 130);
-          } else {
-            // Kupon yoksa genel mesaj
-            ctx.fillStyle = accentColor;
-            ctx.font = "bold 40px 'Inter', sans-serif";
-            ctx.fillText("TÜKENMEDEN AL!", canvas.width / 2, bottomY + 100);
-          }
-
-          // 9. QR KOD
-          const qrSize = 220;
-          const qrX = canvas.width - qrSize - 40;
-          const qrY = canvas.height - qrSize - 40;
-
-          ctx.fillStyle = "white";
-          ctx.shadowColor = "rgba(0,0,0,0.2)";
-          ctx.shadowBlur = 20;
-          ctx.fillRect(qrX, qrY, qrSize, qrSize);
-          ctx.shadowColor = "transparent";
-
-          ctx.drawImage(qrImg, qrX + 10, qrY + 10, qrSize - 20, qrSize - 20);
-
-          // "Tıkla & Al" yazısı
-          ctx.fillStyle = "#000";
-          ctx.font = "bold 16px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("TARAT & GİT", qrX + qrSize / 2, qrY + qrSize + 25);
-
-          // --- Çizim Bitti ---
-
-          btn.style.opacity = "1";
-          btn.style.pointerEvents = "all";
-          btn.style.background = "#10b981";
-          btn.innerHTML = '<i class="fas fa-download"></i> GÖRSELİ İNDİR';
-
-          // İndirme olayını bağla
-          btn.onclick = () =>
-            this.downloadStory(canvasId, "modum-story-" + Date.now());
-        } catch (e) {
-          console.error("Story Hatası:", e);
-          btn.innerHTML = "Hata Oluştu";
-          btn.style.background = "#ef4444";
-          // Hata detayını konsola bas ki görebilelim
-          console.log("Hata Detayı:", e.message);
+        // Eğer sonunda TL yoksa ekleyelim
+        if (
+          !finalPriceStr.includes("TL") &&
+          !finalPriceStr.includes("$") &&
+          !finalPriceStr.includes("€")
+        ) {
+          finalPriceStr += " TL";
         }
-      },
 
-      // 🔥 YENİ: CANVAS İNDİRME FONKSİYONU
-      downloadStory: function (canvasId, fileName) {
-        const canvas = document.getElementById(canvasId);
-        // Canvas'ı resim verisine (Data URL) çevir
-        const dataUrl = canvas.toDataURL("image/png", 1.0);
+        // İndirim modundaysak "FIRSAT ÜRÜNÜ" yazısı ekle
+        if (template === "sale") {
+          ctx.fillStyle = "rgba(255,255,255,0.8)";
+          ctx.font = "bold 40px 'Inter', sans-serif";
+          ctx.fillText("🔥 FIRSAT ÜRÜNÜ", canvas.width / 2, nextY + 60);
+          nextY += 70; // Fiyatı biraz aşağı it
+        }
 
-        // Sanal bir link oluştur ve tıkla
-        const link = document.createElement("a");
-        link.download = fileName + ".png";
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
+        // Ana Fiyatı Çiz
+        ctx.fillStyle = priceColor;
+        ctx.font = "900 110px 'Inter', sans-serif";
+        ctx.fillText(finalPriceStr, canvas.width / 2, nextY + 80);
 
-      // --- CÜZDAN & GEÇMİŞ (DEKONT BUTONLU FİNAL HALİ) ---
-      renderWallet: async function (container) {
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Cüzdan yükleniyor...</div>';
-        var email = detectUser();
-        if (!email)
-          return (container.innerHTML =
-            "<div style='padding:20px; text-align:center;'>Giriş yapmalısınız.</div>");
+        // 8. KUPON KUTUSU
+        let bottomY = nextY + 180;
 
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "get_partner_history",
-              email: email,
-            }),
-          });
-          const data = await res.json();
+        if (coupon && coupon !== "KOD YOK" && coupon !== "") {
+          const boxW = 600;
+          const boxH = 180;
+          const boxX = (canvas.width - boxW) / 2;
 
-          let historyHTML = "";
-          if (data.success && data.list.length > 0) {
-            data.list.forEach((tx) => {
-              // --- 1. DEĞERLERİ HAZIRLA ---
-              let val = parseFloat(tx.commission || tx.amount || 0);
-              if (isNaN(val)) val = 0;
+          // Kesikli Çizgi Çerçeve
+          ctx.setLineDash([15, 15]);
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = accentColor;
+          ctx.strokeRect(boxX, bottomY, boxW, boxH);
+          ctx.setLineDash([]);
 
-              let icon = "🛒";
-              let color = "#10b981";
-              let sign = "+";
-              let desc = tx.desc;
+          // Metinler
+          ctx.fillStyle =
+            template === "minimal" ? "#64748b" : "rgba(255,255,255,0.8)";
+          ctx.font = "bold 24px 'Inter', sans-serif";
+          ctx.fillText("ÖZEL İNDİRİM KODUN", canvas.width / 2, bottomY + 50);
 
-              // --- 2. TİP KONTROLÜ ---
-              if (tx.type === "payout_request") {
-                icon = "💸";
-                color = "#ef4444";
-                sign = "-";
-                if (!desc || desc === "Para Çekme Talebi")
-                  desc = "Ödeme Alındı";
-              }
+          ctx.fillStyle = template === "minimal" ? "#1e293b" : "#ffffff";
+          ctx.font = "900 70px monospace";
+          ctx.fillText(coupon, canvas.width / 2, bottomY + 130);
+        } else {
+          // Kupon yoksa genel mesaj
+          ctx.fillStyle = accentColor;
+          ctx.font = "bold 40px 'Inter', sans-serif";
+          ctx.fillText("TÜKENMEDEN AL!", canvas.width / 2, bottomY + 100);
+        }
 
-              // --- 3. İADE KONTROLÜ ---
-              let isRefunded = tx.status === "refunded";
-              let statusBadge = "";
-              let amountText = `${sign}${val.toLocaleString()} ₺`;
+        // 9. QR KOD
+        const qrSize = 220;
+        const qrX = canvas.width - qrSize - 40;
+        const qrY = canvas.height - qrSize - 40;
 
-              if (isRefunded) {
-                color = "#94a3b8";
-                amountText = `<span style="text-decoration:line-through;">${amountText}</span> <span style="color:red; font-size:10px;">(İADE)</span>`;
-                statusBadge =
-                  '<span style="background:#fee2e2; color:red; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">İADE EDİLDİ</span>';
-                icon = "↩️";
-              }
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "rgba(0,0,0,0.2)";
+        ctx.shadowBlur = 20;
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+        ctx.shadowColor = "transparent";
 
-              // --- 4. DEKONT BUTONU ---
-              let receiptBtn = "";
-              if (tx.receiptUrl && tx.receiptUrl.length > 5) {
-                receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block; margin-top:2px; font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 6px; border-radius:4px; text-decoration:none; font-weight:bold; border:1px solid #dbeafe;">📄 Dekont</a>`;
-              }
+        ctx.drawImage(qrImg, qrX + 10, qrY + 10, qrSize - 20, qrSize - 20);
 
-              // --- 🔥 5. KAYNAK ETİKETİ (YENİ EKLENDİ) ---
-              let sourceBadge = "";
-              // Backend'den 'sourceTag' alanı geliyorsa ve 'direct' değilse göster
-              if (tx.soldItems && tx.soldItems.includes("🏷️")) {
-                // Eski versiyonlarda sourceTag yoksa diye manuel parse denemesi (Gerekmeyebilir ama garanti olsun)
-              }
+        // "Tıkla & Al" yazısı
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("TARAT & GİT", qrX + qrSize / 2, qrY + qrSize + 25);
 
-              // Backend'den tx.sourceTag gelmesini bekliyoruz (Controller'da eklemiştik)
-              // Eğer backend henüz göndermiyorsa, geçici olarak boş kalır.
-              if (tx.sourceTag && tx.sourceTag !== "direct") {
-                sourceBadge = `<span style="background:#f3e8ff; color:#7c3aed; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid #ddd6fe;">🏷️ ${tx.sourceTag}</span>`;
-              }
+        // --- Çizim Bitti ---
 
-              // --- 6. ÜRÜN LİSTESİ ---
-              let productsHTML = "";
-              let rawProd = "";
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "all";
+        btn.style.background = "#10b981";
+        btn.innerHTML = '<i class="fas fa-download"></i> GÖRSELİ İNDİR';
 
-              if (
-                tx.soldItemsList &&
-                Array.isArray(tx.soldItemsList) &&
-                tx.soldItemsList.length > 0
-              ) {
-                rawProd = tx.soldItemsList.join(", ");
-              } else if (tx.soldItems) {
-                rawProd = tx.soldItems;
-              }
+        // İndirme olayını bağla
+        btn.onclick = () =>
+          this.downloadStory(canvasId, "modum-story-" + Date.now());
+      } catch (e) {
+        console.error("Story Hatası:", e);
+        btn.innerHTML = "Hata Oluştu";
+        btn.style.background = "#ef4444";
+        // Hata detayını konsola bas ki görebilelim
+        console.log("Hata Detayı:", e.message);
+      }
+    },
 
-              if (rawProd.includes("%") || rawProd === "") {
-                if (tx.type === "sale_commission")
-                  productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
-              } else {
-                productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
+    // 🔥 YENİ: CANVAS İNDİRME FONKSİYONU
+    downloadStory: function (canvasId, fileName) {
+      const canvas = document.getElementById(canvasId);
+      // Canvas'ı resim verisine (Data URL) çevir
+      const dataUrl = canvas.toDataURL("image/png", 1.0);
+
+      // Sanal bir link oluştur ve tıkla
+      const link = document.createElement("a");
+      link.download = fileName + ".png";
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+
+    // --- CÜZDAN & GEÇMİŞ (DEKONT BUTONLU FİNAL HALİ) ---
+    renderWallet: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Cüzdan yükleniyor...</div>';
+      var email = detectUser();
+      if (!email)
+        return (container.innerHTML =
+          "<div style='padding:20px; text-align:center;'>Giriş yapmalısınız.</div>");
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "get_partner_history",
+            email: email,
+          }),
+        });
+        const data = await res.json();
+
+        let historyHTML = "";
+        if (data.success && data.list.length > 0) {
+          data.list.forEach((tx) => {
+            // --- 1. DEĞERLERİ HAZIRLA ---
+            let val = parseFloat(tx.commission || tx.amount || 0);
+            if (isNaN(val)) val = 0;
+
+            let icon = "🛒";
+            let color = "#10b981";
+            let sign = "+";
+            let desc = tx.desc;
+
+            // --- 2. TİP KONTROLÜ ---
+            if (tx.type === "payout_request") {
+              icon = "💸";
+              color = "#ef4444";
+              sign = "-";
+              if (!desc || desc === "Para Çekme Talebi") desc = "Ödeme Alındı";
+            }
+
+            // --- 3. İADE KONTROLÜ ---
+            let isRefunded = tx.status === "refunded";
+            let statusBadge = "";
+            let amountText = `${sign}${val.toLocaleString()} ₺`;
+
+            if (isRefunded) {
+              color = "#94a3b8";
+              amountText = `<span style="text-decoration:line-through;">${amountText}</span> <span style="color:red; font-size:10px;">(İADE)</span>`;
+              statusBadge =
+                '<span style="background:#fee2e2; color:red; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">İADE EDİLDİ</span>';
+              icon = "↩️";
+            }
+
+            // --- 4. DEKONT BUTONU ---
+            let receiptBtn = "";
+            if (tx.receiptUrl && tx.receiptUrl.length > 5) {
+              receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block; margin-top:2px; font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 6px; border-radius:4px; text-decoration:none; font-weight:bold; border:1px solid #dbeafe;">📄 Dekont</a>`;
+            }
+
+            // --- 🔥 5. KAYNAK ETİKETİ (YENİ EKLENDİ) ---
+            let sourceBadge = "";
+            // Backend'den 'sourceTag' alanı geliyorsa ve 'direct' değilse göster
+            if (tx.soldItems && tx.soldItems.includes("🏷️")) {
+              // Eski versiyonlarda sourceTag yoksa diye manuel parse denemesi (Gerekmeyebilir ama garanti olsun)
+            }
+
+            // Backend'den tx.sourceTag gelmesini bekliyoruz (Controller'da eklemiştik)
+            // Eğer backend henüz göndermiyorsa, geçici olarak boş kalır.
+            if (tx.sourceTag && tx.sourceTag !== "direct") {
+              sourceBadge = `<span style="background:#f3e8ff; color:#7c3aed; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid #ddd6fe;">🏷️ ${tx.sourceTag}</span>`;
+            }
+
+            // --- 6. ÜRÜN LİSTESİ ---
+            let productsHTML = "";
+            let rawProd = "";
+
+            if (
+              tx.soldItemsList &&
+              Array.isArray(tx.soldItemsList) &&
+              tx.soldItemsList.length > 0
+            ) {
+              rawProd = tx.soldItemsList.join(", ");
+            } else if (tx.soldItems) {
+              rawProd = tx.soldItems;
+            }
+
+            if (rawProd.includes("%") || rawProd === "") {
+              if (tx.type === "sale_commission")
+                productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
+            } else {
+              productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
                   <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>
                   <div style="font-size:11px; color:#334155;">${rawProd}</div>
               </div>`;
-              }
+            }
 
-              // --- 7. KART HTML OLUŞTUR ---
-              historyHTML += `
+            // --- 7. KART HTML OLUŞTUR ---
+            historyHTML += `
         <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
             <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
                   onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
@@ -1447,26 +1499,26 @@ ${css}
                 ${productsHTML}
             </div>
         </div>`;
-            });
-          } else {
-            historyHTML =
-              '<div style="text-align:center; padding:20px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>';
-          }
+          });
+        } else {
+          historyHTML =
+            '<div style="text-align:center; padding:20px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>';
+        }
 
-          // --- BURASI GÜNCELLENDİ (ÖDEME İSTE BUTONU KALKTI, BEKLEYEN EKLENDİ) ---
+        // --- BURASI GÜNCELLENDİ (ÖDEME İSTE BUTONU KALKTI, BEKLEYEN EKLENDİ) ---
 
-          // Önce partner verisinin yüklü olduğundan emin olalım
-          let pStats = window.PartnerData || {};
+        // Önce partner verisinin yüklü olduğundan emin olalım
+        let pStats = window.PartnerData || {};
 
-          // Eğer API'den gelen veriyi kullanmak istersen (daha güncel):
-          // Ancak 'res' değişkeni sadece 'get_partner_history' çağrısının sonucudur, 'stats' içermez.
-          // Bu yüzden window.PartnerData'yı kullanmak daha güvenlidir.
+        // Eğer API'den gelen veriyi kullanmak istersen (daha güncel):
+        // Ancak 'res' değişkeni sadece 'get_partner_history' çağrısının sonucudur, 'stats' içermez.
+        // Bu yüzden window.PartnerData'yı kullanmak daha güvenlidir.
 
-          let safeBalance = parseFloat(pStats.balance || 0);
-          let pendingVal = parseFloat(pStats.pending_balance || 0);
+        let safeBalance = parseFloat(pStats.balance || 0);
+        let pendingVal = parseFloat(pStats.pending_balance || 0);
 
-          // 🔥 YENİ BAŞLIK EKLENDİ
-          container.innerHTML = `
+        // 🔥 YENİ BAŞLIK EKLENDİ
+        container.innerHTML = `
   <div style="background:#fff; border-left:4px solid #10b981; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
       <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">💰 Cüzdan ve Ödemeler</h3>
       <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -1504,52 +1556,52 @@ ${css}
   </div>    
   ${historyHTML}
 `;
-          // Son olarak güncel bakiyeyi tekrar çekip ekrana basalım (Garanti olsun)
-          PartnerApp.updateBalanceDisplay(container);
-        } catch (e) {
-          container.innerHTML = "Hata: " + e.message;
+        // Son olarak güncel bakiyeyi tekrar çekip ekrana basalım (Garanti olsun)
+        PartnerApp.updateBalanceDisplay(container);
+      } catch (e) {
+        container.innerHTML = "Hata: " + e.message;
+      }
+    }, // 🔥 EKSİK OLAN FONKSİYON BURAYA EKLENECEK:
+    updateBalanceDisplay: async function (container) {
+      var email = detectUser(); // Kullanıcı emailini al
+      if (!email) return;
+
+      try {
+        const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          // API URL'ni kontrol et
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          const balEl = container.querySelector(".p-stat-val");
+          // Eğer element varsa bakiyeyi güncelle
+          if (balEl)
+            balEl.innerText =
+              parseFloat(data.stats.balance).toLocaleString("tr-TR") + " ₺";
         }
-      }, // 🔥 EKSİK OLAN FONKSİYON BURAYA EKLENECEK:
-      updateBalanceDisplay: async function (container) {
-        var email = detectUser(); // Kullanıcı emailini al
-        if (!email) return;
+      } catch (e) {
+        console.log("Bakiye güncelleme hatası:", e);
+      }
+    },
 
-        try {
-          const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-            // API URL'ni kontrol et
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_partner_stats", email: email }),
-          });
-          const data = await res.json();
-          if (data.success) {
-            const balEl = container.querySelector(".p-stat-val");
-            // Eğer element varsa bakiyeyi güncelle
-            if (balEl)
-              balEl.innerText =
-                parseFloat(data.stats.balance).toLocaleString("tr-TR") + " ₺";
-          }
-        } catch (e) {
-          console.log("Bakiye güncelleme hatası:", e);
-        }
-      },
+    renderAcademy: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Akademi Yükleniyor...</div>';
 
-      renderAcademy: async function (container) {
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Akademi Yükleniyor...</div>';
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_academy_lessons" }),
+        }).then((r) => r.json());
 
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_academy_lessons" }),
-          }).then((r) => r.json());
+        if (res.success) {
+          // 🔥 KRİTİK: Veriyi Hafızaya Alıyoruz (Bozulmayı önlemek için)
+          window.AcademyData = res.list || [];
 
-          if (res.success) {
-            // 🔥 KRİTİK: Veriyi Hafızaya Alıyoruz (Bozulmayı önlemek için)
-            window.AcademyData = res.list || [];
-
-            container.innerHTML = `
+          container.innerHTML = `
           <div style="background:#fff; border-left:4px solid #8b5cf6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
               <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎓 Partner Akademisi</h3>
               <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -1559,38 +1611,38 @@ ${css}
           </div>
           <h3 style="margin:0 0 15px 0;">Dersler</h3>`;
 
-            if (res.list.length === 0) {
-              container.innerHTML +=
-                "<div style='text-align:center; color:#999; padding:20px;'>Henüz eğitim eklenmemiş.</div>";
-              return;
+          if (res.list.length === 0) {
+            container.innerHTML +=
+              "<div style='text-align:center; color:#999; padding:20px;'>Henüz eğitim eklenmemiş.</div>";
+            return;
+          }
+
+          // 🔥 DÖNGÜDE ARTIK (index) KULLANIYORUZ
+          res.list.forEach((l, index) => {
+            let icon = "🎥";
+            let actionText = "İZLE";
+            let badgeColor = "#ef4444";
+
+            // Tıklama aksiyonunu basitleştirdik: Sadece index gönderiyoruz
+            let clickAction = "";
+
+            if (l.type === "article") {
+              icon = "📝";
+              actionText = "OKU";
+              badgeColor = "#3b82f6"; // Mavi
+              // 🔥 Sadece sıra numarasını gönderiyoruz (index)
+              clickAction = `PartnerApp.openArticleModal(${index})`;
+            } else if (l.type === "pdf") {
+              icon = "📄";
+              actionText = "İNDİR";
+              badgeColor = "#f59e0b"; // Turuncu
+              clickAction = `window.open('${l.link}', '_blank')`;
+            } else {
+              // Video vb.
+              clickAction = `window.open('${l.link}', '_blank')`;
             }
 
-            // 🔥 DÖNGÜDE ARTIK (index) KULLANIYORUZ
-            res.list.forEach((l, index) => {
-              let icon = "🎥";
-              let actionText = "İZLE";
-              let badgeColor = "#ef4444";
-
-              // Tıklama aksiyonunu basitleştirdik: Sadece index gönderiyoruz
-              let clickAction = "";
-
-              if (l.type === "article") {
-                icon = "📝";
-                actionText = "OKU";
-                badgeColor = "#3b82f6"; // Mavi
-                // 🔥 Sadece sıra numarasını gönderiyoruz (index)
-                clickAction = `PartnerApp.openArticleModal(${index})`;
-              } else if (l.type === "pdf") {
-                icon = "📄";
-                actionText = "İNDİR";
-                badgeColor = "#f59e0b"; // Turuncu
-                clickAction = `window.open('${l.link}', '_blank')`;
-              } else {
-                // Video vb.
-                clickAction = `window.open('${l.link}', '_blank')`;
-              }
-
-              container.innerHTML += `
+            container.innerHTML += `
           <div class="p-card" onclick="${clickAction}" style="cursor:pointer; display:flex; gap:15px; align-items:center; margin-bottom:10px;">
               <div style="width:50px; height:50px; background:${badgeColor}20; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px;">
                   ${icon}
@@ -1604,28 +1656,28 @@ ${css}
               </div>
           </div>
       `;
-            });
-          }
-        } catch (e) {
-          container.innerHTML = "Hata: " + e.message;
+          });
         }
-      },
+      } catch (e) {
+        container.innerHTML = "Hata: " + e.message;
+      }
+    },
 
-      // 🔥 YENİ: Hafızadan Okuyan Güvenli Modal
-      openArticleModal: function (index) {
-        // Hafızadaki veriyi al
-        let lesson = window.AcademyData[index];
-        if (!lesson) return alert("İçerik bulunamadı.");
+    // 🔥 YENİ: Hafızadan Okuyan Güvenli Modal
+    openArticleModal: function (index) {
+      // Hafızadaki veriyi al
+      let lesson = window.AcademyData[index];
+      if (!lesson) return alert("İçerik bulunamadı.");
 
-        // Varolan modal varsa sil
-        let old = document.getElementById("p-article-modal");
-        if (old) old.remove();
+      // Varolan modal varsa sil
+      let old = document.getElementById("p-article-modal");
+      if (old) old.remove();
 
-        // İçeriği hazırla
-        let title = lesson.title;
-        let content = lesson.content;
+      // İçeriği hazırla
+      let title = lesson.title;
+      let content = lesson.content;
 
-        let html = `
+      let html = `
 <div id="p-article-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
   <div style="background:white; width:100%; max-width:600px; max-height:80vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
       <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
@@ -1641,25 +1693,25 @@ ${css}
   </div>
 </div>
 `;
-        document.body.insertAdjacentHTML("beforeend", html);
-      },
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
 
-      renderMarketing: async function (container) {
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Görseller yükleniyor...</div>';
+    renderMarketing: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Görseller yükleniyor...</div>';
 
-        try {
-          // Backend'den görselleri çekiyoruz
-          const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_marketing_assets" }),
-          });
-          const res = await response.json();
+      try {
+        // Backend'den görselleri çekiyoruz
+        const response = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_marketing_assets" }),
+        });
+        const res = await response.json();
 
-          if (res.success) {
-            // 🔥 YENİ BAŞLIK
-            container.innerHTML = `
+        if (res.success) {
+          // 🔥 YENİ BAŞLIK
+          container.innerHTML = `
           <div style="background:#fff; border-left:4px solid #ef4444; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
               <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎨 Pazarlama Kiti</h3>
               <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -1669,27 +1721,27 @@ ${css}
           </div>
           <h3 style="margin:0 0 15px 0;">Galeri</h3>`;
 
-            if (!res.list || res.list.length === 0) {
-              container.innerHTML += `<div style="text-align:center; color:#94a3b8; padding:20px;">Henüz görsel eklenmemiş.</div>`;
-              return;
-            }
+          if (!res.list || res.list.length === 0) {
+            container.innerHTML += `<div style="text-align:center; color:#94a3b8; padding:20px;">Henüz görsel eklenmemiş.</div>`;
+            return;
+          }
 
-            res.list.forEach((item) => {
-              let badgeColor =
-                item.type === "story"
-                  ? "#e1306c"
-                  : item.type === "post"
-                    ? "#3b82f6"
-                    : "#ef4444";
-              let badgeText =
-                item.type === "story"
-                  ? "STORY (9:16)"
-                  : item.type === "post"
-                    ? "POST (1:1)"
-                    : "BANNER";
+          res.list.forEach((item) => {
+            let badgeColor =
+              item.type === "story"
+                ? "#e1306c"
+                : item.type === "post"
+                  ? "#3b82f6"
+                  : "#ef4444";
+            let badgeText =
+              item.type === "story"
+                ? "STORY (9:16)"
+                : item.type === "post"
+                  ? "POST (1:1)"
+                  : "BANNER";
 
-              // Görsel Kartı HTML'i
-              container.innerHTML += `
+            // Görsel Kartı HTML'i
+            container.innerHTML += `
           <div class="p-card" style="padding:0; overflow:hidden; margin-bottom:15px;">
               <div style="position:relative; background:#f1f5f9; min-height:150px; display:flex; align-items:center; justify-content:center;">
                   <img src="${item.imageUrl}" style="width:100%; display:block; max-height:300px; object-fit:contain;">
@@ -1703,39 +1755,39 @@ ${css}
               </div>
           </div>
       `;
-            });
-          }
-        } catch (e) {
-          container.innerHTML = `<div style="color:red; text-align:center;">Yükleme hatası: ${e.message}</div>`;
+          });
         }
-      },
+      } catch (e) {
+        container.innerHTML = `<div style="color:red; text-align:center;">Yükleme hatası: ${e.message}</div>`;
+      }
+    },
 
-      // 🔥 YENİ: BİLDİRİM EKRANI
-      renderNotifications: async function (container) {
-        var email = detectUser();
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Bildirimler...</div>';
+    // 🔥 YENİ: BİLDİRİM EKRANI
+    renderNotifications: async function (container) {
+      var email = detectUser();
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Bildirimler...</div>';
 
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "get_my_notifications",
-              email: email,
-            }), // Backend'de tanımladık
-          }).then((r) => r.json());
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "get_my_notifications",
+            email: email,
+          }), // Backend'de tanımladık
+        }).then((r) => r.json());
 
-          if (res.success) {
-            container.innerHTML = `<h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>`;
-            if (res.list.length === 0)
-              container.innerHTML +=
-                "<div style='text-align:center; color:#999;'>Yeni bildirim yok.</div>";
+        if (res.success) {
+          container.innerHTML = `<h3 style="margin:0 0 15px 0;">🔔 Bildirimler</h3>`;
+          if (res.list.length === 0)
+            container.innerHTML +=
+              "<div style='text-align:center; color:#999;'>Yeni bildirim yok.</div>";
 
-            res.list.forEach((n) => {
-              let icon =
-                n.type === "sale" ? "💰" : n.type === "level_up" ? "🚀" : "📢";
-              container.innerHTML += `
+          res.list.forEach((n) => {
+            let icon =
+              n.type === "sale" ? "💰" : n.type === "level_up" ? "🚀" : "📢";
+            container.innerHTML += `
           <div class="p-card" style="padding:15px; border-left:4px solid #3b82f6;">
               <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                   <b style="color:#1e293b;">${icon} ${n.title}</b>
@@ -1744,60 +1796,60 @@ ${css}
               <div style="font-size:12px; color:#475569;">${n.message}</div>
           </div>
       `;
-            });
-          }
-        } catch (e) {
-          container.innerHTML = "Hata.";
-        }
-      },
-
-      requestPayout: function () {
-        var email = detectUser();
-        // Bakiye bilgisini ekrandan veya cache'den alabiliriz ama backend zaten kontrol edecek.
-        var amountStr = prompt(
-          "Çekmek istediğiniz tutarı girin (Min 500 TL):",
-          "500",
-        );
-        if (!amountStr) return;
-
-        var amount = parseFloat(amountStr);
-        if (isNaN(amount) || amount < 500)
-          return alert("Geçersiz tutar veya 500 TL altı.");
-
-        // Backend isteği
-        fetchApi("request_payout", { email: email, amount: amount }).then(
-          (res) => {
-            if (res.success) {
-              alert("✅ " + res.message);
-              // Cüzdanı yenile
-              ModumPartner.loadTab(
-                "wallet",
-                document.querySelector(".p-nav-item:nth-child(3)"),
-              );
-            } else {
-              alert("❌ " + res.message);
-            }
-          },
-        );
-      }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
-      renderShowcase: async function (container) {
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
-
-        var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode || "REF-YOK";
-
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_showcase_products" }),
           });
-          const data = await res.json();
+        }
+      } catch (e) {
+        container.innerHTML = "Hata.";
+      }
+    },
 
-          if (data.success && data.list.length > 0) {
-            // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
-            container.innerHTML = `
+    requestPayout: function () {
+      var email = detectUser();
+      // Bakiye bilgisini ekrandan veya cache'den alabiliriz ama backend zaten kontrol edecek.
+      var amountStr = prompt(
+        "Çekmek istediğiniz tutarı girin (Min 500 TL):",
+        "500",
+      );
+      if (!amountStr) return;
+
+      var amount = parseFloat(amountStr);
+      if (isNaN(amount) || amount < 500)
+        return alert("Geçersiz tutar veya 500 TL altı.");
+
+      // Backend isteği
+      fetchApi("request_payout", { email: email, amount: amount }).then(
+        (res) => {
+          if (res.success) {
+            alert("✅ " + res.message);
+            // Cüzdanı yenile
+            ModumPartner.loadTab(
+              "wallet",
+              document.querySelector(".p-nav-item:nth-child(3)"),
+            );
+          } else {
+            alert("❌ " + res.message);
+          }
+        },
+      );
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
+    renderShowcase: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
+
+      var pData = window.PartnerData || {};
+      var myRefCode = pData.refCode || "REF-YOK";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_showcase_products" }),
+        });
+        const data = await res.json();
+
+        if (data.success && data.list.length > 0) {
+          // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
+          container.innerHTML = `
             <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
                 <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
                 <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -1816,17 +1868,17 @@ ${css}
             
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
 
-            let gridHtml = "";
-            data.list.forEach((p) => {
-              // Ref linki hazırla
-              let shareLink =
-                p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
+          let gridHtml = "";
+          data.list.forEach((p) => {
+            // Ref linki hazırla
+            let shareLink =
+              p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
-              // Ürün verisini güvenli bir şekilde string'e çevir (fonksiyona parametre olarak geçmek için)
-              // Tırnak işaretleri sorun çıkarmasın diye encodeURIComponent kullanıyoruz.
-              let safeProductData = encodeURIComponent(JSON.stringify(p));
+            // Ürün verisini güvenli bir şekilde string'e çevir (fonksiyona parametre olarak geçmek için)
+            // Tırnak işaretleri sorun çıkarmasın diye encodeURIComponent kullanıyoruz.
+            let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-              gridHtml += `
+            gridHtml += `
     <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%;">
         
         <div class="showcase-img-box">
@@ -1856,44 +1908,44 @@ ${css}
             </div>
         </div>
     </div>`;
-            });
+          });
 
-            container.innerHTML += gridHtml + `</div>`;
+          container.innerHTML += gridHtml + `</div>`;
 
-            // Alt bilgi
-            container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
+          // Alt bilgi
+          container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
                 <i class="fas fa-sync"></i> Liste her gece 00:00'da yenilenir.
             </div>`;
-          } else {
-            container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Bugün için vitrin oluşturulamadı.</div>`;
-          }
-        } catch (e) {
-          container.innerHTML = "Hata: " + e.message;
+        } else {
+          container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Bugün için vitrin oluşturulamadı.</div>`;
         }
-      }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ) ---
-      renderMyCollection: async function (container) {
-        container.innerHTML =
-          '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Koleksiyonun yükleniyor...</div>';
+      } catch (e) {
+        container.innerHTML = "Hata: " + e.message;
+      }
+    }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ) ---
+    renderMyCollection: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Koleksiyonun yükleniyor...</div>';
 
-        var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode;
-        var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
+      var pData = window.PartnerData || {};
+      var myRefCode = pData.refCode;
+      var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
 
-        try {
-          // Kendi koleksiyonunu çek (Public fonksiyonu kullanabiliriz)
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "get_public_collection",
-              refCode: myRefCode,
-            }),
-          }).then((r) => r.json());
+      try {
+        // Kendi koleksiyonunu çek (Public fonksiyonu kullanabiliriz)
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "get_public_collection",
+            refCode: myRefCode,
+          }),
+        }).then((r) => r.json());
 
-          if (res.success) {
-            const products = res.products || [];
+        if (res.success) {
+          const products = res.products || [];
 
-            container.innerHTML = `
+          container.innerHTML = `
                     <div style="background:white; padding:20px; border-radius:12px; border-left:4px solid #3b82f6; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:20px;">
                         <h3 style="margin:0; color:#1e293b;">🛍️ Benim Sanal Mağazam</h3>
                         <p style="font-size:13px; color:#64748b; margin:5px 0 15px;">
@@ -1911,8 +1963,8 @@ ${css}
                     <h4 style="margin:0 0 15px 0; color:#334155;">Seçtiğin Ürünler (${products.length}/30)</h4>
                   `;
 
-            if (products.length === 0) {
-              container.innerHTML += `
+          if (products.length === 0) {
+            container.innerHTML += `
                         <div style="text-align:center; padding:40px; background:#f8fafc; border-radius:12px; border:2px dashed #e2e8f0;">
                             <div style="font-size:40px; margin-bottom:10px;">🛒</div>
                             <div style="color:#64748b; font-weight:bold;">Henüz ürün eklemedin.</div>
@@ -1920,25 +1972,25 @@ ${css}
                             <a href="/" class="p-btn" style="width:auto; display:inline-block; margin-top:10px; background:#10b981; color:white; text-decoration:none;">Siteye Git</a>
                         </div>
                       `;
-              return;
-            }
+            return;
+          }
 
-            let grid = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">`;
+          let grid = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">`;
 
-            products.forEach((p) => {
-              // Ürün Datasını string olarak sakla (Silmek için)
-              // Sadece ID ve gerekli bilgileri gönderiyoruz
-              const pSafe = encodeURIComponent(
-                JSON.stringify({
-                  id: p.id,
-                  title: p.title,
-                  image: p.image,
-                  price: p.price,
-                  url: p.url,
-                }),
-              );
+          products.forEach((p) => {
+            // Ürün Datasını string olarak sakla (Silmek için)
+            // Sadece ID ve gerekli bilgileri gönderiyoruz
+            const pSafe = encodeURIComponent(
+              JSON.stringify({
+                id: p.id,
+                title: p.title,
+                image: p.image,
+                price: p.price,
+                url: p.url,
+              }),
+            );
 
-              grid += `
+            grid += `
                         <div style="background:white; border-radius:8px; overflow:hidden; border:1px solid #e2e8f0; position:relative;">
                             <div style="height:150px; overflow:hidden; position:relative;">
                                 <img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">
@@ -1951,200 +2003,189 @@ ${css}
                             </div>
                         </div>
                       `;
-            });
+          });
 
-            grid += `</div>`;
-            container.innerHTML += grid;
-          } else {
-            container.innerHTML = "Bir hata oluştu.";
-          }
-        } catch (e) {
-          container.innerHTML = "Bağlantı hatası.";
+          grid += `</div>`;
+          container.innerHTML += grid;
+        } else {
+          container.innerHTML = "Bir hata oluştu.";
         }
-      },
+      } catch (e) {
+        container.innerHTML = "Bağlantı hatası.";
+      }
+    },
 
-      // Panelden Silme Fonksiyonu
-      removeProductFromPanel: async function (pStr, btnEl) {
-        if (!confirm("Bu ürünü koleksiyonundan çıkarmak istiyor musun?"))
-          return;
+    // Panelden Silme Fonksiyonu
+    removeProductFromPanel: async function (pStr, btnEl) {
+      if (!confirm("Bu ürünü koleksiyonundan çıkarmak istiyor musun?")) return;
 
-        const p = JSON.parse(decodeURIComponent(pStr));
-        const email = detectUser();
+      const p = JSON.parse(decodeURIComponent(pStr));
+      const email = detectUser();
 
-        // Butonu gizle (Hissiyat için)
-        const card = btnEl.closest("div[style*='background:white']");
-        card.style.opacity = "0.5";
+      // Butonu gizle (Hissiyat için)
+      const card = btnEl.closest("div[style*='background:white']");
+      card.style.opacity = "0.5";
 
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "toggle_collection_product",
+          email: email,
+          product: p,
+        }),
+      }).then((r) => r.json());
+
+      if (res.success && res.action === "removed") {
+        card.remove(); // Kartı tamamen sil
+      } else {
+        alert("Hata: " + res.message);
+        card.style.opacity = "1";
+      }
+    },
+    // 🔥 YENİ: PDF HAKEDİŞ RAPORU OLUŞTURUCU
+    downloadPDFStatement: async function () {
+      var email = detectUser();
+      var pData = window.PartnerData || {};
+      var name = pData.name || "Sayın Ortağımız";
+
+      // Butona basıldığını hissettir
+      const btn = event.target;
+      const oldText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...';
+      btn.disabled = true;
+
+      try {
+        // 1. Verileri Çek (Son 100 işlem)
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            islem: "toggle_collection_product",
+            islem: "get_partner_history",
             email: email,
-            product: p,
           }),
-        }).then((r) => r.json());
+        });
+        const data = await res.json();
 
-        if (res.success && res.action === "removed") {
-          card.remove(); // Kartı tamamen sil
-        } else {
-          alert("Hata: " + res.message);
-          card.style.opacity = "1";
-        }
-      },
-      // 🔥 YENİ: PDF HAKEDİŞ RAPORU OLUŞTURUCU
-      downloadPDFStatement: async function () {
-        var email = detectUser();
-        var pData = window.PartnerData || {};
-        var name = pData.name || "Sayın Ortağımız";
-
-        // Butona basıldığını hissettir
-        const btn = event.target;
-        const oldText = btn.innerHTML;
-        btn.innerHTML =
-          '<i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...';
-        btn.disabled = true;
-
-        try {
-          // 1. Verileri Çek (Son 100 işlem)
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "get_partner_history",
-              email: email,
-            }),
-          });
-          const data = await res.json();
-
-          if (!data.success || data.list.length === 0) {
-            alert("Henüz raporlanacak işlem geçmişiniz yok.");
-            btn.innerHTML = oldText;
-            btn.disabled = false;
-            return;
-          }
-
-          // 2. PDF Başlat
-          const { jsPDF } = window.jspdf;
-          const doc = new jsPDF();
-
-          // --- TASARIM BAŞLIYOR ---
-
-          // Logo & Başlık (Mavi Şerit)
-          doc.setFillColor(30, 41, 59); // Koyu Lacivert (#1e293b)
-          doc.rect(0, 0, 210, 40, "F"); // Üst şerit
-
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(22);
-          doc.setFont("helvetica", "bold");
-          doc.text("MODUMNET", 15, 20);
-
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "normal");
-          doc.text("PARTNER HAKEDIS EKSTRESI", 15, 28);
-
-          // Sağ Üst Bilgi
-          doc.setFontSize(9);
-          doc.text(
-            "Tarih: " + new Date().toLocaleDateString("tr-TR"),
-            195,
-            20,
-            { align: "right" },
-          );
-          doc.text("Ortak: " + name, 195, 28, { align: "right" });
-          doc.text("E-Posta: " + email, 195, 33, { align: "right" });
-
-          // Özet Bilgi Kutusu
-          doc.setTextColor(50, 50, 50);
-          doc.setFontSize(10);
-          doc.text(
-            `Sayin ${name}, asagida ModumNet ortaklik programi kapsaminda gerceklesen`,
-            15,
-            50,
-          );
-          doc.text(
-            `satis ve hakedis islemlerinizin dokumu yer almaktadir.`,
-            15,
-            55,
-          );
-
-          // Tablo Verisini Hazırla
-          let tableRows = [];
-          data.list.forEach((tx) => {
-            let amount = parseFloat(tx.commission || tx.amount || 0).toFixed(2);
-            let type =
-              tx.type === "payout_request" ? "ODEME CIKISI" : "SATIS KAZANCI";
-            let status =
-              tx.status === "paid"
-                ? "ODENDI"
-                : tx.status === "pending"
-                  ? "BEKLIYOR"
-                  : "ONAYLANDI";
-            let sign = tx.type === "payout_request" ? "-" : "+";
-
-            // Türkçe karakter sorununu aşmak için basit replace (jsPDF default fontu TR karakter sevmez)
-            let desc = (tx.desc || "")
-              .replace(/İ/g, "I")
-              .replace(/ı/g, "i")
-              .replace(/Ş/g, "S")
-              .replace(/ş/g, "s")
-              .replace(/Ğ/g, "G")
-              .replace(/ğ/g, "g");
-
-            tableRows.push([
-              tx.date,
-              type,
-              desc,
-              status,
-              sign + amount + " TL",
-            ]);
-          });
-
-          // Tabloyu Çiz
-          doc.autoTable({
-            startY: 65,
-            head: [["Tarih", "Islem Tipi", "Aciklama", "Durum", "Tutar"]],
-            body: tableRows,
-            theme: "grid",
-            headStyles: {
-              fillColor: [67, 97, 238],
-              textColor: 255,
-              fontStyle: "bold",
-            }, // Mavi başlık
-            styles: { fontSize: 8, cellPadding: 3 },
-            alternateRowStyles: { fillColor: [241, 245, 249] }, // Açık gri satırlar
-          });
-
-          // Alt Bilgi (Footer)
-          let finalY = doc.lastAutoTable.finalY + 20;
-          doc.setFontSize(8);
-          doc.setTextColor(150);
-          doc.text(
-            "Bu belge bilgilendirme amaclidir. Resmi fatura yerine gecmez.",
-            105,
-            finalY,
-            { align: "center" },
-          );
-          doc.text("ModumNet E-Ticaret Sistemleri", 105, finalY + 5, {
-            align: "center",
-          });
-
-          // İndir
-          doc.save(`Modum_Ekstre_${new Date().toISOString().slice(0, 10)}.pdf`);
-        } catch (e) {
-          console.error("PDF Hatası:", e);
-          alert("PDF oluşturulurken bir hata oluştu.");
-        } finally {
+        if (!data.success || data.list.length === 0) {
+          alert("Henüz raporlanacak işlem geçmişiniz yok.");
           btn.innerHTML = oldText;
           btn.disabled = false;
+          return;
         }
-      }, // 🔥 VİTRİN İÇİN HIZLI LİNK OLUŞTURUCU (MODAL)
-      openQuickLink: function (url, refCode) {
-        // Eski modal varsa sil
-        let old = document.getElementById("p-quick-link-modal");
-        if (old) old.remove();
 
-        let html = `
+        // 2. PDF Başlat
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // --- TASARIM BAŞLIYOR ---
+
+        // Logo & Başlık (Mavi Şerit)
+        doc.setFillColor(30, 41, 59); // Koyu Lacivert (#1e293b)
+        doc.rect(0, 0, 210, 40, "F"); // Üst şerit
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text("MODUMNET", 15, 20);
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("PARTNER HAKEDIS EKSTRESI", 15, 28);
+
+        // Sağ Üst Bilgi
+        doc.setFontSize(9);
+        doc.text("Tarih: " + new Date().toLocaleDateString("tr-TR"), 195, 20, {
+          align: "right",
+        });
+        doc.text("Ortak: " + name, 195, 28, { align: "right" });
+        doc.text("E-Posta: " + email, 195, 33, { align: "right" });
+
+        // Özet Bilgi Kutusu
+        doc.setTextColor(50, 50, 50);
+        doc.setFontSize(10);
+        doc.text(
+          `Sayin ${name}, asagida ModumNet ortaklik programi kapsaminda gerceklesen`,
+          15,
+          50,
+        );
+        doc.text(
+          `satis ve hakedis islemlerinizin dokumu yer almaktadir.`,
+          15,
+          55,
+        );
+
+        // Tablo Verisini Hazırla
+        let tableRows = [];
+        data.list.forEach((tx) => {
+          let amount = parseFloat(tx.commission || tx.amount || 0).toFixed(2);
+          let type =
+            tx.type === "payout_request" ? "ODEME CIKISI" : "SATIS KAZANCI";
+          let status =
+            tx.status === "paid"
+              ? "ODENDI"
+              : tx.status === "pending"
+                ? "BEKLIYOR"
+                : "ONAYLANDI";
+          let sign = tx.type === "payout_request" ? "-" : "+";
+
+          // Türkçe karakter sorununu aşmak için basit replace (jsPDF default fontu TR karakter sevmez)
+          let desc = (tx.desc || "")
+            .replace(/İ/g, "I")
+            .replace(/ı/g, "i")
+            .replace(/Ş/g, "S")
+            .replace(/ş/g, "s")
+            .replace(/Ğ/g, "G")
+            .replace(/ğ/g, "g");
+
+          tableRows.push([tx.date, type, desc, status, sign + amount + " TL"]);
+        });
+
+        // Tabloyu Çiz
+        doc.autoTable({
+          startY: 65,
+          head: [["Tarih", "Islem Tipi", "Aciklama", "Durum", "Tutar"]],
+          body: tableRows,
+          theme: "grid",
+          headStyles: {
+            fillColor: [67, 97, 238],
+            textColor: 255,
+            fontStyle: "bold",
+          }, // Mavi başlık
+          styles: { fontSize: 8, cellPadding: 3 },
+          alternateRowStyles: { fillColor: [241, 245, 249] }, // Açık gri satırlar
+        });
+
+        // Alt Bilgi (Footer)
+        let finalY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(
+          "Bu belge bilgilendirme amaclidir. Resmi fatura yerine gecmez.",
+          105,
+          finalY,
+          { align: "center" },
+        );
+        doc.text("ModumNet E-Ticaret Sistemleri", 105, finalY + 5, {
+          align: "center",
+        });
+
+        // İndir
+        doc.save(`Modum_Ekstre_${new Date().toISOString().slice(0, 10)}.pdf`);
+      } catch (e) {
+        console.error("PDF Hatası:", e);
+        alert("PDF oluşturulurken bir hata oluştu.");
+      } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+      }
+    }, // 🔥 VİTRİN İÇİN HIZLI LİNK OLUŞTURUCU (MODAL)
+    openQuickLink: function (url, refCode) {
+      // Eski modal varsa sil
+      let old = document.getElementById("p-quick-link-modal");
+      if (old) old.remove();
+
+      let html = `
         <div id="p-quick-link-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
             <div style="background:white; width:100%; max-width:300px; border-radius:12px; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center;">
                 <h4 style="margin:0 0 15px 0; color:#1e293b;">Nerede Paylaşacaksın?</h4>
@@ -2160,122 +2201,121 @@ ${css}
             </div>
         </div>
         `;
-        document.body.insertAdjacentHTML("beforeend", html);
-      },
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
 
-      // Son Aşamada Kopyalama Yapan Fonksiyon
-      copyFinalLink: function (url, refCode, source) {
-        // Linke Source Ekle
-        let separator = url.includes("?") ? "&" : "?";
-        let finalLink =
-          url + separator + "ref=" + refCode + "&source=" + source;
+    // Son Aşamada Kopyalama Yapan Fonksiyon
+    copyFinalLink: function (url, refCode, source) {
+      // Linke Source Ekle
+      let separator = url.includes("?") ? "&" : "?";
+      let finalLink = url + separator + "ref=" + refCode + "&source=" + source;
 
-        // Kopyala
-        navigator.clipboard.writeText(finalLink).then(() => {
-          alert("✅ Link Kopyalandı! (" + source + ")");
-          document.getElementById("p-quick-link-modal").remove();
-        });
-      }, // --- 🔥 ÜRÜNÜ KOLEKSİYONA EKLE (SCRAPER) ---
-      toggleCollectionItem: async function () {
-        const btn = event.target.closest("button"); // Tıklanan butonu bul
-        const oldHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        btn.disabled = true;
+      // Kopyala
+      navigator.clipboard.writeText(finalLink).then(() => {
+        alert("✅ Link Kopyalandı! (" + source + ")");
+        document.getElementById("p-quick-link-modal").remove();
+      });
+    }, // --- 🔥 ÜRÜNÜ KOLEKSİYONA EKLE (SCRAPER) ---
+    toggleCollectionItem: async function () {
+      const btn = event.target.closest("button"); // Tıklanan butonu bul
+      const oldHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
 
-        try {
-          // 1. Sayfadan Veri Kazıma (Faprika Standartları & Meta Taglar)
-          const getMeta = (prop) => {
-            const el =
-              document.querySelector(`meta[property="${prop}"]`) ||
-              document.querySelector(`meta[name="${prop}"]`);
-            return el ? el.content : "";
-          };
+      try {
+        // 1. Sayfadan Veri Kazıma (Faprika Standartları & Meta Taglar)
+        const getMeta = (prop) => {
+          const el =
+            document.querySelector(`meta[property="${prop}"]`) ||
+            document.querySelector(`meta[name="${prop}"]`);
+          return el ? el.content : "";
+        };
 
-          let pTitle = getMeta("og:title") || document.title;
-          let pImage = getMeta("og:image");
-          let pUrl = getMeta("og:url") || window.location.href.split("?")[0];
+        let pTitle = getMeta("og:title") || document.title;
+        let pImage = getMeta("og:image");
+        let pUrl = getMeta("og:url") || window.location.href.split("?")[0];
 
-          // Fiyatı bulmak
-          let pPrice = getMeta("product:price:amount");
-          if (!pPrice) {
-            // Yedek: HTML'den oku
-            const priceEl =
-              document.querySelector(".product-price") ||
-              document.querySelector(".current-price") ||
-              document.querySelector(".fiyat");
-            if (priceEl) pPrice = priceEl.innerText.replace(/[^0-9,.]/g, "");
-          }
-          if (!pPrice) pPrice = "0";
-
-          // ID Bulma
-          let pId = "";
-          const urlParts = pUrl.split("-");
-          const possibleId = urlParts[urlParts.length - 1].replace("/", "");
-          // Eğer ID sayıysa al, değilse URL'i ID yap
-          pId = !isNaN(possibleId) && possibleId.length > 0 ? possibleId : pUrl;
-
-          // Veriyi hazırla
-          const productData = {
-            id: pId,
-            title: pTitle,
-            image: pImage,
-            price: pPrice.includes("TL") ? pPrice : pPrice + " TL",
-            url: pUrl,
-          };
-
-          // 2. Backend'e Gönder
-          // Not: detectUser() fonksiyonunun yukarıda tanımlı olduğundan emin ol
-          const email = detectUser();
-
-          // API_URL değişkeninin globalde tanımlı olduğunu varsayıyoruz
-          // (Dosyanın en başında var: var API_URL = "...")
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "toggle_collection_product",
-              email: email,
-              product: productData,
-            }),
-          }).then((r) => r.json());
-
-          if (res.success) {
-            if (res.action === "added") {
-              btn.style.background = "#ef4444";
-              btn.style.borderColor = "#b91c1c";
-              btn.innerHTML =
-                '<i class="fas fa-minus-circle"></i> <span class="hide-mobile">Koleksiyondan</span> Çıkar';
-              // Küçük bir bildirim (Toast) gösterebiliriz ama alert yeterli şimdilik
-              alert("✅ Ürün koleksiyonuna eklendi!");
-            } else {
-              btn.style.background = "#f59e0b";
-              btn.style.borderColor = "#d97706";
-              btn.innerHTML =
-                '<i class="fas fa-plus-circle"></i> <span class="hide-mobile">Koleksiyona</span> Ekle';
-              alert("🗑️ Ürün koleksiyondan çıkarıldı.");
-            }
-          } else {
-            alert("Hata: " + res.message);
-            btn.innerHTML = oldHtml;
-          }
-        } catch (e) {
-          console.error(e);
-          alert(
-            "Ürün bilgisi alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
-          );
-          btn.innerHTML = oldHtml;
-        } finally {
-          btn.disabled = false;
+        // Fiyatı bulmak
+        let pPrice = getMeta("product:price:amount");
+        if (!pPrice) {
+          // Yedek: HTML'den oku
+          const priceEl =
+            document.querySelector(".product-price") ||
+            document.querySelector(".current-price") ||
+            document.querySelector(".fiyat");
+          if (priceEl) pPrice = priceEl.innerText.replace(/[^0-9,.]/g, "");
         }
-      }, // --- 🔥 AKILLI PAYLAŞIM MENÜSÜ ---
-      openShareMenu: function (baseUrl, isCollection = false) {
-        // Eski modal varsa sil
-        let old = document.getElementById("mdm-share-modal");
-        if (old) old.remove();
+        if (!pPrice) pPrice = "0";
 
-        let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
+        // ID Bulma
+        let pId = "";
+        const urlParts = pUrl.split("-");
+        const possibleId = urlParts[urlParts.length - 1].replace("/", "");
+        // Eğer ID sayıysa al, değilse URL'i ID yap
+        pId = !isNaN(possibleId) && possibleId.length > 0 ? possibleId : pUrl;
 
-        let html = `
+        // Veriyi hazırla
+        const productData = {
+          id: pId,
+          title: pTitle,
+          image: pImage,
+          price: pPrice.includes("TL") ? pPrice : pPrice + " TL",
+          url: pUrl,
+        };
+
+        // 2. Backend'e Gönder
+        // Not: detectUser() fonksiyonunun yukarıda tanımlı olduğundan emin ol
+        const email = detectUser();
+
+        // API_URL değişkeninin globalde tanımlı olduğunu varsayıyoruz
+        // (Dosyanın en başında var: var API_URL = "...")
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "toggle_collection_product",
+            email: email,
+            product: productData,
+          }),
+        }).then((r) => r.json());
+
+        if (res.success) {
+          if (res.action === "added") {
+            btn.style.background = "#ef4444";
+            btn.style.borderColor = "#b91c1c";
+            btn.innerHTML =
+              '<i class="fas fa-minus-circle"></i> <span class="hide-mobile">Koleksiyondan</span> Çıkar';
+            // Küçük bir bildirim (Toast) gösterebiliriz ama alert yeterli şimdilik
+            alert("✅ Ürün koleksiyonuna eklendi!");
+          } else {
+            btn.style.background = "#f59e0b";
+            btn.style.borderColor = "#d97706";
+            btn.innerHTML =
+              '<i class="fas fa-plus-circle"></i> <span class="hide-mobile">Koleksiyona</span> Ekle';
+            alert("🗑️ Ürün koleksiyondan çıkarıldı.");
+          }
+        } else {
+          alert("Hata: " + res.message);
+          btn.innerHTML = oldHtml;
+        }
+      } catch (e) {
+        console.error(e);
+        alert(
+          "Ürün bilgisi alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
+        );
+        btn.innerHTML = oldHtml;
+      } finally {
+        btn.disabled = false;
+      }
+    }, // --- 🔥 AKILLI PAYLAŞIM MENÜSÜ ---
+    openShareMenu: function (baseUrl, isCollection = false) {
+      // Eski modal varsa sil
+      let old = document.getElementById("mdm-share-modal");
+      if (old) old.remove();
+
+      let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
+
+      let html = `
           <div id="mdm-share-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
               <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                   
@@ -2314,96 +2354,41 @@ ${css}
               </div>
           </div>
           `;
-        document.body.insertAdjacentHTML("beforeend", html);
-      },
+      document.body.insertAdjacentHTML("beforeend", html);
+    },
 
-      // --- LİNKİ OLUŞTUR VE KOPYALA ---
-      copySmartLink: function (url, source) {
-        var pData = window.PartnerData || {};
-        var myRefCode = pData.refCode;
+    // --- LİNKİ OLUŞTUR VE KOPYALA ---
+    copySmartLink: function (url, source) {
+      var pData = window.PartnerData || {};
+      var myRefCode = pData.refCode;
 
-        // URL Temizliği (Eski parametreleri kaldırabiliriz ama şimdilik ekleyelim)
-        // Eğer URL zaten bir parametre içeriyorsa (örn: ?koleksiyon=...), '&' ile ekle
-        // İçermiyorsa '?' ile ekle
-        var separator = url.includes("?") ? "&" : "?";
+      // URL Temizliği (Eski parametreleri kaldırabiliriz ama şimdilik ekleyelim)
+      // Eğer URL zaten bir parametre içeriyorsa (örn: ?koleksiyon=...), '&' ile ekle
+      // İçermiyorsa '?' ile ekle
+      var separator = url.includes("?") ? "&" : "?";
 
-        // Eğer URL'de zaten 'ref=' varsa, onu tekrar eklemeyelim, sadece source ekleyelim
-        var finalLink = url;
+      // Eğer URL'de zaten 'ref=' varsa, onu tekrar eklemeyelim, sadece source ekleyelim
+      var finalLink = url;
 
-        if (!url.includes("ref=")) {
-          finalLink += separator + "ref=" + myRefCode;
-          separator = "&"; // Artık bir sonraki parametre '&' ile gelecek
-        }
-
-        finalLink += separator + "source=" + source;
-
-        // Panoya Kopyala
-        navigator.clipboard.writeText(finalLink).then(() => {
-          // Modalı kapat
-          document.getElementById("mdm-share-modal").remove();
-
-          // Başarı mesajı (Toast gibi)
-          alert(
-            `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
-          );
-        });
-      },
-    };
-
-    // Açılış
-    window.PartnerApp.loadTab("home");
-  }
-  // --- CANVAS YARDIMCISI: RESİM YÜKLEME ---
-  // Bir görselin canvas'a çizilebilmesi için tamamen yüklenmiş olması gerekir.
-  function loadCanvasImage(src) {
-    return new Promise((resolve, reject) => {
-      // 1. Resim linkindeki "https://" kısmını temizleyip temiz URL alalım
-      let cleanUrl = src.replace(/^https?:\/\//, "");
-
-      // 2. Güvenli Proxy Servisi (wsrv.nl) üzerinden geçir
-      // Bu servis resmi alır, güvenlik izinlerini (CORS) ekler ve bize geri verir.
-      // Ayrıca &w=800 diyerek resmi optimize ediyoruz, çok daha hızlı çalışır.
-      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&output=png&w=800&n=-1`;
-
-      const img = new Image();
-      img.crossOrigin = "Anonymous"; // Artık bu çalışacak çünkü proxy izin veriyor
-      img.onload = () => resolve(img);
-      img.onerror = (e) => {
-        console.error("Resim yükleme hatası:", e);
-        // Proxy başarısız olursa orijinali dene (Yedek plan)
-        const backupImg = new Image();
-        backupImg.crossOrigin = "Anonymous";
-        backupImg.onload = () => resolve(backupImg);
-        backupImg.onerror = () => reject(new Error("Resim yüklenemedi"));
-        backupImg.src = src;
-      };
-      img.src = proxyUrl;
-    });
-  }
-
-  // --- CANVAS YARDIMCISI: UZUN METİNLERİ SATIRLARA BÖLME ---
-  // Canvas, uzun metinleri otomatik olarak alt satıra geçirmez. Bunu elle yapıyoruz.
-  function wrapText(context, text, x, y, maxWidth, lineHeight) {
-    var words = text.split(" ");
-    var line = "";
-    var currentY = y;
-
-    for (var n = 0; n < words.length; n++) {
-      var testLine = line + words[n] + " ";
-      var metrics = context.measureText(testLine);
-      var testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        context.fillText(line, x, currentY);
-        line = words[n] + " ";
-        currentY += lineHeight;
-      } else {
-        line = testLine;
+      if (!url.includes("ref=")) {
+        finalLink += separator + "ref=" + myRefCode;
+        separator = "&"; // Artık bir sonraki parametre '&' ile gelecek
       }
-    }
-    context.fillText(line, x, currentY);
-    // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
-    return currentY + lineHeight;
-  }
+
+      finalLink += separator + "source=" + source;
+
+      // Panoya Kopyala
+      navigator.clipboard.writeText(finalLink).then(() => {
+        // Modalı kapat
+        document.getElementById("mdm-share-modal").remove();
+
+        // Başarı mesajı (Toast gibi)
+        alert(
+          `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
+        );
+      });
+    },
+  };
   // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (FİNAL) ---
   function renderSiteStripe() {
     if (document.getElementById("mdm-stripe-bar")) return;
@@ -2471,7 +2456,7 @@ ${css}
              
              <div class="mdm-divider"></div>
 
-             <button onclick="PartnerApp.openShareMenu('${collectionLink}', true)" class="mdm-btn" style="background:#10b981; border-color:#059669;">
+             <button onclick="PartnerApp.openShareMenu('${window.location.href}')" class="mdm-btn" style="background:#10b981; border-color:#059669;">
                 <i class="fas fa-store"></i> <span class="hide-mobile">Mağazam</span>
             </button>
 
@@ -3216,5 +3201,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v1*/
 })();
