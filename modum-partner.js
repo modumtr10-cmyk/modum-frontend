@@ -479,6 +479,52 @@ ${css}
 
           const s = res.stats;
 
+          // --- 🔥 YENİ: TRAFİK KAYNAKLARI MANTIĞI (BAŞLANGIÇ) ---
+          let sourceHTML = "";
+          let sources = s.sourceStats || {}; // Backend'den gelen veri
+          let totalClicksCalc = parseInt(s.totalClicks || 1); // 0 hatası olmasın diye 1
+
+          if (Object.keys(sources).length > 0) {
+            // En çoktan aza sırala
+            let sortedKeys = Object.keys(sources).sort(
+              (a, b) => sources[b] - sources[a],
+            );
+
+            sortedKeys.forEach((key) => {
+              let count = sources[key];
+              let percent = Math.round((count / totalClicksCalc) * 100);
+
+              // İsim ve İkon Ayarı
+              let name = key
+                .replace("instagram_", "Insta ")
+                .replace("_", " ")
+                .toUpperCase();
+              let icon = "🔗";
+              if (key.includes("instagram")) icon = "📸";
+              if (key.includes("whatsapp")) icon = "💬";
+              if (key.includes("telegram")) icon = "✈️";
+              if (key.includes("youtube")) icon = "▶️";
+
+              sourceHTML += `
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12px;">
+                      <div style="display:flex; align-items:center; gap:8px; color:#334155;">
+                          <span style="font-size:14px;">${icon}</span> 
+                          <span style="font-weight:600;">${name}</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                          <div style="width:60px; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                              <div style="width:${percent}%; height:100%; background:${percent > 50 ? "#10b981" : "#3b82f6"};"></div>
+                          </div>
+                          <span style="font-weight:bold; color:#64748b;">${count}</span>
+                      </div>
+                  </div>`;
+            });
+          } else {
+            sourceHTML =
+              "<div style='color:#999; font-size:11px; text-align:center; padding:10px;'>Henüz veri yok.</div>";
+          }
+          // --- 🔥 TRAFİK KAYNAKLARI MANTIĞI (BİTİŞ) ---
+
           // --- VERİ HAZIRLIĞI ---
           let currentRev = parseFloat(s.totalRevenue || 0);
           let myRate = parseFloat(s.commission_rate || 10);
@@ -1935,46 +1981,46 @@ ${css}
     var finalLink = currentUrl + "?ref=" + myRefCode;
     var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
 
-    // 4. HTML (Sadeleştirilmiş ve Şık)
+    // 4. HTML (GÜNCELLENMİŞ VERSİYON - Modal Tetikleyici)
     var stripeHTML = `
-    <style>
-        #mdm-stripe-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 40px; 
-            background: #0f172a; color: white; z-index: 999990; 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-            font-family: 'Inter', sans-serif; box-sizing: border-box;
-        }
-        .mdm-bar-input {
-            background: #1e293b; border: 1px solid #334155; color: #fbbf24; 
-            padding: 4px 8px; border-radius: 4px; font-family: monospace; 
-            font-size: 11px; width: 100%; max-width: 180px; outline: none;
-        }
-        .mdm-btn {
-            background: #3b82f6; color: white; border: none; padding: 5px 10px; 
-            border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
-            display: flex; align-items: center; gap: 4px; text-decoration: none;
-        }
-    </style>
-    <div id="mdm-stripe-bar">
-        <div style="font-weight:900; color:#fbbf24; font-size:12px;">👑 MODUM</div>
-        
-        <div style="display:flex; gap:5px; align-items:center; flex:1; justify-content:flex-end;">
-            <input type="text" value="${finalLink}" readonly class="mdm-bar-input">
-            
-            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Kopyalandı!')" class="mdm-btn">
-                <i class="fas fa-link"></i> 
-                <span style="display:none; @media(min-width:400px){display:inline;}">Kopyala</span>
-            </button>
-            
-            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366;">
-                <i class="fab fa-whatsapp"></i>
-            </a>
+   <style>
+       #mdm-stripe-bar {
+           position: fixed; top: 0; left: 0; width: 100%; height: 40px; 
+           background: #0f172a; color: white; z-index: 999990; 
+           display: flex; align-items: center; justify-content: space-between; 
+           padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+           font-family: 'Inter', sans-serif; box-sizing: border-box;
+       }
+       .mdm-bar-input {
+           background: #1e293b; border: 1px solid #334155; color: #fbbf24; 
+           padding: 4px 8px; border-radius: 4px; font-family: monospace; 
+           font-size: 11px; width: 100%; max-width: 180px; outline: none; opacity: 0.8;
+       }
+       .mdm-btn {
+           background: #3b82f6; color: white; border: none; padding: 5px 10px; 
+           border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
+           display: flex; align-items: center; gap: 4px; text-decoration: none;
+       }
+   </style>
+   <div id="mdm-stripe-bar">
+       <div style="font-weight:900; color:#fbbf24; font-size:12px;">👑 MODUM</div>
+       
+       <div style="display:flex; gap:5px; align-items:center; flex:1; justify-content:flex-end;">
+           <input type="text" value="${currentUrl}" readonly class="mdm-bar-input">
+           
+           <button onclick="window.PartnerApp.openQuickLink('${currentUrl}', '${myRefCode}')" class="mdm-btn" style="background:#3b82f6;">
+               <i class="fas fa-share-alt"></i> 
+               <span style="display:none; @media(min-width:400px){display:inline;}">Paylaş & Linkle</span>
+           </button>
+           
+           <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366;">
+               <i class="fab fa-whatsapp"></i>
+           </a>
 
-            <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#999;">&times;</div>
-        </div>
-    </div>
-    `;
+           <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#999;">&times;</div>
+       </div>
+   </div>
+   `;
 
     // 5. Sayfaya Ekle
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
@@ -2739,5 +2785,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
