@@ -177,7 +177,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 /* --- 1. ANA KAPLAYICI (Overlay) --- */
-.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2147483647; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
+.p-overlay { position:fixed; top:0; left:0; width:100%; background:rgba(15,23,42,0.8); z-index:2147483647; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
 
 /* --- 2. UYGULAMA KUTUSU --- */
 .p-app { width:100%; height:100%; background:#f1f5f9; position:relative; display:flex; flex-direction:row; overflow:hidden; }
@@ -188,6 +188,7 @@
 /* --- 3. ORTAK SOL MENÜ (Hem Mobil Hem PC) --- */
 .p-nav {
     width: 70px; /* PC Kapalı Genişlik */
+    height: 100%;
     background: #0f172a;
     border-right: 1px solid #e2e8f0;
     display: flex; flex-direction: column;
@@ -2738,5 +2739,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
