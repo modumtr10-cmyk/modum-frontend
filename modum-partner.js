@@ -188,7 +188,6 @@
 /* --- 3. ORTAK SOL MENÜ (Hem Mobil Hem PC) --- */
 .p-nav {
     width: 70px; /* PC Kapalı Genişlik */
-    height: 100%;
     background: #0f172a;
     border-right: 1px solid #e2e8f0;
     display: flex; flex-direction: column;
@@ -271,7 +270,7 @@
 
 /* --- 6. DİĞER STİLLER (Vitrin vb.) --- */
 .showcase-img-box { width: 100%; aspect-ratio: 1 / 1; background: #fff; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid #f1f5f9; }
-.showcase-img { width: 100%; object-fit: cover; transition: transform 0.3s; }
+.showcase-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
 .p-card { background:white; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.02); }
 .p-stat-val { font-size:24px; font-weight:800; color:#0f172a; }
 .p-stat-lbl { font-size:11px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
@@ -2739,5 +2738,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v1*/
 })();
