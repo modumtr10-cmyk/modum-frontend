@@ -1937,26 +1937,22 @@ ${css}
     // Eğer sayfada başka parametreler varsa (örn: beden seçimi ?variant=123) onları korumak istersen:
     // var currentUrl = window.location.href.replace(/([?&])ref=[^&]+/, "").replace(/([?&])source=[^&]+/, "");
 
-    // 4. HTML (GÜÇLENDİRİLMİŞ CSS İLE)
+    // 4. HTML (Sadeleştirilmiş ve Şık)
     var stripeHTML = `
     <style>
         #mdm-stripe-bar {
-            position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 44px !important; 
-            background: #0f172a !important; color: white !important; 
-            z-index: 2147483647 !important; /* 🔥 EN ÜST KATMAN GARANTİSİ */
-            display: flex !important; align-items: center !important; justify-content: space-between !important; 
-            padding: 0 15px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; 
-            font-family: 'Inter', sans-serif !important; box-sizing: border-box !important; border-bottom: 1px solid #1e293b !important;
-            pointer-events: auto !important; /* 🔥 TIKLAMAYI AÇ */
+            position: fixed; top: 0; left: 0; width: 100%; height: 44px; 
+            background: #0f172a; color: white; z-index: 2147483640; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+            font-family: 'Inter', sans-serif; box-sizing: border-box; border-bottom: 1px solid #1e293b;
         }
         .mdm-stripe-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb) !important; 
-            color: white !important; border: none !important; padding: 6px 15px !important; 
-            border-radius: 20px !important; cursor: pointer !important; font-size: 11px !important; font-weight: 700 !important;
-            display: flex !important; align-items: center !important; gap: 6px !important; text-decoration: none !important;
-            transition: all 0.2s !important; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3) !important;
-            position: relative !important; z-index: 2147483648 !important; /* 🔥 BUTONU DAHA DA ÜSTE AL */
-            pointer-events: auto !important; /* 🔥 TIKLAMAYI ZORLA */
+            background: linear-gradient(135deg, #3b82f6, #2563eb); 
+            color: white; border: none; padding: 6px 15px; 
+            border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; gap: 6px; text-decoration: none;
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
         }
         .mdm-stripe-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
         .mdm-stripe-btn:active { transform: scale(0.95); }
@@ -1969,12 +1965,12 @@ ${css}
         
         <div style="display:flex; gap:10px; align-items:center;">
             
-            <button onclick="console.log('Butona basıldı'); PartnerApp.openQuickLink('${currentUrl}', '${myRefCode}')" class="mdm-stripe-btn">
+            <button onclick="PartnerApp.openQuickLink('${currentUrl}', '${myRefCode}')" class="mdm-stripe-btn">
                 <i class="fas fa-share-alt"></i> 
                 <span>BU SAYFAYI PAYLAŞ</span>
             </button>
 
-            <div onclick="closeStripe()" style="padding:5px; cursor:pointer; color:#64748b; font-size:16px; margin-left:5px; position:relative; z-index:2147483648;">&times;</div>
+            <div onclick="closeStripe()" style="padding:5px; cursor:pointer; color:#64748b; font-size:16px; margin-left:5px;">&times;</div>
         </div>
     </div>
     `;
@@ -1982,22 +1978,21 @@ ${css}
     // 5. Sayfaya Ekle
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
-    // 6. 🔥 AKILLI KAYDIRMA MOTORU (GÜÇLENDİRİLMİŞ)
+    // 6. 🔥 AKILLI KAYDIRMA MOTORU
     var barHeight = 44;
 
     // A. Body'yi aşağı it
     document.body.style.marginTop = barHeight + "px";
 
-    // B. Faprika Header'ı aşağı it (Sticky veya Fixed ise)
+    // B. Faprika Header'ı aşağı it (Sticky ise)
     var headers = document.querySelectorAll(
-      "header, .header, #header, .header-container, .top-bar, .sticky-header, .fixed-header",
+      "header, .header, #header, .header-container, .top-bar, .sticky-header",
     );
 
     headers.forEach(function (h) {
       var style = window.getComputedStyle(h);
       if (style.position === "fixed" || style.position === "sticky") {
         h.style.top = barHeight + "px";
-        h.style.zIndex = "999"; // 🔥 Header'ın katmanını düşür ki senin barın üstte kalsın
       }
     });
 
@@ -2734,5 +2729,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
