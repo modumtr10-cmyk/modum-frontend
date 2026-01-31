@@ -1918,7 +1918,7 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (GELİŞMİŞ v3.0) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK ÇUBUĞU (AKILLI HEADER KAYDIRMA) ---
   function renderSiteStripe() {
     // 1. Zaten varsa tekrar ekleme
     if (document.getElementById("mdm-stripe-bar")) return;
@@ -1930,47 +1930,48 @@ ${css}
     // Eğer ref kodu yoksa barı gösterme
     if (!myRefCode) return;
 
-    // 3. Mevcut Sayfa Linkini Al
+    // 3. Link Hazırlığı
     var currentUrl = window.location.href.split("?")[0];
-    
-    // 4. HTML (Mobil Uyumlu & Butonlu)
+    var finalLink = currentUrl + "?ref=" + myRefCode;
+    var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
+
+    // 4. HTML (Sadeleştirilmiş ve Şık)
     var stripeHTML = `
     <style>
         #mdm-stripe-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 46px; 
-            background: #0f172a; color: white; z-index: 2147483640; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 40px; 
+            background: #0f172a; color: white; z-index: 999990; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
             font-family: 'Inter', sans-serif; box-sizing: border-box;
         }
-        .mdm-info-text {
-            font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 5px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%;
+        .mdm-bar-input {
+            background: #1e293b; border: 1px solid #334155; color: #fbbf24; 
+            padding: 4px 8px; border-radius: 4px; font-family: monospace; 
+            font-size: 11px; width: 100%; max-width: 180px; outline: none;
         }
-        .mdm-share-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb); 
-            color: white; border: none; padding: 6px 12px; 
-            border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold;
-            display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
-            transition: transform 0.1s;
+        .mdm-btn {
+            background: #3b82f6; color: white; border: none; padding: 5px 10px; 
+            border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
+            display: flex; align-items: center; gap: 4px; text-decoration: none;
         }
-        .mdm-share-btn:active { transform: scale(0.95); }
-        .mdm-close { padding: 5px; cursor: pointer; color: #64748b; font-size: 16px; margin-left: 5px; }
     </style>
     <div id="mdm-stripe-bar">
-        <div style="display:flex; align-items:center; gap:8px;">
-            <div style="font-weight:900; color:#fbbf24; font-size:14px;">👑</div>
-            <div class="mdm-info-text">
-                <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-size:10px;">PARTNER</span>
-                <span style="display:none; @media(min-width:400px){display:inline;}">Bu sayfayı paylaş, kazan!</span>
-            </div>
-        </div>
+        <div style="font-weight:900; color:#fbbf24; font-size:12px;">👑 MODUM</div>
         
-        <div style="display:flex; align-items:center;">
-            <button onclick="PartnerApp.openQuickLink('${currentUrl}', '${myRefCode}')" class="mdm-share-btn">
-                <i class="fas fa-share-alt"></i> PAYLAŞ & KAZAN
+        <div style="display:flex; gap:5px; align-items:center; flex:1; justify-content:flex-end;">
+            <input type="text" value="${finalLink}" readonly class="mdm-bar-input">
+            
+            <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Kopyalandı!')" class="mdm-btn">
+                <i class="fas fa-link"></i> 
+                <span style="display:none; @media(min-width:400px){display:inline;}">Kopyala</span>
             </button>
-            <div class="mdm-close" onclick="closeStripe()">&times;</div>
+            
+            <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366;">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+
+            <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#999;">&times;</div>
         </div>
     </div>
     `;
@@ -1978,18 +1979,21 @@ ${css}
     // 5. Sayfaya Ekle
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
-    // 6. 🔥 AKILLI KAYDIRMA MOTORU (Sayfa içeriğini aşağı it)
-    var barHeight = 46;
+    // 6. 🔥 AKILLI KAYDIRMA MOTORU (ÖNEMLİ KISIM)
+    var barHeight = 40;
 
-    // A. Body'yi aşağı it
+    // A. Body'yi aşağı it (Sayfa içeriği için)
     document.body.style.marginTop = barHeight + "px";
 
-    // B. Faprika'nın Header'ını bul ve aşağı it (Fixed headerlar için)
+    // B. Faprika'nın Header'ını bul ve aşağı it
+    // Faprika genelde 'header' etiketini veya '.header-wrapper' class'ını kullanır.
+    // Garanti olsun diye yaygın kullanılan tüm header sınıflarını deniyoruz.
     var headers = document.querySelectorAll(
-      "header, .header, #header, .header-container, .top-bar, .sticky-header"
+      "header, .header, #header, .header-container, .top-bar, .sticky-header",
     );
 
     headers.forEach(function (h) {
+      // Eğer header "fixed" veya "sticky" ise, onu aşağı itmemiz lazım
       var style = window.getComputedStyle(h);
       if (style.position === "fixed" || style.position === "sticky") {
         h.style.top = barHeight + "px";
@@ -2004,11 +2008,17 @@ ${css}
         h.style.top = "0px";
       });
     };
-    
-    // CSS Fix: Z-index ve Mobil Padding
     var styleFix = document.createElement("style");
     styleFix.innerHTML = `
+        /* Partner Paneli açıldığında her şeyin üstünde olsun */
         #mdm-partner-modal { z-index: 2147483647 !important; }
+        
+        /* Link Çubuğu bir tık altta olsun */
+        #mdm-stripe-bar { z-index: 2147483640 !important; }
+        
+        /* Eğer mobildeysek, link çubuğu altta olduğu için, 
+           Faprika'nın "Sepete Ekle" veya "WhatsApp" butonlarını kapatmasın diye 
+           sayfanın altına boşluk ekle */
         @media (max-width: 768px) {
             body { padding-bottom: 50px !important; }
         }
@@ -2729,5 +2739,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v6*/
 })();
