@@ -1922,7 +1922,7 @@ ${css}
       } catch (e) {
         container.innerHTML = "Hata: " + e.message;
       }
-    }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ) ---
+    }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ - GÜNCELLENMİŞ PAYLAŞIMLI) ---
     renderMyCollection: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Koleksiyonun yükleniyor...</div>';
@@ -1932,7 +1932,7 @@ ${css}
       var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
 
       try {
-        // Kendi koleksiyonunu çek (Public fonksiyonu kullanabiliriz)
+        // Kendi koleksiyonunu çek
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1953,10 +1953,12 @@ ${css}
                         </p>
                         
                         <div style="display:flex; gap:10px; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #dbeafe; align-items:center;">
-                            <input type="text" value="${collectionLink}" readonly style="flex:1; background:transparent; border:none; font-family:monospace; color:#1e40af; outline:none;">
-                            <button onclick="navigator.clipboard.writeText('${collectionLink}'); alert('✅ Link Kopyalandı!');" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#3b82f6; color:white;">
-                                <i class="fas fa-copy"></i> Linki Kopyala
+                            <input type="text" value="${collectionLink}" readonly style="flex:1; background:transparent; border:none; font-family:monospace; color:#1e40af; outline:none;" onclick="this.select();">
+                            
+                            <button onclick="PartnerApp.openShareMenu('${collectionLink}', true)" class="p-btn" style="width:auto; padding:8px 20px; font-size:12px; background:#3b82f6; color:white; border:none; display:flex; align-items:center; gap:5px;">
+                                <i class="fas fa-share-alt"></i> Paylaş
                             </button>
+
                         </div>
                     </div>
 
@@ -1979,7 +1981,6 @@ ${css}
 
           products.forEach((p) => {
             // Ürün Datasını string olarak sakla (Silmek için)
-            // Sadece ID ve gerekli bilgileri gönderiyoruz
             const pSafe = encodeURIComponent(
               JSON.stringify({
                 id: p.id,
@@ -3201,5 +3202,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
