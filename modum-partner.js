@@ -5,6 +5,7 @@
 
 (function () {
   console.log("🚀 Modum Partner Pro (v3.1) Başlatılıyor...");
+  window.PartnerApp = window.PartnerApp || {};
 
   // AYARLAR
   var API_URL = "https://api-hjen5442oq-uc.a.run.app";
@@ -99,63 +100,83 @@
     }
   }
 
-  // --- HTML ÇİZİCİ (Mobil Uyumlu & Şık) ---
+  // --- HTML ÇİZİCİ (BEDEN GÖSTERİMLİ & YENİ SEKME MODU) ---
   function renderVirtualShop(partnerName, products, refCode) {
     if (!products || products.length === 0) return;
 
     let itemsHtml = "";
 
     products.forEach((p) => {
+      // --- BEDENLERİ HAZIRLA ---
+      let sizesHtml = "";
+      if (p.sizes && Array.isArray(p.sizes) && p.sizes.length > 0) {
+        // Sadece ilk 5 bedeni gösterelim, taşmasın
+        const showSizes = p.sizes.slice(0, 5);
+        sizesHtml = `<div style="display:flex; gap:3px; flex-wrap:wrap; margin-bottom:8px;">`;
+        showSizes.forEach((s) => {
+          sizesHtml += `<span style="font-size:10px; border:1px solid #cbd5e1; color:#64748b; padding:1px 4px; border-radius:3px;">${s}</span>`;
+        });
+        if (p.sizes.length > 5)
+          sizesHtml += `<span style="font-size:9px; color:#999;">+${p.sizes.length - 5}</span>`;
+        sizesHtml += `</div>`;
+      } else {
+        // Beden yoksa (Çanta vs.) boş geç
+        sizesHtml = `<div style="height:21px;"></div>`;
+      }
+
       itemsHtml += `
-          <div style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:1px solid #f1f5f9; display:flex; flex-direction:column;">
-              <a href="${p.url}?ref=${refCode}" style="text-decoration:none; color:inherit; flex:1;">
-                  <div style="position:relative; padding-top:100%; overflow:hidden;">
-                      <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
-                  </div>
-                  <div style="padding:15px;">
-                      <div style="font-size:13px; color:#334155; margin-bottom:5px; height:36px; overflow:hidden; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
-                      <div style="font-weight:900; color:#10b981; font-size:16px;">${p.price}</div>
-                  </div>
-              </a>
-              <div style="padding:0 15px 15px;">
-                  <button onclick="window.location.href='${p.url}?ref=${refCode}'" style="width:100%; padding:10px; background:#1e293b; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                      <span>Sepete Ekle</span> <i class="fas fa-arrow-right"></i>
-                  </button>
-              </div>
-          </div>
-        `;
+            <div style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:1px solid #f1f5f9; display:flex; flex-direction:column; transition:transform 0.2s;">
+                <a href="${p.url}?ref=${refCode}" target="_blank" style="text-decoration:none; color:inherit; flex:1;">
+                    <div style="position:relative; padding-top:100%; overflow:hidden;">
+                        <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
+                        ${p.stock < 5 ? '<span style="position:absolute; bottom:5px; left:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px;">Son Ürünler</span>' : ""}
+                    </div>
+                    <div style="padding:10px 10px 0;">
+                        <div style="font-size:12px; color:#334155; margin-bottom:5px; height:32px; overflow:hidden; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
+                        
+                        ${sizesHtml}
+                        
+                        <div style="font-weight:900; color:#10b981; font-size:15px; margin-bottom:5px;">${p.price}</div>
+                    </div>
+                </a>
+                
+                <div style="padding:0 10px 15px;">
+                    <a href="${p.url}?ref=${refCode}" target="_blank" style="display:flex; align-items:center; justify-content:center; width:100%; padding:8px; background:#1e293b; color:white; border:none; border-radius:6px; font-weight:bold; font-size:12px; text-decoration:none; gap:5px;">
+                        <span>İncele & Al</span> <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+         `;
     });
 
+    // Eski modal varsa sil
+    let old = document.getElementById("mdm-virtual-shop");
+    if (old) old.remove();
+
     const html = `
-      <div id="mdm-virtual-shop" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f8fafc; z-index:2147483647; overflow-y:auto; -webkit-overflow-scrolling:touch;">
-          
-          <div style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; padding:40px 20px 60px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
-              <button onclick="document.getElementById('mdm-virtual-shop').remove()" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.1); border:none; color:white; font-size:24px; cursor:pointer; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
-              
-              <div style="width:80px; height:80px; background:white; color:#333; font-size:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; border:4px solid rgba(255,255,255,0.2);">🛍️</div>
-              <h1 style="margin:0; font-size:22px; font-weight:800;">${partnerName}'in Seçtikleri</h1>
-              <p style="opacity:0.8; margin:5px 0 0; font-size:13px; max-width:400px; margin:5px auto;">
-                  Sizin için özel olarak hazırladığım favori ürünlerimi burada bulabilirsiniz.
-              </p>
-          </div>
+        <div id="mdm-virtual-shop" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f8fafc; z-index:2147483647; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+            
+            <div style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; padding:30px 20px 50px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
+                <button onclick="document.getElementById('mdm-virtual-shop').remove()" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.1); border:none; color:white; font-size:24px; cursor:pointer; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+                
+                <div style="width:70px; height:70px; background:white; color:#333; font-size:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; border:4px solid rgba(255,255,255,0.2);">🛍️</div>
+                <h1 style="margin:0; font-size:20px; font-weight:800;">${partnerName}'in Seçtikleri</h1>
+                <p style="opacity:0.8; margin:5px 0 0; font-size:12px; max-width:400px; margin:5px auto;">
+                    Beğendiğin ürüne tıkla, numaranı seç ve sepete ekle.
+                </p>
+            </div>
 
-          <div style="max-width:1000px; margin: -40px auto 0; padding:0 15px 50px; position:relative; z-index:10;">
-              <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; @media(min-width:768px){grid-template-columns: repeat(4, 1fr); gap:20px;}">
-                  ${itemsHtml}
-              </div>
-          </div>
+            <div style="max-width:1000px; margin: -30px auto 0; padding:0 10px 50px; position:relative; z-index:10;">
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; @media(min-width:768px){grid-template-columns: repeat(4, 1fr); gap:15px;}">
+                    ${itemsHtml}
+                </div>
+            </div>
 
-          <div style="text-align:center; padding:20px; color:#94a3b8; font-size:11px;">
-              Güvenli Alışveriş • ModumNet Garantisiyle
-          </div>
-      </div>
-      <style>
-            /* Mobilde 2 sütun, PC'de 4 sütun için media query CSS içinde zaten var */
-            @media (min-width: 768px) {
-                #mdm-virtual-shop .grid { grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; }
-            }
-      </style>
-    `;
+            <div style="text-align:center; padding:20px; color:#94a3b8; font-size:11px;">
+                Güvenli Alışveriş • ModumNet Garantisiyle
+            </div>
+        </div>
+      `;
 
     document.body.insertAdjacentHTML("beforeend", html);
   }
@@ -759,6 +780,77 @@ ${css}
             e.message +
             "</div>";
         }
+      }, // --- 1. AKILLI PAYLAŞIM MENÜSÜ ---
+      openShareMenu: function (baseUrl, isCollection = false) {
+        // Eski modal varsa sil
+        let old = document.getElementById("mdm-share-modal");
+        if (old) old.remove();
+
+        let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
+
+        let html = `
+        <div id="mdm-share-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
+            <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                
+                <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
+                    Nerede paylaşacağını seç, sana özel linki oluşturalım.
+                </p>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'instagram')" class="p-btn" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fab fa-instagram" style="font-size:24px; margin-bottom:5px;"></i> Instagram
+                    </button>
+                    
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'whatsapp')" class="p-btn" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fab fa-whatsapp" style="font-size:24px; margin-bottom:5px;"></i> WhatsApp
+                    </button>
+                    
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'tiktok')" class="p-btn" style="background:#000000; color:white; border:1px solid #333; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fab fa-tiktok" style="font-size:24px; margin-bottom:5px;"></i> TikTok
+                    </button>
+
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'telegram')" class="p-btn" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fab fa-telegram" style="font-size:24px; margin-bottom:5px;"></i> Telegram
+                    </button>
+
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'youtube')" class="p-btn" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fab fa-youtube" style="font-size:24px; margin-bottom:5px;"></i> YouTube
+                    </button>
+
+                    <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'other')" class="p-btn" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0; flex-direction:column; padding:15px; font-size:12px;">
+                        <i class="fas fa-link" style="font-size:24px; margin-bottom:5px;"></i> Diğer
+                    </button>
+                </div>
+                
+                <div onclick="document.getElementById('mdm-share-modal').remove()" style="cursor:pointer; color:#94a3b8; font-size:13px; text-decoration:underline;">Vazgeç</div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML("beforeend", html);
+      },
+
+      // --- 2. LİNKİ OLUŞTUR VE KOPYALA ---
+      copySmartLink: function (url, source) {
+        var pData = window.PartnerData || {};
+        var myRefCode = pData.refCode;
+
+        var separator = url.includes("?") ? "&" : "?";
+        var finalLink = url;
+
+        if (!url.includes("ref=")) {
+          finalLink += separator + "ref=" + myRefCode;
+          separator = "&";
+        }
+
+        finalLink += separator + "source=" + source;
+
+        navigator.clipboard.writeText(finalLink).then(() => {
+          document.getElementById("mdm-share-modal").remove();
+          alert(
+            `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
+          );
+        });
       },
 
       // --- LİNKLER & QR ARAÇLARI (AKILLI KAYNAK SEÇİCİ v2.0) ---
@@ -2312,7 +2404,7 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (V3 - AKILLI MENÜ) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (FİNAL) ---
   function renderSiteStripe() {
     if (document.getElementById("mdm-stripe-bar")) return;
 
@@ -2320,7 +2412,7 @@ ${css}
     var myRefCode = pData.refCode;
     if (!myRefCode) return;
 
-    // Ürün sayfası kontrolü
+    // Ürün sayfası kontrolü (Faprika uyumlu)
     var isProductPage =
       window.location.href.includes("-p-") ||
       document.querySelector('meta[property="product:price:amount"]') ||
@@ -2390,7 +2482,7 @@ ${css}
 
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
-    // Body'yi aşağı it
+    // Siteyi aşağı it
     document.body.style.marginTop = "45px";
     var headers = document.querySelectorAll(
       "header, .header, #header, .header-container, .top-bar, .sticky-header",
@@ -3124,5 +3216,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v5*/
 })();
