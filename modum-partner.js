@@ -625,6 +625,7 @@ ${css}
       document.body.insertAdjacentHTML("beforeend", infoHtml);
     },
 
+    // --- 7. ANA SAYFA PANELİ (PROFESYONEL DASHBOARD v2) ---
     renderHome: async function (container) {
       var email = detectUser();
       if (!email) {
@@ -634,10 +635,11 @@ ${css}
       }
 
       try {
-        // Yükleniyor...
+        // Yükleniyor animasyonu
         container.innerHTML =
           '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Veriler analiz ediliyor...</div>';
 
+        // Verileri Çek
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -660,10 +662,7 @@ ${css}
         let tClicks = parseInt(s.totalClicks || 0);
         let tSales = parseInt(s.totalSales || 0);
 
-        // 🔥 PRO ANALİZ HESAPLAMALARI (CR & EPC)
-
         // 1. Dönüşüm Oranı (CR)
-        // Formül: (Satış / Tık) * 100
         let conversionRate =
           tClicks > 0 ? ((tSales / tClicks) * 100).toFixed(2) : "0.00";
         let crColor =
@@ -671,62 +670,84 @@ ${css}
             ? "#10b981"
             : conversionRate > 1.0
               ? "#f59e0b"
-              : "#ef4444"; // İyi: Yeşil, Orta: Sarı, Kötü: Kırmızı
+              : "#ef4444";
 
         // 2. Tık Başı Kazanç (EPC)
-        // Formül: (Toplam Tahmini Kazanç / Tık)
         let estimatedEarnings = currentRev * (myRate / 100);
         let epcVal =
           tClicks > 0 ? (estimatedEarnings / tClicks).toFixed(2) : "0.00";
 
-        // --- TIER (SEVİYE) HESAPLAMA MOTORU ---
-        let nextLevelName = "Maksimum";
-        let nextTargetAmount = 0;
-        let progressPercent = 0;
+        // 3. Platform Analizi (Source Stats) - 🔥 YENİ KISIM
+        const sources = s.sourceStats || {};
+        let topSource = "Henüz Yok";
+        let sourceHtml = "";
+
+        // Platform ikonları
+        const sourceIcons = {
+          instagram_story:
+            '<i class="fab fa-instagram" style="color:#E1306C"></i>',
+          instagram_bio:
+            '<i class="fab fa-instagram" style="color:#C13584"></i>',
+          whatsapp: '<i class="fab fa-whatsapp" style="color:#25D366"></i>',
+          tiktok: '<i class="fab fa-tiktok" style="color:#000"></i>',
+          telegram: '<i class="fab fa-telegram" style="color:#229ED9"></i>',
+          youtube: '<i class="fab fa-youtube" style="color:#FF0000"></i>',
+          other: '<i class="fas fa-link" style="color:#666"></i>',
+          direct: '<i class="fas fa-globe" style="color:#999"></i>',
+        };
+
+        // Kaynakları listele ve sırala
+        const sortedSources = Object.entries(sources).sort(
+          (a, b) => b[1] - a[1],
+        );
+
+        if (sortedSources.length > 0) {
+          topSource = sortedSources[0][0].toUpperCase().replace("_", " ");
+
+          // Toplam tık sayısını tekrar hesapla (garanti olsun)
+          let totalTracked = sortedSources.reduce(
+            (acc, curr) => acc + curr[1],
+            0,
+          );
+
+          sortedSources.slice(0, 5).forEach(([key, val]) => {
+            // İlk 5 kaynağı göster
+            let percent = Math.round((val / totalTracked) * 100);
+            let icon = sourceIcons[key] || sourceIcons["other"];
+            let cleanName = key.replace("_", " ").toUpperCase();
+
+            sourceHtml += `
+                    <div style="display:flex; align-items:center; margin-bottom:8px; font-size:11px;">
+                        <div style="width:20px; text-align:center;">${icon}</div>
+                        <div style="flex:1; margin-left:8px; color:#334155;">${cleanName}</div>
+                        <div style="font-weight:bold; margin-right:10px; color:#1e293b;">${val}</div>
+                        <div style="width:40px; background:#f1f5f9; height:4px; border-radius:2px; overflow:hidden;">
+                            <div style="width:${percent}%; height:100%; background:${key.includes("instagram") ? "#E1306C" : "#3b82f6"};"></div>
+                        </div>
+                    </div>
+                  `;
+          });
+        } else {
+          sourceHtml = `<div style="text-align:center; color:#94a3b8; font-size:11px; padding:15px; background:#f8fafc; border-radius:8px;">Henüz trafik verisi oluşmadı.<br>Linklerinizi paylaşmaya başlayın!</div>`;
+        }
+
+        // Seviye İlerleme Çubuğu
+        let nextTarget = 0;
+        let progress = 0;
         let barColor = "#fbbf24";
 
         if (currentRev < 10000) {
-          nextLevelName = "Gümüş (%15)";
-          nextTargetAmount = 10000;
-          progressPercent = (currentRev / 10000) * 100;
+          nextTarget = 10000;
+          progress = (currentRev / 10000) * 100;
           barColor = "#94a3b8";
         } else if (currentRev < 50000) {
-          nextLevelName = "Altın (%20)";
-          nextTargetAmount = 50000;
-          progressPercent = ((currentRev - 10000) / (50000 - 10000)) * 100;
+          nextTarget = 50000;
+          progress = ((currentRev - 10000) / 40000) * 100;
           barColor = "#fbbf24";
         } else {
-          nextLevelName = "Efsane";
-          nextTargetAmount = currentRev;
-          progressPercent = 100;
+          nextTarget = currentRev;
+          progress = 100;
           barColor = "#ef4444";
-        }
-
-        let progressHTML = "";
-        if (progressPercent < 100) {
-          let remaining = (nextTargetAmount - currentRev).toLocaleString(
-            "tr-TR",
-          );
-          progressHTML = `
-              <div style="margin-top:15px;">
-                  <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:5px;">
-                      <span>🚀 Sonraki: <b>${nextLevelName}</b></span>
-                      <span>Kalan: <b>${remaining} ₺</b></span>
-                  </div>
-                  <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                      <div style="width:${progressPercent}%; height:100%; background:${barColor}; transition: width 1s ease-in-out;"></div>
-                  </div>
-                  <div style="font-size:10px; text-align:center; margin-top:3px; color:rgba(255,255,255,0.5);">
-                      Hedef: ${nextTargetAmount.toLocaleString()} ₺ 
-                  </div>
-              </div>
-          `;
-        } else {
-          progressHTML = `
-              <div style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.1); padding:5px; border-radius:8px;">
-                  <span style="font-size:12px;">🏆 Zirvedesin! Maksimum oran geçerli.</span>
-              </div>
-          `;
         }
 
         // --- HTML ÇIKTISI ---
@@ -734,103 +755,113 @@ ${css}
           <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                      <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">MEVCUT SEVİYE</div>
-                      <div style="font-size:22px; font-weight:800; color:${barColor}; text-shadow:0 0 10px ${barColor}40;">
-                          ${s.level || "Bronz"} <span style="font-size:14px; color:white; opacity:0.8;">(%${myRate})</span>
+                      <div style="font-size:10px; opacity:0.7; letter-spacing:1px; font-weight:600;">SEVİYE</div>
+                      <div style="font-size:20px; font-weight:800; color:${barColor}; text-shadow:0 0 10px ${barColor}40;">
+                          ${s.level || "Bronz"} <span style="font-size:12px; color:white; opacity:0.8; font-weight:normal;">(%${myRate})</span>
                       </div>
                   </div>
                   <div style="text-align:right;">
-                      <div style="font-size:11px; opacity:0.7; letter-spacing:1px;">BAKİYE</div>
+                      <div style="font-size:10px; opacity:0.7; letter-spacing:1px; font-weight:600;">BAKİYE</div>
                       <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
                   </div>
               </div>
-              ${progressHTML}
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
-              <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                  <div class="p-stat-val" style="font-size:18px;">${tClicks}</div>
-                  <div class="p-stat-lbl">TIK</div>
-              </div>
-              <div class="p-card" style="padding:15px; text-align:center; margin:0;">
-                  <div class="p-stat-val" style="font-size:18px;">${tSales}</div>
-                  <div class="p-stat-lbl">SATIŞ</div>
-              </div>
-              <div class="p-card" style="padding:15px; text-align:center; margin:0; border:1px solid #a78bfa; background:#f5f3ff;">
-                  <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
-                  <div class="p-stat-lbl" style="color:#7c3aed;">ÜYE</div>
+              <div style="margin-top:15px;">
+                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                      <div style="width:${progress}%; height:100%; background:${barColor};"></div>
+                  </div>
+                  <div style="font-size:10px; text-align:right; margin-top:5px; opacity:0.6;">Hedef: ${nextTarget.toLocaleString()} ₺</div>
               </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
+              <div class="p-card" style="padding:15px; text-align:center; margin:0; box-shadow:none; border:1px solid #e2e8f0;">
+                  <div class="p-stat-val" style="font-size:18px; color:#334155;">${tClicks}</div>
+                  <div class="p-stat-lbl" style="font-size:10px;">TIK</div>
+              </div>
+              <div class="p-card" style="padding:15px; text-align:center; margin:0; box-shadow:none; border:1px solid #e2e8f0;">
+                  <div class="p-stat-val" style="font-size:18px; color:#334155;">${tSales}</div>
+                  <div class="p-stat-lbl" style="font-size:10px;">SATIŞ</div>
+              </div>
+              <div class="p-card" style="padding:15px; text-align:center; margin:0; background:#f0f9ff; border:1px solid #bae6fd;">
+                  <div class="p-stat-val" style="font-size:18px; color:#0369a1;">%${conversionRate}</div>
+                  <div class="p-stat-lbl" style="color:#0ea5e9; font-size:10px;">DÖNÜŞÜM</div>
+              </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr; gap:15px; @media(min-width:768px){grid-template-columns: 2fr 1fr;}">
               
-              <div class="p-card" style="padding:15px; margin:0; background:#f0f9ff; border:1px solid #bae6fd;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <div class="p-stat-lbl" style="color:#0369a1;">DÖNÜŞÜM (CR)</div>
-                      <i class="fas fa-percent" style="color:#0ea5e9; opacity:0.5;"></i>
+              <div class="p-card" style="padding:15px; margin:0; border:1px solid #e2e8f0; box-shadow:none;">
+                  <h4 style="margin:0 0 15px 0; font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">💰 Son 7 Gün Performansı</h4>
+                  <div style="height:180px;">
+                      <canvas id="p-chart"></canvas>
                   </div>
-                  <div class="p-stat-val" style="font-size:20px; color:${crColor}; margin-top:5px;">%${conversionRate}</div>
-                  <div style="font-size:9px; color:#64748b; margin-top:3px;">Her 100 tıkta satış</div>
               </div>
 
-              <div class="p-card" style="padding:15px; margin:0; background:#f0fdf4; border:1px solid #bbf7d0;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <div class="p-stat-lbl" style="color:#15803d;">TIK DEĞERİ (EPC)</div>
-                      <i class="fas fa-coins" style="color:#22c55e; opacity:0.5;"></i>
-                  </div>
-                  <div class="p-stat-val" style="font-size:20px; color:#166534; margin-top:5px;">${epcVal} ₺</div>
-                  <div style="font-size:9px; color:#64748b; margin-top:3px;">Tıklama başı getiri</div>
+              <div class="p-card" style="padding:15px; margin:0; border:1px solid #e2e8f0; box-shadow:none;">
+                  <h4 style="margin:0 0 15px 0; font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">🌍 Trafik Kaynakları</h4>
+                  ${sourceHtml}
+                  
+                  ${
+                    sortedSources.length > 0
+                      ? `
+                  <div style="margin-top:15px; padding-top:10px; border-top:1px solid #f1f5f9; text-align:center;">
+                      <div style="font-size:9px; color:#94a3b8;">EN GÜÇLÜ KANALIN</div>
+                      <div style="font-weight:bold; color:#1e293b; font-size:13px;">🔥 ${topSource}</div>
+                  </div>`
+                      : ""
+                  }
               </div>
-
           </div>
-          
-          <h4 style="margin:0 0 10px 0; font-size:12px; color:#64748b;">SON 7 GÜN KAZANÇ</h4>
-          <div style="background:white; border-radius:12px; padding:10px; border:1px solid #e2e8f0;">
-              <canvas id="p-chart" height="150"></canvas>
-          </div>
-        `;
+          `;
 
         // GRAFİK ÇİZİMİ
-        try {
-          if (s.chart && s.chart.labels && s.chart.data) {
-            new Chart(document.getElementById("p-chart"), {
-              type: "line",
-              data: {
-                labels: s.chart.labels,
-                datasets: [
-                  {
-                    label: "Kazanç",
-                    data: s.chart.data,
-                    borderColor: "#10b981",
-                    tension: 0.4,
-                    pointRadius: 3,
-                    fill: true,
-                    backgroundColor: "rgba(16, 185, 129, 0.1)",
+        if (s.chart && s.chart.labels) {
+          new Chart(document.getElementById("p-chart"), {
+            type: "line",
+            data: {
+              labels: s.chart.labels,
+              datasets: [
+                {
+                  label: "Günlük Kazanç (₺)",
+                  data: s.chart.data,
+                  borderColor: "#3b82f6",
+                  backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                    gradient.addColorStop(0, "rgba(59, 130, 246, 0.2)");
+                    gradient.addColorStop(1, "rgba(59, 130, 246, 0)");
+                    return gradient;
                   },
-                ],
-              },
-              options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                  x: { display: false, grid: { display: false } },
-                  y: { display: false, grid: { display: false } },
+                  borderWidth: 2,
+                  pointRadius: 0, // Noktaları gizle (daha temiz)
+                  pointHoverRadius: 4,
+                  fill: true,
+                  tension: 0.4,
                 },
-                responsive: true,
-                maintainAspectRatio: false,
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 9 }, color: "#94a3b8" },
+                },
+                y: {
+                  grid: { color: "#f1f5f9" },
+                  beginAtZero: true,
+                  ticks: { font: { size: 9 }, color: "#94a3b8" },
+                },
               },
-            });
-          } else {
-            document.getElementById("p-chart").parentElement.innerHTML =
-              "<div style='text-align:center; padding:20px; font-size:11px; color:#999;'>Grafik verisi yok.</div>";
-          }
-        } catch (err) {
-          console.log("Grafik hatası:", err);
-          document.getElementById("p-chart").parentElement.style.display =
-            "none";
+              interaction: { intersect: false, mode: "index" },
+            },
+          });
         }
       } catch (e) {
         container.innerHTML =
-          "<div style='padding:20px; text-align:center; color:red;'>Bağlantı Hatası: " +
+          "<div style='color:red; text-align:center;'>Veri hatası: " +
           e.message +
           "</div>";
       }
@@ -3205,5 +3236,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
