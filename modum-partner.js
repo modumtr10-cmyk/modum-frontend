@@ -2390,7 +2390,7 @@ ${css}
       });
     },
   };
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (FİNAL) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (V4 - FIX) ---
   function renderSiteStripe() {
     if (document.getElementById("mdm-stripe-bar")) return;
 
@@ -2398,21 +2398,28 @@ ${css}
     var myRefCode = pData.refCode;
     if (!myRefCode) return;
 
-    // Ürün sayfası kontrolü (Faprika uyumlu)
+    // Ürün sayfası kontrolü
     var isProductPage =
       window.location.href.includes("-p-") ||
       document.querySelector('meta[property="product:price:amount"]') ||
       document.querySelector(".product-price");
 
-    // Koleksiyon Linki
-    var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
+    // Linkler
+    var currentPageLink = window.location.href.split("?")[0]; // Mevcut sayfa (temiz)
+    var myStoreLink = "https://www.modum.tr/?koleksiyon=" + myRefCode; // Koleksiyon linki
 
     // Butonlar
-    var collectionBtn = "";
+    var leftBtnHtml = `
+         <button onclick="PartnerApp.openShareMenu('${currentPageLink}', false)" class="mdm-btn" style="background:#3b82f6; border-color:#2563eb;">
+            <i class="fas fa-share-alt"></i> <span class="hide-mobile">Bu Sayfayı Paylaş</span>
+        </button>
+    `;
+
+    var collectionActionBtn = "";
     if (isProductPage) {
-      collectionBtn = `
+      collectionActionBtn = `
             <button onclick="PartnerApp.toggleCollectionItem()" class="mdm-btn" style="background:#f59e0b; color:#fff; border:1px solid #d97706;">
-                <i class="fas fa-plus-circle"></i> <span class="hide-mobile">Ekle</span>
+                <i class="fas fa-plus-circle"></i> <span class="hide-mobile">Koleksiyona Ekle</span>
             </button>
         `;
     }
@@ -2420,7 +2427,7 @@ ${css}
     var stripeHTML = `
     <style>
         #mdm-stripe-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 45px; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
             background: #0f172a; color: white; z-index: 2147483640; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
@@ -2428,36 +2435,32 @@ ${css}
             border-bottom: 2px solid #3b82f6;
         }
         .mdm-btn {
-            background: #334155; color: white; border: 1px solid #475569; padding: 6px 12px; 
+            background: #334155; color: white; border: 1px solid #475569; padding: 0 12px; 
             border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
             display: flex; align-items: center; gap: 6px; text-decoration: none;
-            transition: 0.2s; white-space: nowrap; height: 32px;
+            transition: 0.2s; white-space: nowrap; height: 34px;
         }
         .mdm-btn:active { transform: scale(0.95); }
         .mdm-divider { width:1px; height:20px; background:#334155; margin:0 5px; }
         
-        /* Mobil Düzenlemeler */
         @media (max-width: 600px) {
             .hide-mobile { display: none; }
             #mdm-stripe-bar { padding: 0 8px; }
-            .mdm-btn { padding: 6px 10px; font-size: 13px; }
+            .mdm-btn { padding: 0 10px; font-size: 13px; }
         }
     </style>
     <div id="mdm-stripe-bar">
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="font-weight:900; color:#fbbf24; font-size:18px;">👑</div>
-            
-            <button onclick="PartnerApp.openShareMenu('${window.location.href}')" class="mdm-btn" style="background:#3b82f6; border-color:#2563eb;">
-                <i class="fas fa-share-alt"></i> Paylaş
-            </button>
+            ${leftBtnHtml}
         </div>
         
         <div style="display:flex; gap:8px; align-items:center;">
-             ${collectionBtn}
+             ${collectionActionBtn}
              
              <div class="mdm-divider"></div>
 
-             <button onclick="PartnerApp.openShareMenu('${window.location.href}')" class="mdm-btn" style="background:#10b981; border-color:#059669;">
+             <button onclick="PartnerApp.openShareMenu('${myStoreLink}', true)" class="mdm-btn" style="background:#10b981; border-color:#059669;">
                 <i class="fas fa-store"></i> <span class="hide-mobile">Mağazam</span>
             </button>
 
@@ -2469,14 +2472,14 @@ ${css}
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
     // Siteyi aşağı it
-    document.body.style.marginTop = "45px";
+    document.body.style.marginTop = "50px";
     var headers = document.querySelectorAll(
       "header, .header, #header, .header-container, .top-bar, .sticky-header",
     );
     headers.forEach(function (h) {
       var style = window.getComputedStyle(h);
       if (style.position === "fixed" || style.position === "sticky") {
-        h.style.top = "45px";
+        h.style.top = "50px";
       }
     });
 
@@ -3202,5 +3205,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
