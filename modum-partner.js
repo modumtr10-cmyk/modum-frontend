@@ -2175,6 +2175,86 @@ ${css}
         } finally {
           btn.disabled = false;
         }
+      }, // --- 🔥 AKILLI PAYLAŞIM MENÜSÜ ---
+      openShareMenu: function (baseUrl, isCollection = false) {
+        // Eski modal varsa sil
+        let old = document.getElementById("mdm-share-modal");
+        if (old) old.remove();
+
+        let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
+
+        let html = `
+          <div id="mdm-share-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
+              <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                  
+                  <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
+                  <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
+                      Nerede paylaşacağını seç, sana özel linki oluşturalım.
+                  </p>
+
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'instagram')" class="p-btn" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fab fa-instagram" style="font-size:24px; margin-bottom:5px;"></i> Instagram
+                      </button>
+                      
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'whatsapp')" class="p-btn" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fab fa-whatsapp" style="font-size:24px; margin-bottom:5px;"></i> WhatsApp
+                      </button>
+                      
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'tiktok')" class="p-btn" style="background:#000000; color:white; border:1px solid #333; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fab fa-tiktok" style="font-size:24px; margin-bottom:5px;"></i> TikTok
+                      </button>
+
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'telegram')" class="p-btn" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fab fa-telegram" style="font-size:24px; margin-bottom:5px;"></i> Telegram
+                      </button>
+
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'youtube')" class="p-btn" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fab fa-youtube" style="font-size:24px; margin-bottom:5px;"></i> YouTube
+                      </button>
+
+                      <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'other')" class="p-btn" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0; flex-direction:column; padding:15px; font-size:12px;">
+                          <i class="fas fa-link" style="font-size:24px; margin-bottom:5px;"></i> Diğer
+                      </button>
+                  </div>
+                  
+                  <div onclick="document.getElementById('mdm-share-modal').remove()" style="cursor:pointer; color:#94a3b8; font-size:13px; text-decoration:underline;">Vazgeç</div>
+              </div>
+          </div>
+          `;
+        document.body.insertAdjacentHTML("beforeend", html);
+      },
+
+      // --- LİNKİ OLUŞTUR VE KOPYALA ---
+      copySmartLink: function (url, source) {
+        var pData = window.PartnerData || {};
+        var myRefCode = pData.refCode;
+
+        // URL Temizliği (Eski parametreleri kaldırabiliriz ama şimdilik ekleyelim)
+        // Eğer URL zaten bir parametre içeriyorsa (örn: ?koleksiyon=...), '&' ile ekle
+        // İçermiyorsa '?' ile ekle
+        var separator = url.includes("?") ? "&" : "?";
+
+        // Eğer URL'de zaten 'ref=' varsa, onu tekrar eklemeyelim, sadece source ekleyelim
+        var finalLink = url;
+
+        if (!url.includes("ref=")) {
+          finalLink += separator + "ref=" + myRefCode;
+          separator = "&"; // Artık bir sonraki parametre '&' ile gelecek
+        }
+
+        finalLink += separator + "source=" + source;
+
+        // Panoya Kopyala
+        navigator.clipboard.writeText(finalLink).then(() => {
+          // Modalı kapat
+          document.getElementById("mdm-share-modal").remove();
+
+          // Başarı mesajı (Toast gibi)
+          alert(
+            `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
+          );
+        });
       },
     };
 
@@ -2232,114 +2312,93 @@ ${css}
     // Son satırın bittiği Y koordinatını döndür, belki altına bir şey çizeriz.
     return currentY + lineHeight;
   }
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (V2 - KOLEKSİYONLU) ---
+  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (V3 - AKILLI MENÜ) ---
   function renderSiteStripe() {
-    // Zaten varsa tekrar ekleme
     if (document.getElementById("mdm-stripe-bar")) return;
 
     var pData = window.PartnerData || {};
     var myRefCode = pData.refCode;
     if (!myRefCode) return;
 
-    // --- 1. ÜRÜN SAYFASI KONTROLÜ (Faprika Uyumlu) ---
-    // URL içinde "-p-" var mı? Veya fiyat etiketi var mı?
+    // Ürün sayfası kontrolü
     var isProductPage =
       window.location.href.includes("-p-") ||
       document.querySelector('meta[property="product:price:amount"]') ||
       document.querySelector(".product-price");
 
-    // Link Hazırlığı
-    var currentUrl = window.location.href.split("?")[0];
-    var finalLink = currentUrl + "?ref=" + myRefCode;
-    var waMsg = encodeURIComponent("Bu ürüne bayıldım! Link: " + finalLink);
-
-    // Koleksiyon Linki (Müşterinin göreceği sayfa)
+    // Koleksiyon Linki
     var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
 
-    // HTML Hazırlığı
+    // Butonlar
     var collectionBtn = "";
-
-    // Sadece ürün sayfasındaysak "Ekle" butonu göster
     if (isProductPage) {
       collectionBtn = `
-          <button onclick="PartnerApp.toggleCollectionItem()" class="mdm-btn" style="background:#f59e0b; color:#fff; border:1px solid #d97706;">
-              <i class="fas fa-plus-circle"></i> <span class="hide-mobile">Koleksiyona</span> Ekle
-          </button>
-      `;
+            <button onclick="PartnerApp.toggleCollectionItem()" class="mdm-btn" style="background:#f59e0b; color:#fff; border:1px solid #d97706;">
+                <i class="fas fa-plus-circle"></i> <span class="hide-mobile">Ekle</span>
+            </button>
+        `;
     }
 
     var stripeHTML = `
-  <style>
-      #mdm-stripe-bar {
-          position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
-          background: #0f172a; color: white; z-index: 2147483640; 
-          display: flex; align-items: center; justify-content: space-between; 
-          padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-          font-family: 'Inter', sans-serif; box-sizing: border-box;
-          border-bottom: 2px solid #3b82f6;
-      }
-      .mdm-bar-input {
-          background: #1e293b; border: 1px solid #334155; color: #fbbf24; 
-          padding: 6px 10px; border-radius: 4px; font-family: monospace; 
-          font-size: 11px; width: 100%; max-width: 150px; outline: none;
-      }
-      .mdm-btn {
-          background: #334155; color: white; border: 1px solid #475569; padding: 6px 10px; 
-          border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;
-          display: flex; align-items: center; gap: 5px; text-decoration: none;
-          transition: 0.2s; white-space: nowrap;
-      }
-      .mdm-btn:hover { background: #475569; transform: translateY(-1px); }
-      .mdm-divider { width:1px; height:20px; background:#334155; margin:0 5px; }
-      
-      @media (max-width: 600px) {
-          .hide-mobile { display: none; }
-          .mdm-bar-input { max-width: 80px; } /* Mobilde inputu küçült */
-          #mdm-stripe-bar { padding: 0 5px; }
-      }
-  </style>
-  <div id="mdm-stripe-bar">
-      <div style="display:flex; align-items:center; gap:8px;">
-          <div style="font-weight:900; color:#fbbf24; font-size:16px;">👑</div>
-          
-          <div style="display:flex; align-items:center; gap:5px;">
-              <input type="text" value="${finalLink}" readonly class="mdm-bar-input" onclick="this.select();">
-              <button onclick="navigator.clipboard.writeText('${finalLink}'); alert('✅ Link Kopyalandı!')" class="mdm-btn">
-                  <i class="fas fa-link"></i> <span class="hide-mobile">Kopyala</span>
-              </button>
-                <a href="https://api.whatsapp.com/send?text=${waMsg}" target="_blank" class="mdm-btn" style="background:#25D366; border-color:#25D366;">
-                  <i class="fab fa-whatsapp" style="font-size:14px;"></i>
-              </a>
-          </div>
-      </div>
-      
-      <div style="display:flex; gap:8px; align-items:center;">
-            ${collectionBtn}
+    <style>
+        #mdm-stripe-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 45px; 
+            background: #0f172a; color: white; z-index: 2147483640; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            font-family: 'Inter', sans-serif; box-sizing: border-box;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .mdm-btn {
+            background: #334155; color: white; border: 1px solid #475569; padding: 6px 12px; 
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; text-decoration: none;
+            transition: 0.2s; white-space: nowrap; height: 32px;
+        }
+        .mdm-btn:active { transform: scale(0.95); }
+        .mdm-divider { width:1px; height:20px; background:#334155; margin:0 5px; }
+        
+        /* Mobil Düzenlemeler */
+        @media (max-width: 600px) {
+            .hide-mobile { display: none; }
+            #mdm-stripe-bar { padding: 0 8px; }
+            .mdm-btn { padding: 6px 10px; font-size: 13px; }
+        }
+    </style>
+    <div id="mdm-stripe-bar">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-weight:900; color:#fbbf24; font-size:18px;">👑</div>
             
-            <div class="mdm-divider"></div>
+            <button onclick="PartnerApp.openShareMenu('${window.location.href}')" class="mdm-btn" style="background:#3b82f6; border-color:#2563eb;">
+                <i class="fas fa-share-alt"></i> Paylaş
+            </button>
+        </div>
+        
+        <div style="display:flex; gap:8px; align-items:center;">
+             ${collectionBtn}
+             
+             <div class="mdm-divider"></div>
 
-            <button onclick="navigator.clipboard.writeText('${collectionLink}'); alert('✅ Koleksiyon Linkin Kopyalandı!\\n\\nBu linki paylaşarak seçtiğin tüm ürünleri müşterilerine gösterebilirsin.');" class="mdm-btn" style="background:#3b82f6; border-color:#2563eb;">
-              <i class="fas fa-store"></i> <span class="hide-mobile">Mağazam</span> Linki
-          </button>
+             <button onclick="PartnerApp.openShareMenu('${collectionLink}', true)" class="mdm-btn" style="background:#10b981; border-color:#059669;">
+                <i class="fas fa-store"></i> <span class="hide-mobile">Mağazam</span>
+            </button>
 
-          <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#94a3b8; font-size:20px; line-height:1;">&times;</div>
-      </div>
-  </div>
-  `;
+            <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#94a3b8; font-size:22px; line-height:1; margin-left:5px;">&times;</div>
+        </div>
+    </div>
+    `;
 
     document.body.insertAdjacentHTML("afterbegin", stripeHTML);
 
-    // Body'yi aşağı it (Site üst barın altında kalmasın)
-    document.body.style.marginTop = "50px";
-
-    // Faprika Header'ını aşağı it (Eğer yapışkansa)
+    // Body'yi aşağı it
+    document.body.style.marginTop = "45px";
     var headers = document.querySelectorAll(
       "header, .header, #header, .header-container, .top-bar, .sticky-header",
     );
     headers.forEach(function (h) {
       var style = window.getComputedStyle(h);
       if (style.position === "fixed" || style.position === "sticky") {
-        h.style.top = "50px";
+        h.style.top = "45px";
       }
     });
 
@@ -3065,5 +3124,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
