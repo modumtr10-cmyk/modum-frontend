@@ -1932,7 +1932,7 @@ ${css}
 
     // 3. Mevcut Sayfa Linkini Al
     var currentUrl = window.location.href.split("?")[0];
-
+    
     // 4. HTML (Mobil Uyumlu & Butonlu)
     var stripeHTML = `
     <style>
@@ -1986,7 +1986,7 @@ ${css}
 
     // B. Faprika'nın Header'ını bul ve aşağı it (Fixed headerlar için)
     var headers = document.querySelectorAll(
-      "header, .header, #header, .header-container, .top-bar, .sticky-header",
+      "header, .header, #header, .header-container, .top-bar, .sticky-header"
     );
 
     headers.forEach(function (h) {
@@ -2004,7 +2004,7 @@ ${css}
         h.style.top = "0px";
       });
     };
-
+    
     // CSS Fix: Z-index ve Mobil Padding
     var styleFix = document.createElement("style");
     styleFix.innerHTML = `
@@ -2729,5 +2729,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v3*/
 })();
