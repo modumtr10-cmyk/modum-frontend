@@ -1915,25 +1915,24 @@ ${css}
 
           let gridHtml = "";
           data.list.forEach((p) => {
-            // Ref linki hazırla
+            // 1. REF LİNKİNİ OLUŞTURUYORUZ (Artık soluk olmayacak çünkü aşağıda kullanacağız)
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
 
-            // Ürün verisini güvenli bir şekilde string'e çevir (fonksiyona parametre olarak geçmek için)
-            // Tırnak işaretleri sorun çıkarmasın diye encodeURIComponent kullanıyoruz.
+            // Ürün verisini güvenli bir şekilde string'e çevir
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
             gridHtml += `
     <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%;">
         
-        <div class="showcase-img-box">
-            <img src="${p.image}" class="showcase-img">
+        <div class="showcase-img-box" style="background: #fff;">
+            <img src="${p.image}" class="showcase-img" style="width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
             <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
                 Fırsat
             </div>
         </div>
 
-        <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff;">
+        <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff; border-top:1px solid #f1f5f9;">
             <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
                 ${p.title}
             </div>
@@ -1941,14 +1940,18 @@ ${css}
             <div style="margin-top:auto;">
                 <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
-        <i class="fas fa-link"></i> Link
-    </button>
-                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
-                        <i class="fas fa-paint-brush"></i> Story Yap
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
+                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:10px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
+                        <i class="fas fa-link"></i> Link
+                    </button>
+                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:10px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
+                        <i class="fas fa-paint-brush"></i> Story
                     </button>
                 </div>
+                
+                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:8px; margin-top:0;">
+                     <i class="fas fa-external-link-alt"></i> Ürüne Git
+                </a>
 
             </div>
         </div>
@@ -3250,5 +3253,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v1*/
 })();
