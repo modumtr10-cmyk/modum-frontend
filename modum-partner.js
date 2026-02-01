@@ -765,15 +765,18 @@ ${css}
                       <div style="font-size:24px; font-weight:800; color:#10b981;">${parseFloat(s.balance).toLocaleString("tr-TR")} ₺</div>
                   </div>
               </div>
-              <div style="margin-top:15px;">
-                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                      <div style="width:${progress}%; height:100%; background:${barColor};"></div>
-                  </div>
-                  <div style="font-size:10px; text-align:right; margin-top:5px; opacity:0.6;">Hedef: ${nextTarget.toLocaleString()} ₺</div>
-              </div>
+<div style="margin-top:15px;">
+    <div style="display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.9); margin-bottom:5px;">
+        <span>🚀 Sonraki: <b>${s.totalRevenue < 10000 ? "Gümüş (%15)" : s.totalRevenue < 50000 ? "Altın (%20)" : "Maximum"}</b></span>
+        <span>Kalan: <b>${(nextTarget - currentRev).toLocaleString()} ₺</b></span>
+    </div>
+    <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+        <div style="width:${progress}%; height:100%; background:${barColor};"></div>
+    </div>
+</div>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
               <div class="p-card" style="padding:15px; text-align:center; margin:0; box-shadow:none; border:1px solid #e2e8f0;">
                   <div class="p-stat-val" style="font-size:18px; color:#334155;">${tClicks}</div>
                   <div class="p-stat-lbl" style="font-size:10px;">TIK</div>
@@ -782,9 +785,20 @@ ${css}
                   <div class="p-stat-val" style="font-size:18px; color:#334155;">${tSales}</div>
                   <div class="p-stat-lbl" style="font-size:10px;">SATIŞ</div>
               </div>
+              <div class="p-card" style="padding:15px; text-align:center; margin:0; background:#f5f3ff; border:1px solid #a78bfa;">
+                  <div class="p-stat-val" style="font-size:18px; color:#8b5cf6;">${s.referralCount || 0}</div>
+                  <div class="p-stat-lbl" style="font-size:10px; color:#7c3aed;">ÜYE</div>
+              </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
               <div class="p-card" style="padding:15px; text-align:center; margin:0; background:#f0f9ff; border:1px solid #bae6fd;">
                   <div class="p-stat-val" style="font-size:18px; color:#0369a1;">%${conversionRate}</div>
-                  <div class="p-stat-lbl" style="color:#0ea5e9; font-size:10px;">DÖNÜŞÜM</div>
+                  <div class="p-stat-lbl" style="color:#0ea5e9; font-size:10px;">DÖNÜŞÜM (CR)</div>
+              </div>
+              <div class="p-card" style="padding:15px; text-align:center; margin:0; background:#f0fdf4; border:1px solid #bbf7d0;">
+                  <div class="p-stat-val" style="font-size:18px; color:#166534;">${epcVal} ₺</div>
+                  <div class="p-stat-lbl" style="color:#15803d; font-size:10px;">TIK DEĞERİ (EPC)</div>
               </div>
           </div>
 
@@ -3236,5 +3250,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
