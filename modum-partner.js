@@ -2537,7 +2537,7 @@ ${css}
     };
   }
   // ============================================================
-  // 🚀 PARTNER BAŞVURU SİHİRBAZI (PRO SÜRÜM - DETAYLI ANALİZ)
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI (DESIGN FIX - FINAL)
   // ============================================================
   async function renderApplicationPage() {
     const root = document.getElementById("mdm-application-page");
@@ -2551,56 +2551,73 @@ ${css}
     const ICON_2 = "https://www.modum.tr/i/m/001/0016753.jpeg";
     const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
 
-    // --- CSS STİLLERİ (MOBİL UYUMLU & MODERN) ---
+    // --- CSS STİLLERİ (GARANTİ GÖRÜNÜM) ---
     const style = `
   <style>
-      .app-hero { width:100%; height:280px; background:linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
-      .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; max-width:600px; }
-      .app-hero h1 { font-size:36px; font-weight:900; margin:0; letter-spacing:-1px; }
-      .app-hero p { font-size:16px; opacity:0.8; margin-top:10px; line-height:1.5; }
+      /* TEMEL AYARLAR */
+      #mdm-application-page { width: 100%; font-family: 'Inter', sans-serif; background:#f8fafc; overflow-x:hidden; }
       
-      .app-container { max-width:900px; margin: -60px auto 50px; position:relative; z-index:10; padding:0 15px; }
+      /* BANNER ALANI */
+      .app-hero { 
+          width: 100%; 
+          height: 320px; 
+          background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.6)), url('${BANNER_IMG}');
+          background-size: cover; 
+          background-position: center; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          position: relative; 
+      }
+      .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; max-width:800px; }
+      .app-hero h1 { font-size:32px; font-weight:900; margin:0 0 10px; letter-spacing:-0.5px; text-transform:uppercase; }
+      .app-hero p { font-size:16px; opacity:0.9; margin:0; line-height:1.5; }
       
-      /* Avantaj Kartları (Listelenmiş hali) */
-      .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; margin-bottom:30px; }
-      .b-card { background:white; padding:20px; border-radius:12px; text-align:center; box-shadow:0 10px 20px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:0.3s; }
-      .b-card:hover { transform:translateY(-5px); }
-      .b-card img { width:50px; height:50px; border-radius:50%; margin-bottom:10px; object-fit:cover; }
-      .b-card h4 { font-size:14px; color:#1e293b; margin:0 0 5px; font-weight:bold; }
-      .b-card p { font-size:11px; color:#64748b; line-height:1.4; margin:0; }
+      /* ANA KONTEYNER */
+      .app-container { max-width:1000px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 20px; }
+      
+      /* AVANTAJ KARTLARI */
+      .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+      .b-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+      .b-card:hover { transform: translateY(-5px); }
+      .b-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #f1f5f9; }
+      .b-card h4 { font-size: 16px; color: #1e293b; margin: 0 0 5px 0; font-weight: 700; }
+      .b-card p { font-size: 13px; color: #64748b; margin: 0; line-height: 1.4; }
 
-      .form-box { background:white; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.15); display:flex; flex-direction:column; min-height:600px; border:1px solid #e2e8f0; }
+      /* FORM KUTUSU */
+      .form-box { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); display: flex; flex-direction: column; min-height: 550px; border: 1px solid #cbd5e1; }
       
-      /* Progress Bar */
-      .progress-header { background:#f8fafc; padding:20px; border-bottom:1px solid #e2e8f0; display:flex; gap:5px; }
-      .p-step { flex:1; height:6px; background:#e2e8f0; border-radius:10px; position:relative; overflow:hidden; }
-      .p-step.active { background:#3b82f6; }
-      .p-step.done { background:#10b981; }
-      
-      .form-content { padding:40px; flex:1; display:flex; flex-direction:column; }
-      
-      /* Inputlar */
-      .inp-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px; }
-      .inp-group { margin-bottom:20px; }
-      .inp-group label { display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
-      .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; font-size:14px; transition:0.2s; background:#fff; }
-      .inp-group input:focus, .inp-group select:focus { border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,0.1); }
-      
-      .inp-hint { font-size:11px; color:#64748b; margin-top:5px; display:flex; align-items:center; gap:5px; }
+      /* İÇERİK DÜZENİ */
+      .form-content { padding: 40px; flex: 1; display: flex; flex-direction: column; }
+      .progress-header { background: #f8fafc; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; }
+      .p-step { flex: 1; height: 6px; background: #e2e8f0; border-radius: 4px; }
+      .p-step.active { background: #3b82f6; }
+      .p-step.done { background: #10b981; }
 
-      .btn-next { background:#0f172a; color:white; border:none; padding:16px; width:100%; border-radius:10px; font-weight:700; cursor:pointer; margin-top:auto; font-size:15px; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:10px; }
-      .btn-next:hover { background:#1e293b; transform:translateY(-2px); }
-      .btn-back { background:transparent; color:#64748b; border:none; font-weight:600; cursor:pointer; }
+      /* INPUTLAR */
+      .inp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+      .inp-group { margin-bottom: 0; }
+      .inp-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .inp-group input, .inp-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; box-sizing: border-box; background: #fff; height:45px; }
+      .inp-group input:focus, .inp-group select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+      .inp-hint { font-size: 11px; color: #64748b; margin-top: 5px; }
 
-      /* Mobil */
-      @media(max-width:768px) {
-          .app-hero { height:220px; }
-          .app-hero h1 { font-size:24px; }
-          .benefit-grid { grid-template-columns: 1fr; gap:10px; }
+      /* BUTONLAR */
+      .btn-next { background: #0f172a; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: auto; font-size: 15px; display: flex; align-items: center; justify-content: center; transition:0.2s; }
+      .btn-next:hover { background: #1e293b; transform: translateY(-2px); }
+      .btn-back { background: transparent; color: #64748b; border: none; font-weight: 600; cursor: pointer; padding: 10px; }
+      
+      /* MOBİL AYARLARI */
+      @media(max-width: 768px) {
+          .app-hero { height: 260px; text-align:center; }
+          .app-hero h1 { font-size: 24px; }
+          .app-container { margin-top: -30px; padding: 0 15px; }
+          .benefit-grid { grid-template-columns: 1fr; gap: 10px; }
           .b-card { flex-direction: row; padding: 15px; text-align: left; align-items: center; justify-content: flex-start; }
-          .b-card img { margin: 0 15px 0 0; }
-          .inp-row { grid-template-columns: 1fr; gap:0; }
-          .form-content { padding:20px; }
+          .b-card img { margin: 0 15px 0 0; width: 50px; height: 50px; }
+          .inp-row { grid-template-columns: 1fr; gap: 15px; }
+          .form-content { padding: 20px; }
+          .progress-header { padding: 15px 20px; }
       }
   </style>
   `;
@@ -2817,7 +2834,7 @@ ${css}
     showStep1();
   }
 
-  // --- ADIM 1: PROFESYONEL ANALİZ ---
+  // --- ADIM 1: PROFESYONEL ANALİZ (GÜNCELLENMİŞ HTML) ---
   window.showStep1 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
@@ -2872,12 +2889,12 @@ ${css}
                   <div class="inp-group" style="margin-bottom:0;">
                       <label style="color:#0284c7;">Aylık Erişim (Reach)</label>
                       <input type="number" id="app_reach" placeholder="Örn: 45000">
-                      <div class="inp-hint">Profesyonel panonuzdaki "Erişilen Hesaplar" sayısı.</div>
+                      <div class="inp-hint">Panelinizdeki "Erişilen Hesaplar".</div>
                   </div>
                   <div class="inp-group" style="margin-bottom:0;">
                       <label style="color:#0284c7;">Ort. Hikaye İzlenmesi</label>
                       <input type="number" id="app_story_views" placeholder="Örn: 2500">
-                      <div class="inp-hint">24 saatteki ortalama hikaye görüntülenmeniz.</div>
+                      <div class="inp-hint">24 saatteki ortalama görüntülenme.</div>
                   </div>
               </div>
           </div>
@@ -2887,25 +2904,40 @@ ${css}
     `;
   };
 
-  // Doğrulama (Sayısal kontroller)
+  // --- ADIM 1 DOĞRULAMA (BUG FIX) ---
   window.validateStep1 = function () {
-    const handle = document.getElementById("app_handle").value;
-    const followers = parseInt(document.getElementById("app_followers").value);
-    const reach = parseInt(document.getElementById("app_reach").value);
-    const story = parseInt(document.getElementById("app_story_views").value);
-    const category = document.getElementById("app_category").value;
+    // ID'leri HTML'den kontrol ederek alıyoruz
+    const handleEl = document.getElementById("app_handle");
+    const followersEl = document.getElementById("app_followers");
+    const reachEl = document.getElementById("app_reach");
+    const storyEl = document.getElementById("app_story_views");
+    const catEl = document.getElementById("app_category");
+    const platEl = document.getElementById("app_platform");
+
+    // Elemanlar var mı?
+    if (!handleEl || !followersEl || !reachEl || !storyEl || !catEl) {
+      alert("Form yüklenirken hata oluştu. Lütfen sayfayı yenileyin.");
+      return;
+    }
+
+    const handle = handleEl.value;
+    const followers = parseInt(followersEl.value);
+    const reach = parseInt(reachEl.value);
+    const story = parseInt(storyEl.value);
+    const category = catEl.value;
 
     if (handle.length < 3) return alert("Lütfen kullanıcı adınızı girin.");
     if (!category) return alert("Lütfen bir kategori seçin.");
 
-    // Basit Bot Kontrolü (Mantıksal)
+    // Sayı kontrolü
     if (isNaN(followers) || followers < 500)
       return alert("Başvuru için en az 500 takipçi gereklidir.");
     if (isNaN(reach) || isNaN(story))
       return alert("Lütfen istatistik verilerini doldurun.");
 
+    // Veriyi kaydet
     window.appData.social = {
-      platform: document.getElementById("app_platform").value,
+      platform: platEl.value,
       handle: handle,
       category: category,
       metrics: {
@@ -2914,18 +2946,8 @@ ${css}
         avg_story_views: story,
       },
     };
-    showStep2();
-  };
 
-  window.validateStep1 = function () {
-    const insta = document.getElementById("app_insta").value;
-    if (insta.length < 3) return alert("Lütfen Instagram kullanıcı adını gir.");
-
-    window.appData.social = {
-      instagram: insta,
-      other: document.getElementById("app_other").value,
-      followers: document.getElementById("app_followers").value,
-    };
+    // 2. Adıma Geç
     showStep2();
   };
 
@@ -3344,5 +3366,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v1*/
 })();
