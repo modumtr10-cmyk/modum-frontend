@@ -2537,11 +2537,11 @@ ${css}
     };
   }
   // ============================================================
-  // 🚀 PARTNER BAŞVURU SİHİRBAZI (PRO SÜRÜM - DETAYLI ANALİZ)
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI (LANDING PAGE + FORM) - FİNAL SÜRÜM
   // ============================================================
   async function renderApplicationPage() {
     const root = document.getElementById("mdm-application-page");
-    if (!root) return;
+    if (!root) return; // Bu sayfada değilsek çalışma
 
     var email = detectUser();
 
@@ -2550,69 +2550,100 @@ ${css}
     const ICON_1 = "https://www.modum.tr/i/m/001/0016754.jpeg";
     const ICON_2 = "https://www.modum.tr/i/m/001/0016753.jpeg";
     const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
+    const FORM_SIDE_IMG = "https://www.modum.tr/i/m/001/0016756.jpeg";
 
-    // --- CSS STİLLERİ (MOBİL UYUMLU & MODERN) ---
+    // --- CSS STİLLERİ (MOBİL UYUMLU) ---
     const style = `
   <style>
-      .app-hero { width:100%; height:280px; background:linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
-      .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; max-width:600px; }
-      .app-hero h1 { font-size:36px; font-weight:900; margin:0; letter-spacing:-1px; }
-      .app-hero p { font-size:16px; opacity:0.8; margin-top:10px; line-height:1.5; }
+      /* GENEL MASAÜSTÜ AYARLARI */
+      .app-hero { width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
+      .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
+      .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; }
+      .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
+      .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
       
-      .app-container { max-width:900px; margin: -60px auto 50px; position:relative; z-index:10; padding:0 15px; }
+      /* Kutuların taşmasını önleyen sihirli kod */
+      .app-container * { box-sizing: border-box; }
+      .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; width:100%; overflow:hidden; }
       
-      /* Avantaj Kartları (Listelenmiş hali) */
-      .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; margin-bottom:30px; }
-      .b-card { background:white; padding:20px; border-radius:12px; text-align:center; box-shadow:0 10px 20px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:0.3s; }
-      .b-card:hover { transform:translateY(-5px); }
-      .b-card img { width:50px; height:50px; border-radius:50%; margin-bottom:10px; object-fit:cover; }
-      .b-card h4 { font-size:14px; color:#1e293b; margin:0 0 5px; font-weight:bold; }
-      .b-card p { font-size:11px; color:#64748b; line-height:1.4; margin:0; }
+      /* KARTLAR */
+      .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
+      .b-card { background:white; padding:30px; border-radius:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05); transition:0.3s; }
+      .b-card:hover { transform:translateY(-10px); }
+      .b-card img { width:80px; height:80px; border-radius:50%; margin-bottom:15px; object-fit:cover; }
+      .b-card h4 { font-size:18px; color:#1e293b; margin:0 0 10px; }
+      .b-card p { font-size:13px; color:#64748b; line-height:1.5; }
 
-      .form-box { background:white; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.15); display:flex; flex-direction:column; min-height:600px; border:1px solid #e2e8f0; }
+      /* FORM KUTUSU */
+      .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:550px; }
+      .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; }
+      .form-left::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, #0f172a, transparent); }
+      .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; }
       
-      /* Progress Bar */
-      .progress-header { background:#f8fafc; padding:20px; border-bottom:1px solid #e2e8f0; display:flex; gap:5px; }
-      .p-step { flex:1; height:6px; background:#e2e8f0; border-radius:10px; position:relative; overflow:hidden; }
-      .p-step.active { background:#3b82f6; }
-      .p-step.done { background:#10b981; }
+      .form-right { width:60%; padding:40px; display:flex; flex-direction:column; }
       
-      .form-content { padding:40px; flex:1; display:flex; flex-direction:column; }
+      /* ADIMLAR VE INPUTLAR */
+      .step-indicator { display:flex; gap:10px; margin-bottom:30px; }
+      .step-dot { flex:1; height:4px; background:#e2e8f0; border-radius:4px; }
+      .step-dot.active { background:#3b82f6; }
       
-      /* Inputlar */
-      .inp-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px; }
-      .inp-group { margin-bottom:20px; }
-      .inp-group label { display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
-      .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; font-size:14px; transition:0.2s; background:#fff; }
-      .inp-group input:focus, .inp-group select:focus { border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,0.1); }
-      
-      .inp-hint { font-size:11px; color:#64748b; margin-top:5px; display:flex; align-items:center; gap:5px; }
+      .inp-group { margin-bottom:15px; }
+      .inp-group label { display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:5px; }
+      .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; }
+      .inp-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
 
-      .btn-next { background:#0f172a; color:white; border:none; padding:16px; width:100%; border-radius:10px; font-weight:700; cursor:pointer; margin-top:auto; font-size:15px; transition:0.2s; display:flex; align-items:center; justify-content:center; gap:10px; }
-      .btn-next:hover { background:#1e293b; transform:translateY(-2px); }
-      .btn-back { background:transparent; color:#64748b; border:none; font-weight:600; cursor:pointer; }
+      .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
+      .btn-next:hover { background:#1e293b; transform:scale(1.02); }
 
-      /* Mobil */
+      /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (GÜNCELLENMİŞ) */
       @media(max-width:768px) {
-          .app-hero { height:220px; }
-          .app-hero h1 { font-size:24px; }
-          .benefit-grid { grid-template-columns: 1fr; gap:10px; }
-          .b-card { flex-direction: row; padding: 15px; text-align: left; align-items: center; justify-content: flex-start; }
-          .b-card img { margin: 0 15px 0 0; }
-          .inp-row { grid-template-columns: 1fr; gap:0; }
-          .form-content { padding:20px; }
+          /* Bannerı Düzelt */
+          .app-hero { 
+              height: auto; 
+              min-height: 250px; /* Yüksekliği biraz artır */
+              background-position: top center; /* Görselin üst kısmını göster */
+              padding: 40px 15px; /* İçerik için boşluk */
+              align-items: flex-end; /* Yazıları alta it */
+          }
+          .app-hero h1 { font-size: 20px; line-height: 1.2; }
+          .app-hero p { font-size: 13px; margin-top: 5px; }
+          
+          /* Konteynırı yukarı çek */
+          .app-container { margin-top: -20px; padding: 0 15px; }
+
+          /* Kartları daha kompakt yap (Yatay Liste Gibi) */
+          .benefit-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+          .b-card { padding: 15px; display: flex; align-items: center; text-align: left; gap: 15px; }
+          .b-card img { width: 50px; height: 50px; margin-bottom: 0; }
+          .b-card h4 { font-size: 15px; margin-bottom: 2px; }
+          .b-card p { font-size: 11px; margin: 0; }
+
+          /* Form Yapısı */
+          .form-box { flex-direction: column; min-height: auto; } /* Yüksekliği serbest bırak */
+          
+          /* 🔥 Yan resmi mobilde GİZLE */
+          .form-left { display: none; } 
+          
+          /* Sağ tarafı tam genişlik yap */
+          .form-right { width: 100%; padding: 20px 15px; }
+          
+          /* Inputları rahatlat */
+          .inp-group input, .btn-next { font-size: 16px; } 
       }
   </style>
   `;
 
+    // --- 1. DURUM KONTROLÜ (Backend'e Sor) ---
     let appStatus = "none";
     if (email) {
       try {
         root.innerHTML =
-          '<div style="text-align:center; padding:100px;"><i class="fas fa-spinner fa-spin fa-3x"></i><br>Yükleniyor...</div>';
+          '<div style="text-align:center; padding:100px;"><i class="fas fa-spinner fa-spin fa-3x"></i><br>Durum kontrol ediliyor...</div>';
+
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          // check_application_status fonksiyonunu backend'e eklemiştik
           body: JSON.stringify({
             islem: "check_application_status",
             email: email,
@@ -2625,25 +2656,28 @@ ${css}
       }
     }
 
+    // --- 2. HTML İSKELETİNİ KUR ---
     var html = `
   ${style}
   <div class="app-hero">
       <div class="app-hero-content">
-          <h1>INFLUENCER BAŞVURUSU</h1>
-          <p>Sadece bir ortaklık değil, profesyonel bir kariyer. Verilerinizi girin, ModumNet'in ayrıcalıklı dünyasına adım atın.</p>
+          <h1>MODUMNET PARTNER</h1>
+          <p>Sosyal medya gücünü kazanca dönüştür.</p>
       </div>
   </div>
   <div class="app-container">
       <div class="benefit-grid">
-          <div class="b-card"><img src="${ICON_1}"><div><h4>Yüksek Komisyon</h4><p>Satış yaptıkça artan oranlar.</p></div></div>
-          <div class="b-card"><img src="${ICON_2}"><div><h4>Özel Hediyeler</h4><p>Sürpriz kutular ve ürünler.</p></div></div>
-          <div class="b-card"><img src="${ICON_3}"><div><h4>Partner Akademisi</h4><p>Ücretsiz eğitimlerle geliş.</p></div></div>
+          <div class="b-card"><img src="${ICON_1}"><h4>Yüksek Komisyon</h4><p>Satış yaptıkça artan oranlar.</p></div>
+          <div class="b-card"><img src="${ICON_2}"><h4>Özel Hediyeler</h4><p>Sürpriz kutular ve ürünler.</p></div>
+          <div class="b-card"><img src="${ICON_3}"><h4>Partner Akademisi</h4><p>Ücretsiz eğitimlerle geliş.</p></div>
       </div>
-      <div class="form-box" id="app-form-area"></div>
+      <div class="form-box" id="app-form-area">
+          </div>
   </div>
   `;
     root.innerHTML = html;
 
+    // --- 3. DURUMA GÖRE İÇERİĞİ DOLDUR ---
     renderFormContent(appStatus, email);
   }
 
@@ -2817,104 +2851,45 @@ ${css}
     showStep1();
   }
 
-  // --- ADIM 1: PROFESYONEL ANALİZ ---
+  // --- ADIM 1: SOSYAL MEDYA ---
   window.showStep1 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
-      <div class="progress-header">
-          <div class="p-step active"></div><div class="p-step"></div><div class="p-step"></div>
+      <div class="form-left">
+          <div class="form-left-text">
+              <h3 style="margin:0;">Adım 1/3</h3>
+              <p style="margin:5px 0 0; opacity:0.8;">Sosyal medya gücünü tanıyalım.</p>
+          </div>
       </div>
-      <div class="form-content">
-          <h3 style="margin:0 0 5px 0; color:#1e293b;">📊 Profil Analizi</h3>
-          <p style="color:#64748b; font-size:13px; margin-bottom:25px;">Profesyonel hesabınızın istatistiklerine göre doldurunuz.</p>
+      <div class="form-right">
+          <div class="step-indicator">
+              <div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div>
+          </div>
+          
+          <h3 style="margin:0 0 20px 0; color:#1e293b;">Sosyal Medya Hesapların</h3>
 
-          <div class="inp-row">
-              <div class="inp-group">
-                  <label>Ana Platformunuz</label>
-                  <select id="app_platform">
-                      <option value="Instagram">Instagram</option>
-                      <option value="YouTube">YouTube</option>
-                      <option value="TikTok">TikTok</option>
-                      <option value="Web/Blog">Web Sitesi / Blog</option>
-                  </select>
-              </div>
-              <div class="inp-group">
-                  <label>Kullanıcı Adınız / Link</label>
-                  <input type="text" id="app_handle" placeholder="@kullaniciadi">
-              </div>
+          <div class="inp-group">
+              <label>Instagram Kullanıcı Adın (Zorunlu)</label>
+              <input type="text" id="app_insta" placeholder="@kullaniciadi">
+          </div>
+          <div class="inp-group">
+              <label>TikTok, YouTube veya Diğerleri (Varsa)</label>
+              <input type="text" id="app_other" placeholder="Örn: TikTok: @modum, YouTube: ModumKanal (Hepsini yazabilirsiniz)">
+              <div style="font-size:10px; color:#94a3b8; margin-top:3px;">Birden fazla hesabınız varsa araya virgül koyarak yazabilirsiniz.</div>
+          </div>
+          <div class="inp-group">
+              <label>Toplam Takipçi Sayın (Tahmini)</label>
+              <select id="app_followers">
+                  <option value="1k-5k">1.000 - 5.000</option>
+                  <option value="5k-10k">5.000 - 10.000</option>
+                  <option value="10k-50k">10.000 - 50.000</option>
+                  <option value="50k+">50.000+</option>
+              </select>
           </div>
 
-          <div class="inp-row">
-              <div class="inp-group">
-                  <label>Takipçi Sayısı (Tam Rakam)</label>
-                  <input type="number" id="app_followers" placeholder="Örn: 12500">
-              </div>
-              <div class="inp-group">
-                  <label>İçerik Kategorisi</label>
-                  <select id="app_category">
-                      <option value="">Seçiniz...</option>
-                      <option value="Moda & Giyim">Moda & Giyim</option>
-                      <option value="Ayakkabı & Çanta">Ayakkabı & Çanta</option>
-                      <option value="Anne & Çocuk">Anne & Çocuk</option>
-                      <option value="Lifestyle">Lifestyle / Günlük Yaşam</option>
-                      <option value="Makyaj & Bakım">Makyaj & Bakım</option>
-                      <option value="Diğer">Diğer</option>
-                  </select>
-              </div>
-          </div>
-
-          <div style="background:#f0f9ff; padding:20px; border-radius:12px; border:1px solid #bae6fd; margin-bottom:20px;">
-              <div style="font-weight:bold; color:#0369a1; font-size:13px; margin-bottom:15px; display:flex; align-items:center; gap:5px;">
-                  <i class="fas fa-chart-bar"></i> ETKİLEŞİM VERİLERİ (Son 30 Gün)
-              </div>
-              
-              <div class="inp-row" style="margin-bottom:0;">
-                  <div class="inp-group" style="margin-bottom:0;">
-                      <label style="color:#0284c7;">Aylık Erişim (Reach)</label>
-                      <input type="number" id="app_reach" placeholder="Örn: 45000">
-                      <div class="inp-hint">Profesyonel panonuzdaki "Erişilen Hesaplar" sayısı.</div>
-                  </div>
-                  <div class="inp-group" style="margin-bottom:0;">
-                      <label style="color:#0284c7;">Ort. Hikaye İzlenmesi</label>
-                      <input type="number" id="app_story_views" placeholder="Örn: 2500">
-                      <div class="inp-hint">24 saatteki ortalama hikaye görüntülenmeniz.</div>
-                  </div>
-              </div>
-          </div>
-
-          <button onclick="validateStep1()" class="btn-next">SONRAKİ ADIM &rarr;</button>
+          <button onclick="validateStep1()" class="btn-next">DEVAM ET &rarr;</button>
       </div>
     `;
-  };
-
-  // Doğrulama (Sayısal kontroller)
-  window.validateStep1 = function () {
-    const handle = document.getElementById("app_handle").value;
-    const followers = parseInt(document.getElementById("app_followers").value);
-    const reach = parseInt(document.getElementById("app_reach").value);
-    const story = parseInt(document.getElementById("app_story_views").value);
-    const category = document.getElementById("app_category").value;
-
-    if (handle.length < 3) return alert("Lütfen kullanıcı adınızı girin.");
-    if (!category) return alert("Lütfen bir kategori seçin.");
-
-    // Basit Bot Kontrolü (Mantıksal)
-    if (isNaN(followers) || followers < 500)
-      return alert("Başvuru için en az 500 takipçi gereklidir.");
-    if (isNaN(reach) || isNaN(story))
-      return alert("Lütfen istatistik verilerini doldurun.");
-
-    window.appData.social = {
-      platform: document.getElementById("app_platform").value,
-      handle: handle,
-      category: category,
-      metrics: {
-        followers: followers,
-        monthly_reach: reach,
-        avg_story_views: story,
-      },
-    };
-    showStep2();
   };
 
   window.validateStep1 = function () {
@@ -2929,137 +2904,68 @@ ${css}
     showStep2();
   };
 
-  // --- ADIM 2: KİŞİSEL & STRATEJİ ---
+  // --- ADIM 2: KİŞİSEL BİLGİLER, KUPON VE BANKA ---
   window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
-      <div class="progress-header">
-          <div class="p-step done"></div><div class="p-step active"></div><div class="p-step"></div>
+      <div class="form-left">
+          <div class="form-left-text">
+              <h3 style="margin:0;">Adım 2/3</h3>
+              <p style="margin:5px 0 0; opacity:0.8;">Kimlik ve Ödeme Bilgileri.</p>
+          </div>
       </div>
-      <div class="form-content">
-          <h3 style="margin:0 0 5px 0; color:#1e293b;">👤 Kimlik & Strateji</h3>
-          <p style="color:#64748b; font-size:13px; margin-bottom:25px;">Sizi daha yakından tanıyalım.</p>
+      <div class="form-right">
+          <div class="step-indicator">
+              <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div>
+          </div>
+          
+          <div class="inp-group">
+              <label>Adın Soyadın (Hesap Sahibi)</label>
+              <input type="text" id="app_name" placeholder="Tam adınız">
+          </div>
+          <div class="inp-group">
+              <label>Telefon Numaran (WhatsApp)</label>
+              <input type="tel" id="app_phone" placeholder="0555 555 55 55">
+          </div>
 
-          <div class="inp-row">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
               <div class="inp-group">
-                  <label>Ad Soyad (Kimlikteki Gibi)</label>
-                  <input type="text" id="app_name" placeholder="Adınız Soyadınız">
+                  <label>Banka Seçiniz</label>
+                  <select id="app_bank_name">
+                      <option value="">Seç...</option>
+                      <option value="Ziraat">Ziraat Bankası</option>
+                      <option value="Garanti">Garanti BBVA</option>
+                      <option value="IsBank">İş Bankası</option>
+                      <option value="Akbank">Akbank</option>
+                      <option value="Yapikredi">Yapı Kredi</option>
+                      <option value="Finansbank">QNB Finansbank</option>
+                      <option value="Halkbank">Halkbank</option>
+                      <option value="Vakifbank">Vakıfbank</option>
+                      <option value="Diger">Diğer / Papara</option>
+                  </select>
               </div>
               <div class="inp-group">
-                  <label>Telefon (WhatsApp)</label>
-                  <input type="tel" id="app_phone" placeholder="05XX XXX XX XX">
+                  <label>IBAN Numarası</label>
+                  <input type="text" id="app_iban" placeholder="TR..." maxlength="32" oninput="this.value = this.value.toUpperCase()">
               </div>
+          </div>
+
+          <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px;">
+              <label style="color:#c2410c;">İstediğin İndirim Kodu</label>
+              <input type="text" id="app_coupon" placeholder="Örn: AHMET15" style="font-weight:bold; color:#c2410c;">
           </div>
 
           <div class="inp-group">
-              <label>Tanıtım Stratejiniz</label>
-              <select id="app_strategy">
-                  <option value="">Nasıl satış yapacaksınız?</option>
-                  <option value="Story Kaydırmalı Link">Instagram Hikaye (Link) Paylaşımı</option>
-                  <option value="Reels Kombin">Reels / TikTok Kombin Videoları</option>
-                  <option value="WhatsApp Grubu">Özel WhatsApp İndirim Grubu</option>
-                  <option value="Web SEO">Web Sitesi / Blog Yazıları</option>
-                  <option value="Youtube İnceleme">YouTube Ürün İnceleme</option>
-              </select>
+              <label>Neden ModumNet?</label>
+              <textarea id="app_reason" rows="2" placeholder="Hedeflerin neler?"></textarea>
           </div>
 
-          <div class="inp-group">
-              <label>Kullanmak İstediğiniz Özel Kupon Kodu</label>
-              <input type="text" id="app_coupon" placeholder="Örn: MERVE10 (Takipçileriniz için)" style="letter-spacing:1px; font-weight:bold;">
-              <div class="inp-hint">Takipçilerinize sunacağınız indirim kodu.</div>
-          </div>
-
-          <div class="inp-row">
-             <button onclick="showStep1()" class="btn-back">&larr; Geri Dön</button>
-             <button onclick="validateStep2()" class="btn-next">SONRAKİ ADIM &rarr;</button>
+          <div style="display:flex; gap:10px;">
+              <button onclick="showStep1()" class="btn-next" style="background:#e2e8f0; color:#334155;">&larr; Geri</button>
+              <button onclick="validateStep2()" class="btn-next">SON ADIM &rarr;</button>
           </div>
       </div>
     `;
-  }; // --- ADIM 3: ÖDEME & ONAY ---
-  window.showStep3 = function () {
-    const area = document.getElementById("app-form-area");
-    area.innerHTML = `
-      <div class="progress-header">
-          <div class="p-step done"></div><div class="p-step done"></div><div class="p-step active"></div>
-      </div>
-      <div class="form-content">
-          <h3 style="margin:0 0 5px 0; color:#1e293b;">💳 Ödeme Bilgileri</h3>
-          <p style="color:#64748b; font-size:13px; margin-bottom:25px;">Komisyonların yatırılacağı hesap.</p>
-
-          <div class="inp-group">
-              <label>Banka Seçiniz</label>
-              <select id="app_bank_name">
-                  <option value="">Seç...</option>
-                  <option value="Ziraat">Ziraat Bankası</option>
-                  <option value="Garanti">Garanti BBVA</option>
-                  <option value="IsBank">İş Bankası</option>
-                  <option value="Akbank">Akbank</option>
-                  <option value="Yapikredi">Yapı Kredi</option>
-                  <option value="Finansbank">QNB Finansbank</option>
-                  <option value="Vakifbank">Vakıfbank</option>
-                  <option value="Papara">Papara</option>
-                  <option value="Diger">Diğer</option>
-              </select>
-          </div>
-          <div class="inp-group">
-              <label>IBAN Numarası</label>
-              <input type="text" id="app_iban" placeholder="TR..." maxlength="32" oninput="this.value = this.value.toUpperCase()">
-          </div>
-
-          <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin:20px 0;">
-              <label style="display:flex; gap:10px; font-size:13px; cursor:pointer; align-items:flex-start;">
-                  <input type="checkbox" id="app_terms" style="width:20px; height:20px; margin-top:0;">
-                  <span style="line-height:1.4;">
-                      <span onclick="openContractModal()" style="color:#3b82f6; font-weight:bold; text-decoration:underline;">ModumNet Influencer Sözleşmesi</span>'ni okudum, beyan ettiğim verilerin doğruluğunu taahhüt eder ve kabul ederim.
-                  </span>
-              </label>
-          </div>
-
-          <div class="inp-row">
-             <button onclick="showStep2()" class="btn-back">&larr; Geri Dön</button>
-             <button onclick="submitFinalApplication()" class="btn-next" style="background:#10b981;">BAŞVURUYU TAMAMLA 🚀</button>
-          </div>
-      </div>
-    `;
-  };
-
-  // FİNAL GÖNDERİMİ
-  window.submitFinalApplication = async function () {
-    const bank = document.getElementById("app_bank_name").value;
-    let iban = document.getElementById("app_iban").value;
-
-    if (!bank || iban.length < 15)
-      return alert("Lütfen geçerli bir Banka ve IBAN giriniz.");
-    if (!document.getElementById("app_terms").checked)
-      return alert("Sözleşmeyi onaylamanız gerekmektedir.");
-
-    window.appData.personal.bankInfo = bank + " - " + iban;
-
-    // Backend'e gönder (submitApplication fonksiyonunu tetikle)
-    submitApplication();
-  };
-
-  window.validateStep2 = function () {
-    const name = document.getElementById("app_name").value;
-    const phone = document.getElementById("app_phone").value;
-    const strategy = document.getElementById("app_strategy").value;
-    const coupon = document
-      .getElementById("app_coupon")
-      .value.toUpperCase()
-      .replace(/[^A-Z0-9]/g, "");
-
-    if (name.length < 5 || phone.length < 10)
-      return alert("Ad ve Telefon zorunludur.");
-    if (!strategy) return alert("Lütfen bir tanıtım stratejisi seçin.");
-    if (coupon.length < 3) return alert("Lütfen bir kupon kodu belirleyin.");
-
-    window.appData.personal = {
-      name: name,
-      phone: phone,
-      strategy: strategy,
-      customCoupon: coupon,
-    };
-    showStep3();
   };
 
   // --- VALIDATION GÜNCELLEMESİ (IBAN KONTROLÜ) ---
@@ -3344,5 +3250,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v4*/
 })();
