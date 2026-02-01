@@ -2537,7 +2537,7 @@ ${css}
     };
   }
   // ============================================================
-  // 🚀 PARTNER BAŞVURU SİHİRBAZI (DESIGN FIX - FINAL)
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI (DESIGN FIX V2)
   // ============================================================
   async function renderApplicationPage() {
     const root = document.getElementById("mdm-application-page");
@@ -2554,70 +2554,69 @@ ${css}
     // --- CSS STİLLERİ (GARANTİ GÖRÜNÜM) ---
     const style = `
   <style>
-      /* TEMEL AYARLAR */
       #mdm-application-page { width: 100%; font-family: 'Inter', sans-serif; background:#f8fafc; overflow-x:hidden; }
       
       /* BANNER ALANI */
       .app-hero { 
           width: 100%; 
-          height: 320px; 
-          background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.6)), url('${BANNER_IMG}');
-          background-size: cover; 
-          background-position: center; 
+          height: 350px; 
           display: flex; 
           align-items: center; 
           justify-content: center; 
-          position: relative; 
+          position: relative;
+          background-size: cover;
+          background-position: center;
       }
+      .app-hero-overlay {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4));
+          z-index: 1;
+      }
+      
       .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; max-width:800px; }
-      .app-hero h1 { font-size:32px; font-weight:900; margin:0 0 10px; letter-spacing:-0.5px; text-transform:uppercase; }
+      .app-hero h1 { font-size:36px; font-weight:900; margin:0 0 10px; letter-spacing:-0.5px; text-transform:uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
       .app-hero p { font-size:16px; opacity:0.9; margin:0; line-height:1.5; }
       
-      /* ANA KONTEYNER */
-      .app-container { max-width:1000px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 20px; }
+      /* ANA KUTU */
+      .app-container { max-width:1000px; margin: -60px auto 50px; position:relative; z-index:10; padding:0 20px; }
       
-      /* AVANTAJ KARTLARI */
       .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-      .b-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-      .b-card:hover { transform: translateY(-5px); }
-      .b-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; border: 3px solid #f1f5f9; }
-      .b-card h4 { font-size: 16px; color: #1e293b; margin: 0 0 5px 0; font-weight: 700; }
-      .b-card p { font-size: 13px; color: #64748b; margin: 0; line-height: 1.4; }
+      .b-card { background: white; padding: 25px; border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid #e2e8f0; display:flex; flex-direction:column; align-items:center; }
+      .b-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; }
+      .b-card h4 { font-size: 16px; color: #1e293b; margin: 0 0 5px 0; font-weight: 800; }
+      .b-card p { font-size: 13px; color: #64748b; margin: 0; }
 
-      /* FORM KUTUSU */
-      .form-box { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1); display: flex; flex-direction: column; min-height: 550px; border: 1px solid #cbd5e1; }
+      .form-box { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); display: flex; flex-direction: column; min-height: 600px; border: 1px solid #cbd5e1; }
       
-      /* İÇERİK DÜZENİ */
+      /* İÇERİK */
       .form-content { padding: 40px; flex: 1; display: flex; flex-direction: column; }
-      .progress-header { background: #f8fafc; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; }
+      .progress-header { background: #f8fafc; padding: 20px 40px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 8px; }
       .p-step { flex: 1; height: 6px; background: #e2e8f0; border-radius: 4px; }
       .p-step.active { background: #3b82f6; }
       .p-step.done { background: #10b981; }
 
-      /* INPUTLAR */
       .inp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
       .inp-group { margin-bottom: 0; }
-      .inp-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .inp-group input, .inp-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; box-sizing: border-box; background: #fff; height:45px; }
-      .inp-group input:focus, .inp-group select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-      .inp-hint { font-size: 11px; color: #64748b; margin-top: 5px; }
-
-      /* BUTONLAR */
-      .btn-next { background: #0f172a; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: auto; font-size: 15px; display: flex; align-items: center; justify-content: center; transition:0.2s; }
-      .btn-next:hover { background: #1e293b; transform: translateY(-2px); }
-      .btn-back { background: transparent; color: #64748b; border: none; font-weight: 600; cursor: pointer; padding: 10px; }
+      .inp-group label { display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px; text-transform: uppercase; }
+      .inp-group input, .inp-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; background: #fff; height:45px; box-sizing: border-box; }
+      .inp-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
       
-      /* MOBİL AYARLARI */
+      /* ÇOKLU SEÇİM KUTUSU */
+      .multi-select-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+      .chk-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #334155; }
+      .chk-item input { width: 16px; height: 16px; cursor: pointer; }
+
+      .btn-next { background: #0f172a; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: auto; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+      .btn-back { background: transparent; color: #64748b; border: none; font-weight: 600; cursor: pointer; padding: 10px; }
+
       @media(max-width: 768px) {
-          .app-hero { height: 260px; text-align:center; }
+          .app-hero { height: 250px; }
           .app-hero h1 { font-size: 24px; }
-          .app-container { margin-top: -30px; padding: 0 15px; }
           .benefit-grid { grid-template-columns: 1fr; gap: 10px; }
           .b-card { flex-direction: row; padding: 15px; text-align: left; align-items: center; justify-content: flex-start; }
           .b-card img { margin: 0 15px 0 0; width: 50px; height: 50px; }
-          .inp-row { grid-template-columns: 1fr; gap: 15px; }
+          .inp-row, .multi-select-box { grid-template-columns: 1fr; gap: 15px; }
           .form-content { padding: 20px; }
-          .progress-header { padding: 15px 20px; }
       }
   </style>
   `;
@@ -2625,8 +2624,6 @@ ${css}
     let appStatus = "none";
     if (email) {
       try {
-        root.innerHTML =
-          '<div style="text-align:center; padding:100px;"><i class="fas fa-spinner fa-spin fa-3x"></i><br>Yükleniyor...</div>';
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2644,23 +2641,32 @@ ${css}
 
     var html = `
   ${style}
-  <div class="app-hero">
+  <div class="app-hero" style="background-image: url('${BANNER_IMG}');">
+      <div class="app-hero-overlay"></div>
       <div class="app-hero-content">
           <h1>INFLUENCER BAŞVURUSU</h1>
-          <p>Sadece bir ortaklık değil, profesyonel bir kariyer. Verilerinizi girin, ModumNet'in ayrıcalıklı dünyasına adım atın.</p>
+          <p>ModumNet Partner programı ile sosyal medya gücünü kazanca dönüştür.</p>
       </div>
   </div>
   <div class="app-container">
       <div class="benefit-grid">
-          <div class="b-card"><img src="${ICON_1}"><div><h4>Yüksek Komisyon</h4><p>Satış yaptıkça artan oranlar.</p></div></div>
-          <div class="b-card"><img src="${ICON_2}"><div><h4>Özel Hediyeler</h4><p>Sürpriz kutular ve ürünler.</p></div></div>
-          <div class="b-card"><img src="${ICON_3}"><div><h4>Partner Akademisi</h4><p>Ücretsiz eğitimlerle geliş.</p></div></div>
+          <div class="b-card">
+              <img src="${ICON_1}">
+              <div><h4>Yüksek Komisyon</h4><p>Satış yaptıkça artan oranlar.</p></div>
+          </div>
+          <div class="b-card">
+              <img src="${ICON_2}">
+              <div><h4>Özel Hediyeler</h4><p>Sürpriz kutular ve ürünler.</p></div>
+          </div>
+          <div class="b-card">
+              <img src="${ICON_3}">
+              <div><h4>Partner Akademisi</h4><p>Ücretsiz eğitimlerle geliş.</p></div>
+          </div>
       </div>
       <div class="form-box" id="app-form-area"></div>
   </div>
   `;
     root.innerHTML = html;
-
     renderFormContent(appStatus, email);
   }
 
@@ -2951,7 +2957,7 @@ ${css}
     showStep2();
   };
 
-  // --- ADIM 2: KİŞİSEL & STRATEJİ ---
+  // --- ADIM 2: KİŞİSEL & STRATEJİ (GÜNCELLENMİŞ - ÇOKLU SEÇİM) ---
   window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
@@ -2974,15 +2980,15 @@ ${css}
           </div>
 
           <div class="inp-group">
-              <label>Tanıtım Stratejiniz</label>
-              <select id="app_strategy">
-                  <option value="">Nasıl satış yapacaksınız?</option>
-                  <option value="Story Kaydırmalı Link">Instagram Hikaye (Link) Paylaşımı</option>
-                  <option value="Reels Kombin">Reels / TikTok Kombin Videoları</option>
-                  <option value="WhatsApp Grubu">Özel WhatsApp İndirim Grubu</option>
-                  <option value="Web SEO">Web Sitesi / Blog Yazıları</option>
-                  <option value="Youtube İnceleme">YouTube Ürün İnceleme</option>
-              </select>
+              <label>Tanıtım Stratejiniz (Birden Fazla Seçebilirsiniz)</label>
+              <div class="multi-select-box">
+                  <label class="chk-item"><input type="checkbox" name="strat" value="Story Link"> Instagram Hikaye (Link)</label>
+                  <label class="chk-item"><input type="checkbox" name="strat" value="Reels Kombin"> Reels / TikTok Kombin</label>
+                  <label class="chk-item"><input type="checkbox" name="strat" value="WhatsApp Grup"> WhatsApp İndirim Grubu</label>
+                  <label class="chk-item"><input type="checkbox" name="strat" value="YouTube"> YouTube İnceleme</label>
+                  <label class="chk-item"><input type="checkbox" name="strat" value="Web SEO"> Web Sitesi / Blog</label>
+                  <label class="chk-item"><input type="checkbox" name="strat" value="Diger"> Diğer Yöntemler</label>
+              </div>
           </div>
 
           <div class="inp-group">
@@ -2997,7 +3003,41 @@ ${css}
           </div>
       </div>
     `;
-  }; // --- ADIM 3: ÖDEME & ONAY ---
+  };
+
+  // --- ADIM 2 DOĞRULAMA (ÇOKLU SEÇİM ALMA) ---
+  window.validateStep2 = function () {
+    const name = document.getElementById("app_name").value;
+    const phone = document.getElementById("app_phone").value;
+    const coupon = document
+      .getElementById("app_coupon")
+      .value.toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+
+    // Checkboxları topla
+    const checkboxes = document.querySelectorAll('input[name="strat"]:checked');
+    let strategies = [];
+    checkboxes.forEach((cb) => {
+      strategies.push(cb.value);
+    });
+
+    if (name.length < 5 || phone.length < 10)
+      return alert("Ad ve Telefon zorunludur.");
+    if (strategies.length === 0)
+      return alert("Lütfen en az bir tanıtım stratejisi seçin.");
+    if (coupon.length < 3) return alert("Lütfen bir kupon kodu belirleyin.");
+
+    // Veriyi kaydet
+    window.appData.personal = {
+      name: name,
+      phone: phone,
+      strategy: strategies.join(", "), // Virgülle birleştirip kaydet
+      customCoupon: coupon,
+    };
+
+    // 3. Adıma Geç (Sorun buradaydı, şimdi çözüldü)
+    showStep3();
+  }; // --- ADIM 3: ÖDEME & ONAY (EKSİK PARÇA) ---
   window.showStep3 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
@@ -3032,7 +3072,7 @@ ${css}
               <label style="display:flex; gap:10px; font-size:13px; cursor:pointer; align-items:flex-start;">
                   <input type="checkbox" id="app_terms" style="width:20px; height:20px; margin-top:0;">
                   <span style="line-height:1.4;">
-                      <span onclick="openContractModal()" style="color:#3b82f6; font-weight:bold; text-decoration:underline;">ModumNet Influencer Sözleşmesi</span>'ni okudum, beyan ettiğim verilerin doğruluğunu taahhüt eder ve kabul ederim.
+                      <span onclick="openContractModal()" style="color:#3b82f6; font-weight:bold; text-decoration:underline;">ModumNet Influencer Sözleşmesi</span>'ni okudum ve kabul ediyorum.
                   </span>
               </label>
           </div>
@@ -3366,5 +3406,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
