@@ -2924,36 +2924,85 @@ ${css}
     showIntro(); // 🔥 ÖNCE TANITIM EKRANI AÇILSIN
   }
 
-  // --- ADIM 0: SİSTEM TANITIMI (YENİ) ---
+  // --- ADIM 0: SİSTEM TANITIMI VE İKNA EKRANI (PRO VERSİYON) ---
   window.showIntro = function () {
     const area = document.getElementById("app-form-area");
+
+    // İkonlar (FontAwesome varsa kullanır, yoksa emoji)
+    const iconMoney =
+      '<i class="fas fa-wallet" style="font-size:24px; color:#10b981; margin-bottom:10px;"></i>';
+    const iconGift =
+      '<i class="fas fa-gift" style="font-size:24px; color:#f59e0b; margin-bottom:10px;"></i>';
+    const iconGrowth =
+      '<i class="fas fa-chart-line" style="font-size:24px; color:#3b82f6; margin-bottom:10px;"></i>';
+
     area.innerHTML = `
-      <div class="form-left">
-          <div class="form-left-text">
-              <h3 style="margin:0;">Hoş Geldin!</h3>
-              <p style="margin:5px 0 0; opacity:0.8;">Kazanmaya başlamadan önce...</p>
+      <div class="form-left" style="background-image: url('https://www.modum.tr/i/m/001/0016756.jpeg'); background-size: cover; position: relative;">
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent);"></div>
+          <div class="form-left-text" style="position: absolute; bottom: 40px; left: 30px; z-index: 2; text-align: left;">
+              <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: white; line-height: 1.2;">Tutkunu<br>Kazanca Dönüştür.</h2>
+              <p style="margin: 15px 0 0; opacity: 0.9; font-size: 14px; color: #cbd5e1; line-height: 1.6;">
+                  ModumNet ile sadece bir satış ortağı değil, markamızın bir yüzü olursun.
+                  <br><br>
+                  ✨ Haftalık Ödemeler<br>
+                  ✨ Sana Özel İndirim Kodları<br>
+                  ✨ Hediye Ürün Paketleri
+              </p>
           </div>
       </div>
-      <div class="form-right">
-          <h2 style="color:#1e293b; margin-top:0;">ModumNet Partner Programı</h2>
-          <p style="color:#64748b; font-size:13px; line-height:1.6;">
-              Sosyal medya gücünü gelire dönüştürmeye hazır mısın? ModumNet Partner programı ile paylaştığın her linkten komisyon kazanabilirsin.
-          </p>
-
-          <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
-              <h4 style="margin:0 0 10px 0; color:#334155;">💎 Kazanç Oranları</h4>
-              <ul style="margin:0; padding-left:20px; font-size:12px; color:#475569; line-height:1.8;">
-                  <li><b>🥉 Bronz Seviye:</b> %10 Komisyon (Başlangıç)</li>
-                  <li><b>🥈 Gümüş Seviye:</b> %15 Komisyon (10.000 TL üzeri ciro)</li>
-                  <li><b>👑 Altın Seviye:</b> %20 Komisyon (50.000 TL üzeri ciro)</li>
-              </ul>
+      
+      <div class="form-right" style="padding: 40px; display: flex; flex-direction: column; justify-content: center;">
+          <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="color: #1e293b; margin: 0; font-size: 24px; font-weight: 800;">ModumNet Partner Programı</h2>
+              <p style="color: #64748b; font-size: 13px; margin-top: 5px;">Türkiye'nin en hızlı büyüyen influencer topluluğuna katıl.</p>
           </div>
 
-          <div style="background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0; font-size:12px; color:#166534; margin-bottom:20px;">
-              <i class="fas fa-gift"></i> Ayrıca takipçilerine özel tanımlayacağın <b>İndirim Kuponu</b> ile satışlarını artırabilirsin!
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 15px 0; color: #334155; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">💎 Neden Bizi Seçmelisin?</h4>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
+                  <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                      ${iconMoney}
+                      <div style="font-size: 11px; font-weight: bold; color: #334155;">%20'ye Varan<br>Komisyon</div>
+                  </div>
+                  <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                      ${iconGift}
+                      <div style="font-size: 11px; font-weight: bold; color: #334155;">Sürpriz<br>Hediyeler</div>
+                  </div>
+                  <div style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                      ${iconGrowth}
+                      <div style="font-size: 11px; font-weight: bold; color: #334155;">Ücretsiz<br>Eğitimler</div>
+                  </div>
+              </div>
           </div>
 
-          <button onclick="showStep1()" class="btn-next">BAŞVURUYA BAŞLA &rarr;</button>
+          <div style="margin-bottom: 25px;">
+              <h4 style="margin: 0 0 10px 0; color: #334155; font-size: 14px;">🚀 Nasıl Çalışır?</h4>
+              <div style="display: flex; align-items: flex-start; gap: 15px; font-size: 12px; color: #475569;">
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                      <div style="width: 30px; height: 30px; background: #eff6ff; color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px;">1</div>
+                      <span>Başvurunu<br>Tamamla</span>
+                  </div>
+                  <div style="width: 20px; height: 1px; background: #cbd5e1; margin-top: 15px;"></div>
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                      <div style="width: 30px; height: 30px; background: #f0fdf4; color: #166534; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px;">2</div>
+                      <span>Linkini<br>Paylaş</span>
+                  </div>
+                  <div style="width: 20px; height: 1px; background: #cbd5e1; margin-top: 15px;"></div>
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                      <div style="width: 30px; height: 30px; background: #fffbeb; color: #b45309; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px;">3</div>
+                      <span>Kazancını<br>Takip Et</span>
+                  </div>
+              </div>
+          </div>
+
+          <button onclick="showStep1()" class="btn-next" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); transition: transform 0.2s;">
+              HEMEN BAŞVUR &rarr;
+          </button>
+          
+          <div style="text-align: center; margin-top: 15px; font-size: 11px; color: #94a3b8;">
+              * Başvurunuz 24 saat içinde değerlendirilecektir.
+          </div>
       </div>
     `;
   };
@@ -3449,5 +3498,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
