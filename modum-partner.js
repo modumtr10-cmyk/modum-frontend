@@ -2438,96 +2438,192 @@ ${css}
       });
     },
   };
-  // --- 🚀 SİTE-ÜSTÜ HIZLI LİNK VE KOLEKSİYON ÇUBUĞU (V4 - FIX) ---
+  // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (AMAZON STYLE PRO) ---
   function renderSiteStripe() {
+    // 1. Zaten varsa tekrar oluşturma
     if (document.getElementById("mdm-stripe-bar")) return;
 
     var pData = window.PartnerData || {};
     var myRefCode = pData.refCode;
+
+    // Veriler yoksa gösterme
     if (!myRefCode) return;
 
-    // Ürün sayfası kontrolü
-    var isProductPage =
-      window.location.href.includes("-p-") ||
-      document.querySelector('meta[property="product:price:amount"]') ||
-      document.querySelector(".product-price");
+    // --- AYARLAR ---
+    var myCommissionRate = parseFloat(pData.commission_rate || 10); // Ortağın kazanç oranı (Örn: %10)
+    var customerDiscountRate = parseFloat(pData.discount_rate || 15); // Müşteriye sağlanan indirim (Örn: %15)
+
+    // --- FİYAT VE SAYFA KONTROLÜ ---
+    var productPrice = 0;
+    var isProductPage = false;
+
+    // Fiyatı Faprika Meta Etiketinden Çek (En güvenli yol)
+    var priceMeta = document.querySelector(
+      'meta[property="product:price:amount"]',
+    );
+
+    // Meta yoksa HTML'den tarayalım (Yedek Plan)
+    if (priceMeta) {
+      productPrice = parseFloat(priceMeta.content);
+      isProductPage = true;
+    } else {
+      // Sitedeki olası fiyat sınıflarını tara
+      var priceEl =
+        document.querySelector(".product-price") ||
+        document.querySelector(".current-price") ||
+        document.querySelector(".fiyat") ||
+        document.querySelector(".price");
+
+      if (priceEl) {
+        // "1.250,00 TL" formatını temizle -> 1250.00
+        var txt = priceEl.innerText
+          .replace("TL", "")
+          .replace(/\./g, "") // Binlik ayırıcıyı sil
+          .replace(",", ".") // Kuruş ayırıcıyı nokta yap
+          .trim();
+        productPrice = parseFloat(txt);
+        if (!isNaN(productPrice)) isProductPage = true;
+      }
+    }
+
+    // --- HESAPLAMALAR ---
+    let statsHtml = "";
+
+    if (isProductPage && productPrice > 0) {
+      // Matematik: Önce müşteriye indirim yap, sonra kalan tutardan komisyon ver
+      let discountAmount = productPrice * (customerDiscountRate / 100);
+      let discountedPrice = productPrice - discountAmount;
+      let partnerEarnings = discountedPrice * (myCommissionRate / 100);
+
+      // HTML ÇIKTISI (Masaüstü ve Mobil için ayrı düzen)
+      statsHtml = `
+            <div class="stripe-stats-container">
+                <div class="hide-mobile stripe-detail-box">
+                    <span style="color:#94a3b8; font-size:10px;">Takipçine İndirim:</span>
+                    <span style="color:#f59e0b; font-weight:bold;">-${discountAmount.toFixed(2)} TL</span>
+                </div>
+
+                <div class="hide-mobile stripe-divider"></div>
+
+                <div class="stripe-earn-box">
+                    <span class="earn-label">KAZANCIN:</span>
+                    <span class="earn-amount">+${partnerEarnings.toFixed(2)} TL</span>
+                </div>
+            </div>
+        `;
+    }
 
     // Linkler
-    var currentPageLink = window.location.href.split("?")[0]; // Mevcut sayfa (temiz)
-    var myStoreLink = "https://www.modum.tr/?koleksiyon=" + myRefCode; // Koleksiyon linki
+    var currentPageLink = window.location.href.split("?")[0];
+    var myStoreLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
 
-    // Butonlar
-    var leftBtnHtml = `
-         <button onclick="PartnerApp.openShareMenu('${currentPageLink}', false)" class="mdm-btn" style="background:#3b82f6; border-color:#2563eb;">
-            <i class="fas fa-share-alt"></i> <span class="hide-mobile">Bu Sayfayı Paylaş</span>
-        </button>
-    `;
-
-    var collectionActionBtn = "";
+    // Koleksiyon Butonu (Sadece ürün sayfasındaysa görünür)
+    var collectionBtnHtml = "";
     if (isProductPage) {
-      collectionActionBtn = `
-            <button onclick="PartnerApp.toggleCollectionItem()" class="mdm-btn" style="background:#f59e0b; color:#fff; border:1px solid #d97706;">
+      collectionBtnHtml = `
+            <button onclick="PartnerApp.toggleCollectionItem()" class="mdm-btn btn-collection">
                 <i class="fas fa-plus-circle"></i> <span class="hide-mobile">Koleksiyona Ekle</span>
             </button>
         `;
     }
 
-    var stripeHTML = `
+    // --- CSS TASARIMI (Responsive & Modern) ---
+    var css = `
     <style>
+        /* Ana Çubuk */
         #mdm-stripe-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; 
             background: #0f172a; color: white; z-index: 2147483640; 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            padding: 0 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
             font-family: 'Inter', sans-serif; box-sizing: border-box;
             border-bottom: 2px solid #3b82f6;
         }
+
+        /* İstatistik Kutusu */
+        .stripe-stats-container {
+            display: flex; align-items: center; gap: 10px;
+            background: #1e293b; padding: 5px 12px; border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .stripe-detail-box { display: flex; flex-direction: column; line-height: 1.1; }
+        .stripe-divider { width: 1px; height: 24px; background: #334155; }
+        
+        .stripe-earn-box { display: flex; flex-direction: column; line-height: 1.1; align-items: flex-end; }
+        .earn-label { font-size: 9px; color: #6ee7b7; text-transform: uppercase; font-weight: 700; }
+        .earn-amount { font-size: 14px; color: #34d399; font-weight: 800; text-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
+
+        /* Butonlar */
         .mdm-btn {
-            background: #334155; color: white; border: 1px solid #475569; padding: 0 12px; 
-            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; text-decoration: none;
-            transition: 0.2s; white-space: nowrap; height: 34px;
+            padding: 0 15px; height: 36px; border-radius: 6px; cursor: pointer; 
+            font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; 
+            text-decoration: none; transition: 0.2s; white-space: nowrap; border: none;
         }
         .mdm-btn:active { transform: scale(0.95); }
-        .mdm-divider { width:1px; height:20px; background:#334155; margin:0 5px; }
-        
-        @media (max-width: 600px) {
-            .hide-mobile { display: none; }
-            #mdm-stripe-bar { padding: 0 8px; }
-            .mdm-btn { padding: 0 10px; font-size: 13px; }
+
+        .btn-share { background: #3b82f6; color: white; }
+        .btn-share:hover { background: #2563eb; }
+
+        .btn-collection { background: #f59e0b; color: white; }
+        .btn-collection:hover { background: #d97706; }
+
+        .btn-store { background: #10b981; color: white; }
+        .btn-store:hover { background: #059669; }
+
+        .mdm-logo-area { display: flex; align-items: center; gap: 10px; }
+        .mdm-partner-badge { 
+            background: linear-gradient(135deg, #fbbf24, #d97706); color: white; 
+            padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; 
+            box-shadow: 0 2px 5px rgba(251, 191, 36, 0.3);
+        }
+
+        /* MOBİL UYUM */
+        @media (max-width: 768px) {
+            .hide-mobile { display: none !important; }
+            #mdm-stripe-bar { height: 50px; padding: 0 10px; }
+            .mdm-btn { padding: 0 10px; height: 32px; }
+            .earn-amount { font-size: 13px; }
+            .stripe-stats-container { padding: 4px 8px; }
         }
     </style>
+    `;
+
+    // --- HTML YAPISI ---
+    var html = `
+    ${css}
     <div id="mdm-stripe-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-weight:900; color:#fbbf24; font-size:18px;">👑</div>
-            ${leftBtnHtml}
-        </div>
+        <div class="mdm-logo-area">
+            <div class="mdm-partner-badge hide-mobile">PARTNER</div>
+            ${statsHtml} </div>
         
         <div style="display:flex; gap:8px; align-items:center;">
-             ${collectionActionBtn}
-             
-             <div class="mdm-divider"></div>
+             <button onclick="PartnerApp.openShareMenu('${currentPageLink}', false)" class="mdm-btn btn-share">
+                <i class="fas fa-share-alt"></i> <span class="hide-mobile">Paylaş</span>
+            </button>
 
-             <button onclick="PartnerApp.openShareMenu('${myStoreLink}', true)" class="mdm-btn" style="background:#10b981; border-color:#059669;">
+             ${collectionBtnHtml}
+             
+             <button onclick="PartnerApp.openShareMenu('${myStoreLink}', true)" class="mdm-btn btn-store">
                 <i class="fas fa-store"></i> <span class="hide-mobile">Mağazam</span>
             </button>
 
-            <div onclick="closeStripe()" style="padding:0 5px; cursor:pointer; color:#94a3b8; font-size:22px; line-height:1; margin-left:5px;">&times;</div>
+            <div onclick="closeStripe()" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#64748b; font-size:18px;">&times;</div>
         </div>
     </div>
     `;
 
-    document.body.insertAdjacentHTML("afterbegin", stripeHTML);
+    document.body.insertAdjacentHTML("afterbegin", html);
 
-    // Siteyi aşağı it
-    document.body.style.marginTop = "50px";
+    // Siteyi aşağı it (Header çakışmasını önle)
+    document.body.style.marginTop = "60px";
     var headers = document.querySelectorAll(
       "header, .header, #header, .header-container, .top-bar, .sticky-header",
     );
     headers.forEach(function (h) {
       var style = window.getComputedStyle(h);
       if (style.position === "fixed" || style.position === "sticky") {
-        h.style.top = "50px";
+        h.style.top = "60px";
       }
     });
 
@@ -3253,5 +3349,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
