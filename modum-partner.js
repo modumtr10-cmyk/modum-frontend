@@ -2985,44 +2985,18 @@ ${css}
     });
   }
 
-  function renderFormLogic(email) {
-    const area = document.getElementById("app-form-area");
+  // ============================================================
+  // 🚀 PARTNER BAŞVURU SİHİRBAZI v2.0 (GELİŞTİRİLMİŞ)
+  // ============================================================
 
-    // SENARYO A: GİRİŞ YAPMAMIŞ
-    if (!email) {
-      area.innerHTML = `
-          <div class="form-left">
-              <div class="form-left-text">
-                  <h3 style="margin:0;">Aramıza Katıl</h3>
-                  <p style="margin:5px 0 0; opacity:0.8;">ModumNet ailesinin bir parçası ol.</p>
-              </div>
-          </div>
-          <div class="form-right" style="justify-content:center; text-align:center;">
-              <div style="font-size:50px; margin-bottom:20px;">🔒</div>
-              <h2 style="margin:0; color:#1e293b;">Önce Giriş Yapmalısın</h2>
-              <p style="color:#64748b; margin:10px 0 30px;">Partner başvurusu yapabilmek için ModumNet üyesi olman gerekiyor. Hesabın varsa giriş yap, yoksa hemen ücretsiz oluştur.</p>
-              
-              <a href="/uyelik-girisi" class="btn-next" style="text-decoration:none; display:block; line-height:20px;">
-                  GİRİŞ YAP / KAYIT OL
-              </a>
-          </div>
-        `;
-      return;
-    }
-
-    // SENARYO B: GİRİŞ YAPMIŞ -> BAŞVURU FORMU (ADIM 1)
-    window.appData = { email: email }; // Verileri toplamak için
-    showStep1();
-  }
-
-  // --- ADIM 1: SOSYAL MEDYA ---
+  // --- ADIM 1: SOSYAL MEDYA & ANALİZ (BOT KORUMASI) ---
   window.showStep1 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
       <div class="form-left">
           <div class="form-left-text">
-              <h3 style="margin:0;">Adım 1/3</h3>
-              <p style="margin:5px 0 0; opacity:0.8;">Sosyal medya gücünü tanıyalım.</p>
+              <h3 style="margin:0;">Adım 1/3: Analiz</h3>
+              <p style="margin:5px 0 0; opacity:0.8;">Seni ve kitleni daha yakından tanıyalım.</p>
           </div>
       </div>
       <div class="form-right">
@@ -3030,25 +3004,59 @@ ${css}
               <div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div>
           </div>
           
-          <h3 style="margin:0 0 20px 0; color:#1e293b;">Sosyal Medya Hesapların</h3>
+          <h3 style="margin:0 0 10px 0; color:#1e293b;">Sosyal Medya Gücün</h3>
+          <p style="font-size:12px; color:#64748b; margin-bottom:20px;">
+              Başvurunun onaylanması için lütfen <b>en aktif olduğun</b> platformu ve gerçek verileri gir.
+          </p>
 
           <div class="inp-group">
-              <label>Instagram Kullanıcı Adın (Zorunlu)</label>
-              <input type="text" id="app_insta" placeholder="@kullaniciadi">
-          </div>
-          <div class="inp-group">
-              <label>TikTok, YouTube veya Diğerleri (Varsa)</label>
-              <input type="text" id="app_other" placeholder="Örn: TikTok: @modum, YouTube: ModumKanal (Hepsini yazabilirsiniz)">
-              <div style="font-size:10px; color:#94a3b8; margin-top:3px;">Birden fazla hesabınız varsa araya virgül koyarak yazabilirsiniz.</div>
-          </div>
-          <div class="inp-group">
-              <label>Toplam Takipçi Sayın (Tahmini)</label>
-              <select id="app_followers">
-                  <option value="1k-5k">1.000 - 5.000</option>
-                  <option value="5k-10k">5.000 - 10.000</option>
-                  <option value="10k-50k">10.000 - 50.000</option>
-                  <option value="50k+">50.000+</option>
+              <label>Ana Platformun</label>
+              <select id="app_platform">
+                  <option value="Instagram">Instagram</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Telegram">Telegram / WhatsApp Grubu</option>
               </select>
+          </div>
+
+          <div class="inp-group">
+              <label>Kullanıcı Adın / Kanal Linkin</label>
+              <input type="text" id="app_handle" placeholder="@kullaniciadi veya https://...">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+              <div class="inp-group">
+                  <label>Takipçi Sayın</label>
+                  <select id="app_followers">
+                      <option value="1k-5k">1.000 - 5.000</option>
+                      <option value="5k-10k">5.000 - 10.000</option>
+                      <option value="10k-50k">10.000 - 50.000</option>
+                      <option value="50k-100k">50.000 - 100.000</option>
+                      <option value="100k+">100.000+</option>
+                  </select>
+              </div>
+              <div class="inp-group">
+                  <label>Ortalama Story İzlenmen</label>
+                  <input type="number" id="app_views" placeholder="Örn: 1500">
+                  <div style="font-size:10px; color:#ef4444; margin-top:2px;">* Bot kontrolü için önemlidir.</div>
+              </div>
+          </div>
+
+          <div class="inp-group">
+              <label>İçerik Kategorin</label>
+              <select id="app_category">
+                  <option value="Moda">👗 Moda & Giyim</option>
+                  <option value="Güzellik">💄 Güzellik & Bakım</option>
+                  <option value="AnneCocuk">👶 Anne & Çocuk</option>
+                  <option value="Lifestyle">☕ Lifestyle / Günlük</option>
+                  <option value="Ogrenci">🎓 Öğrenci / Kampüs</option>
+                  <option value="Diger">Diğer</option>
+              </select>
+          </div>
+
+          <div class="inp-group">
+              <label>Satış Stratejin (Bizi nasıl tanıtacaksın?)</label>
+              <textarea id="app_strategy" rows="2" placeholder="Örn: Kombin videoları çekeceğim, indirim kodu paylaşacağım..."></textarea>
           </div>
 
           <button onclick="validateStep1()" class="btn-next">DEVAM ET &rarr;</button>
@@ -3057,25 +3065,35 @@ ${css}
   };
 
   window.validateStep1 = function () {
-    const insta = document.getElementById("app_insta").value;
-    if (insta.length < 3) return alert("Lütfen Instagram kullanıcı adını gir.");
+    const handle = document.getElementById("app_handle").value;
+    const views = document.getElementById("app_views").value;
+    const strategy = document.getElementById("app_strategy").value;
+
+    if (handle.length < 3) return alert("Lütfen kullanıcı adını gir.");
+    if (!views || views < 50)
+      return alert("Lütfen gerçekçi bir izlenme sayısı giriniz.");
+    if (strategy.length < 10) return alert("Lütfen stratejini kısaca anlat.");
 
     window.appData.social = {
-      instagram: insta,
-      other: document.getElementById("app_other").value,
+      platform: document.getElementById("app_platform").value,
+      handle: handle,
       followers: document.getElementById("app_followers").value,
+      // 🔥 YENİ VERİLER:
+      avg_story_views: views,
+      category: document.getElementById("app_category").value,
+      strategy: strategy,
     };
     showStep2();
   };
 
-  // --- ADIM 2: KİŞİSEL BİLGİLER, KUPON VE BANKA ---
+  // --- ADIM 2: KİMLİK & İLETİŞİM (PROFESYONEL) ---
   window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
       <div class="form-left">
           <div class="form-left-text">
               <h3 style="margin:0;">Adım 2/3</h3>
-              <p style="margin:5px 0 0; opacity:0.8;">Kimlik ve Ödeme Bilgileri.</p>
+              <p style="margin:5px 0 0; opacity:0.8;">Ödeme ve kargo bilgileri.</p>
           </div>
       </div>
       <div class="form-right">
@@ -3083,45 +3101,50 @@ ${css}
               <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div>
           </div>
           
-          <div class="inp-group">
-              <label>Adın Soyadın (Hesap Sahibi)</label>
-              <input type="text" id="app_name" placeholder="Tam adınız">
-          </div>
-          <div class="inp-group">
-              <label>Telefon Numaran (WhatsApp)</label>
-              <input type="tel" id="app_phone" placeholder="0555 555 55 55">
-          </div>
+          <h3 style="margin:0 0 15px 0; color:#1e293b;">Kişisel Bilgiler</h3>
 
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
               <div class="inp-group">
-                  <label>Banka Seçiniz</label>
+                  <label>Adın Soyadın</label>
+                  <input type="text" id="app_name" placeholder="Tam adınız">
+              </div>
+              <div class="inp-group">
+                  <label>Doğum Tarihi</label>
+                  <input type="date" id="app_birthdate">
+              </div>
+          </div>
+
+          <div class="inp-group">
+              <label>Telefon (WhatsApp)</label>
+              <input type="tel" id="app_phone" placeholder="0555 555 55 55">
+          </div>
+
+          <hr style="margin:15px 0; border:0; border-top:1px solid #e2e8f0;">
+          <h4 style="margin:0 0 10px 0; font-size:14px; color:#1e293b;">Ödeme Bilgileri</h4>
+
+          <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+              <div class="inp-group">
+                  <label>Banka</label>
                   <select id="app_bank_name">
                       <option value="">Seç...</option>
-                      <option value="Ziraat">Ziraat Bankası</option>
-                      <option value="Garanti">Garanti BBVA</option>
+                      <option value="Ziraat">Ziraat</option>
+                      <option value="Garanti">Garanti</option>
                       <option value="IsBank">İş Bankası</option>
                       <option value="Akbank">Akbank</option>
                       <option value="Yapikredi">Yapı Kredi</option>
-                      <option value="Finansbank">QNB Finansbank</option>
-                      <option value="Halkbank">Halkbank</option>
-                      <option value="Vakifbank">Vakıfbank</option>
-                      <option value="Diger">Diğer / Papara</option>
+                      <option value="Finansbank">QNB Finans</option>
+                      <option value="Diger">Diğer</option>
                   </select>
               </div>
               <div class="inp-group">
-                  <label>IBAN Numarası</label>
-                  <input type="text" id="app_iban" placeholder="TR..." maxlength="32" oninput="this.value = this.value.toUpperCase()">
+                  <label>IBAN (TR...)</label>
+                  <input type="text" id="app_iban" maxlength="32" oninput="this.value = this.value.toUpperCase()">
               </div>
           </div>
 
           <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px;">
-              <label style="color:#c2410c;">İstediğin İndirim Kodu</label>
-              <input type="text" id="app_coupon" placeholder="Örn: AHMET15" style="font-weight:bold; color:#c2410c;">
-          </div>
-
-          <div class="inp-group">
-              <label>Neden ModumNet?</label>
-              <textarea id="app_reason" rows="2" placeholder="Hedeflerin neler?"></textarea>
+              <label style="color:#c2410c;">Sana Özel İndirim Kodu Ne Olsun?</label>
+              <input type="text" id="app_coupon" placeholder="Örn: MERVE15 (Takipçilerin için)" style="font-weight:bold; color:#c2410c;">
           </div>
 
           <div style="display:flex; gap:10px;">
@@ -3132,35 +3155,47 @@ ${css}
     `;
   };
 
-  // --- VALIDATION GÜNCELLEMESİ (IBAN KONTROLÜ) ---
+  // --- VALIDATION (GÜNCELLENDİ) ---
   window.validateStep2 = function () {
     const name = document.getElementById("app_name").value;
     const phone = document.getElementById("app_phone").value;
+    const birthdate = document.getElementById("app_birthdate").value;
     const coupon = document
       .getElementById("app_coupon")
       .value.toUpperCase()
       .replace(/[^A-Z0-9]/g, "");
 
-    // Yeni Banka Verileri
+    // Banka
     const bankName = document.getElementById("app_bank_name").value;
-    let iban = document.getElementById("app_iban").value.trim();
+    const iban = document.getElementById("app_iban").value.trim();
 
-    if (name.length < 3 || phone.length < 10)
-      return alert("Ad ve telefon zorunludur.");
-    if (coupon.length < 3)
-      return alert("Lütfen geçerli bir kupon kodu belirleyin.");
+    if (name.length < 3) return alert("Ad soyad giriniz.");
+    if (!phone) return alert("Telefon giriniz.");
+    if (!birthdate) return alert("Doğum tarihi giriniz.");
 
-    // IBAN Kontrolü (Basit)
-    if (!bankName) return alert("Lütfen bankanızı seçiniz.");
-    if (!iban.startsWith("TR") || iban.length < 10)
-      return alert("Lütfen geçerli bir IBAN giriniz (TR ile başlamalı).");
+    // Yaş Kontrolü (18 yaş altı uyarısı - Opsiyonel)
+    const age = new Date().getFullYear() - new Date(birthdate).getFullYear();
+    if (age < 16)
+      return alert(
+        "Partner programına katılmak için en az 16 yaşında olmalısınız.",
+      );
+
+    if (!bankName || iban.length < 10)
+      return alert("Lütfen banka ve IBAN bilgilerini eksiksiz giriniz.");
+    if (coupon.length < 3) return alert("Lütfen bir indirim kodu belirleyin.");
 
     window.appData.personal = {
       name: name,
       phone: phone,
-      reason: document.getElementById("app_reason").value,
+      birthdate: birthdate,
+      bankInfo: `${bankName} - ${iban}`,
       customCoupon: coupon,
-      bankInfo: `${bankName} - ${iban}`, // 🔥 Tek satırda birleştirip saklıyoruz
+      // Sebebini artık strateji kısmına aldığımız için buraya boş veya özet geçebiliriz
+      reason:
+        "Platform: " +
+        window.appData.social.platform +
+        " | Kategori: " +
+        window.appData.social.category,
     };
     showStep3();
   };
@@ -3414,5 +3449,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
