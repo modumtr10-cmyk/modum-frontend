@@ -2438,7 +2438,7 @@ ${css}
       });
     },
   };
-  // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (AMAZON STYLE PRO) ---
+  // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
   function renderSiteStripe() {
     // 1. Zaten varsa tekrar oluşturma
     if (document.getElementById("mdm-stripe-bar")) return;
@@ -2453,21 +2453,29 @@ ${css}
     var myCommissionRate = parseFloat(pData.commission_rate || 10); // Ortağın kazanç oranı (Örn: %10)
     var customerDiscountRate = parseFloat(pData.discount_rate || 15); // Müşteriye sağlanan indirim (Örn: %15)
 
-    // --- FİYAT VE SAYFA KONTROLÜ ---
+    // --- FİYAT VE SAYFA KONTROLÜ (GÜNCELLENDİ) ---
     var productPrice = 0;
     var isProductPage = false;
 
-    // Fiyatı Faprika Meta Etiketinden Çek (En güvenli yol)
-    var priceMeta = document.querySelector(
-      'meta[property="product:price:amount"]',
-    );
+    // YÖNTEM 1: Senin HTML yapındaki en garanti veri (itemprop="price")
+    // <span itemprop="price" content="1209.90" ... >
+    var schemaPrice = document.querySelector('[itemprop="price"]');
 
-    // Meta yoksa HTML'den tarayalım (Yedek Plan)
-    if (priceMeta) {
+    if (schemaPrice && schemaPrice.getAttribute("content")) {
+      // content="1209.90" değerini direkt alıyoruz (En Temiz Yöntem)
+      productPrice = parseFloat(schemaPrice.getAttribute("content"));
+      isProductPage = true;
+    }
+    // YÖNTEM 2: Faprika Meta Etiketi (Yedek)
+    else if (document.querySelector('meta[property="product:price:amount"]')) {
+      var priceMeta = document.querySelector(
+        'meta[property="product:price:amount"]',
+      );
       productPrice = parseFloat(priceMeta.content);
       isProductPage = true;
-    } else {
-      // Sitedeki olası fiyat sınıflarını tara
+    }
+    // YÖNTEM 3: Klasik Sınıf Tarama (Son Çare)
+    else {
       var priceEl =
         document.querySelector(".product-price") ||
         document.querySelector(".current-price") ||
@@ -2478,11 +2486,13 @@ ${css}
         // "1.250,00 TL" formatını temizle -> 1250.00
         var txt = priceEl.innerText
           .replace("TL", "")
-          .replace(/\./g, "") // Binlik ayırıcıyı sil
-          .replace(",", ".") // Kuruş ayırıcıyı nokta yap
+          .replace("TRY", "")
+          .replace(/\./g, "") // Binlik ayırıcıyı sil (1.200 -> 1200)
+          .replace(",", ".") // Kuruş ayırıcıyı nokta yap (1200,90 -> 1200.90)
           .trim();
         productPrice = parseFloat(txt);
-        if (!isNaN(productPrice)) isProductPage = true;
+        // Eğer sayı geçerliyse (NaN değilse)
+        if (!isNaN(productPrice) && productPrice > 0) isProductPage = true;
       }
     }
 
@@ -3349,5 +3359,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
