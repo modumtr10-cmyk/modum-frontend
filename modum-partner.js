@@ -2846,64 +2846,99 @@ ${css}
   }
 
   // --- İÇERİK YÖNETİCİSİ (GÜNCELLENMİŞ: GÖR AMA DOKUNMA) ---
+  // --- İÇERİK YÖNETİCİSİ (GÜNCELLENMİŞ: İKNA EDİCİ GİRİŞ EKRANI) ---
   function renderFormContent(status, email) {
     const area = document.getElementById("app-form-area");
 
-    // 1. ÖNCE HER DURUMDA FORMU YÜKLE (Böylece herkes sayfayı görür)
-    window.appData = { email: email };
-    showStep1(); // Formu ekrana basar
-
-    // 2. ŞİMDİ DURUMA GÖRE KISITLAMA GETİR (Inputları Kilitle)
-
-    // SENARYO 1: GİRİŞ YAPMAMIŞ (Formu gizle, Giriş butonu koy)
+    // SENARYO 1: GİRİŞ YAPMAMIŞ (ÜYE OLMAYANLARA ÖZEL İKNA EKRANI)
     if (!email) {
       area.innerHTML = `
-          <div class="form-left"><div class="form-left-text"><h3 style="margin:0;">Aramıza Katıl</h3></div></div>
-          <div class="form-right" style="justify-content:center; text-align:center;">
-              <div style="font-size:50px; margin-bottom:20px;">🔒</div>
-              <h2 style="margin:0; color:#1e293b;">Önce Giriş Yapmalısın</h2>
-              <p style="color:#64748b; margin:10px 0 30px;">Başvuru yapabilmek için üye olmalısınız.</p>
-              <a href="/uyelik-girisi" class="btn-next" style="text-decoration:none; display:block; line-height:20px;">GİRİŞ YAP / KAYIT OL</a>
+          <div class="form-left">
+              <div class="form-left-text">
+                  <h3 style="margin:0;">Aramıza Katıl</h3>
+                  <p style="margin:5px 0 0; opacity:0.8;">ModumNet ailesinin bir parçası ol.</p>
+              </div>
+          </div>
+          
+          <div class="form-right" style="justify-content:center;">
+              <h2 style="margin:0 0 10px 0; color:#1e293b; text-align:center;">ModumNet Partner Programı</h2>
+              <p style="color:#64748b; font-size:13px; text-align:center; margin-bottom:25px;">
+                  Sosyal medya gücünü gelire dönüştürmeye hazır mısın? İşte kazanacakların:
+              </p>
+
+              <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                      <div style="width:30px; height:30px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#166534; font-weight:bold;">%</div>
+                      <div style="font-size:13px; color:#334155;"><b>Yüksek Komisyon:</b> Satış başına %20'ye varan kazanç.</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                      <div style="width:30px; height:30px; background:#fef3c7; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#b45309;">🎁</div>
+                      <div style="font-size:13px; color:#334155;"><b>Hediye Ürünler:</b> Başarılı partnerlere sürpriz kutular.</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                      <div style="width:30px; height:30px; background:#e0f2fe; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#0369a1;">🎓</div>
+                      <div style="font-size:13px; color:#334155;"><b>Ücretsiz Eğitim:</b> Satışlarını artırma taktikleri.</div>
+                  </div>
+              </div>
+
+              <div style="text-align:center; background:#fff7ed; padding:15px; border-radius:8px; border:1px dashed #fdba74;">
+                  <div style="font-size:24px; margin-bottom:5px;">🔒</div>
+                  <h4 style="margin:0; color:#9a3412; font-size:14px;">Başvuru Yapabilmek İçin</h4>
+                  <p style="font-size:12px; color:#c2410c; margin:5px 0 15px;">
+                      Önce ModumNet üyesi olman veya hesabına giriş yapman gerekiyor.
+                  </p>
+                  
+                  <a href="/uyelik-girisi" class="btn-next" style="text-decoration:none; display:block; line-height:20px; background:#1e293b;">
+                      GİRİŞ YAP / KAYIT OL
+                  </a>
+              </div>
           </div>`;
       return;
     }
 
+    // --- GİRİŞ YAPMIŞSA DEVAM EDİYOR ---
+
+    // 1. ÖNCE FORMU YÜKLE (Böylece arkada form hazır olur)
+    window.appData = { email: email };
+
     // SENARYO 2: ZATEN PARTNER (Formu Kilitle + Panele Git Butonu)
     if (status === "active") {
+      showStep1(); // Formu bas
       disableFormArea("👑 Tebrikler! Zaten onaylı bir iş ortağımızsınız.");
 
       // Butonu Değiştir
       setTimeout(() => {
-        const btn = area.querySelector(".btn-next");
+        const btn = document.querySelector("#app-form-area .btn-next");
         if (btn) {
           btn.innerText = "ORTAKLIK PANELİNE GİT ➔";
           btn.style.background = "#3b82f6"; // Mavi
           btn.onclick = function () {
             PartnerApp.openPartnerDashboard();
-          }; // Panele yönlendir
+          };
         }
       }, 100);
     }
 
     // SENARYO 3: BEKLEMEDE (Formu Kilitle + Bilgi Ver)
     else if (status === "pending") {
+      showStep1(); // Formu bas
       disableFormArea("⏳ Başvurunuz alındı ve şu an inceleme aşamasında.");
 
       // Butonu Pasif Yap
       setTimeout(() => {
-        const btn = area.querySelector(".btn-next");
+        const btn = document.querySelector("#app-form-area .btn-next");
         if (btn) {
           btn.innerText = "SONUÇ BEKLENİYOR...";
           btn.style.background = "#94a3b8"; // Gri
           btn.style.cursor = "default";
-          btn.onclick = null; // Tıklamayı iptal et
+          btn.onclick = null;
         }
       }, 100);
     }
 
     // SENARYO 4: REDDEDİLMİŞ (Form Açık + Uyarı Ver)
     else if (status === "rejected") {
-      // Inputları kilitlemiyoruz, sadece uyarı ekliyoruz
+      showStep1(); // Formu bas
       setTimeout(() => {
         const warningHTML = `
             <div style="background:#fee2e2; color:#b91c1c; padding:15px; border-radius:8px; border:1px solid #fca5a5; margin-bottom:20px; font-size:13px; display:flex; align-items:center; gap:10px;">
@@ -2920,8 +2955,9 @@ ${css}
     }
 
     // SENARYO 5: TEMİZ (İlk Kez Başvuruyor)
-    window.appData = { email: email };
-    showIntro(); // 🔥 ÖNCE TANITIM EKRANI AÇILSIN
+    else {
+      showIntro(); // 🔥 GİRİŞ YAPMIŞ AMA HENÜZ BAŞVURMAMIŞSA TANITIM EKRANINI AÇ
+    }
   }
 
   // --- ADIM 0: SİSTEM TANITIMI VE İKNA EKRANI (PRO VERSİYON) ---
@@ -3498,5 +3534,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
