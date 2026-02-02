@@ -2508,49 +2508,54 @@ ${css}
     var myCommissionRate = parseFloat(pData.commission_rate || 10); // Ortağın kazanç oranı (Örn: %10)
     var customerDiscountRate = parseFloat(pData.discount_rate || 15); // Müşteriye sağlanan indirim (Örn: %15)
 
-    // --- FİYAT VE SAYFA KONTROLÜ (GÜNCELLENDİ) ---
+    // --- FİYAT VE SAYFA KONTROLÜ (V5 - KATEGORİ SAYFASI FİX) ---
     var productPrice = 0;
     var isProductPage = false;
 
-    // YÖNTEM 1: ÜRÜN DETAY SAYFASI KONTROLÜ (Kategori Sayfalarını Elemek İçin)
-    // Sadece ürün detay sayfalarında "Sepete Ekle" butonu veya stok bilgisi olur.
-    // Kategori sayfalarında liste olur ama tek bir 'availability' meta etiketi olmaz.
-    var isProductDetail = document.querySelector('meta[property="og:type"][content="product"]') || document.querySelector('.product-details-page');
+    // 1. KRİTİK KONTROL: Sayfa gerçekten "Ürün Detay" sayfası mı?
+    // Ürün detay sayfasında ana kapsayıcıda schema.org/Product tanımlı olur.
+    // Kategori sayfalarında bu yapı ürün kartlarının içindedir, sayfanın kendisinde değil.
+    var mainProductContainer = document.querySelector(
+      '.product-details-container[itemtype*="Product"], [itemtype*="schema.org/Product"]',
+    );
 
-    var schemaPrice = isProductDetail ? document.querySelector('[itemprop="price"]') : null;
+    if (mainProductContainer) {
+      // Eğer bu bir ürün detay sayfasıysa fiyatı aramaya başla
 
-    if (schemaPrice && schemaPrice.getAttribute("content")) {
-      // content="1209.90" değerini direkt alıyoruz (En Temiz Yöntem)
-      productPrice = parseFloat(schemaPrice.getAttribute("content"));
-      isProductPage = true;
-    }
-    // YÖNTEM 2: Faprika Meta Etiketi (Yedek)
-    else if (document.querySelector('meta[property="product:price:amount"]')) {
-      var priceMeta = document.querySelector(
-        'meta[property="product:price:amount"]',
-      );
-      productPrice = parseFloat(priceMeta.content);
-      isProductPage = true;
-    }
-    // YÖNTEM 3: Klasik Sınıf Tarama (Son Çare)
-    else {
-      var priceEl =
-        document.querySelector(".product-price") ||
-        document.querySelector(".current-price") ||
-        document.querySelector(".fiyat") ||
-        document.querySelector(".price");
+      // YÖNTEM A: Schema Price (En Temiz)
+      var schemaPrice =
+        mainProductContainer.querySelector('[itemprop="price"]');
+      if (schemaPrice && schemaPrice.getAttribute("content")) {
+        productPrice = parseFloat(schemaPrice.getAttribute("content"));
+        isProductPage = true;
+      }
+      // YÖNTEM B: Faprika Meta Etiketi (Yedek)
+      else if (
+        document.querySelector('meta[property="product:price:amount"]')
+      ) {
+        var priceMeta = document.querySelector(
+          'meta[property="product:price:amount"]',
+        );
+        productPrice = parseFloat(priceMeta.content);
+        isProductPage = true;
+      }
+      // YÖNTEM C: CSS Sınıfı (Son Çare - Sadece Container İçinde Ara)
+      else {
+        var priceEl =
+          mainProductContainer.querySelector(".product-price") ||
+          mainProductContainer.querySelector(".current-price") ||
+          mainProductContainer.querySelector(".fiyat");
 
-      if (priceEl) {
-        // "1.250,00 TL" formatını temizle -> 1250.00
-        var txt = priceEl.innerText
-          .replace("TL", "")
-          .replace("TRY", "")
-          .replace(/\./g, "") // Binlik ayırıcıyı sil (1.200 -> 1200)
-          .replace(",", ".") // Kuruş ayırıcıyı nokta yap (1200,90 -> 1200.90)
-          .trim();
-        productPrice = parseFloat(txt);
-        // Eğer sayı geçerliyse (NaN değilse)
-        if (!isNaN(productPrice) && productPrice > 0) isProductPage = true;
+        if (priceEl) {
+          var txt = priceEl.innerText
+            .replace("TL", "")
+            .replace("TRY", "")
+            .replace(/\./g, "")
+            .replace(",", ".")
+            .trim();
+          productPrice = parseFloat(txt);
+          if (!isNaN(productPrice) && productPrice > 0) isProductPage = true;
+        }
       }
     }
 
@@ -3537,5 +3542,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v7*/
 })();
