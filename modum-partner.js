@@ -878,6 +878,7 @@ ${css}
                       : ""
                   }
               </div>
+              ${topProductsCardHtml}
           </div>
           `;
 
@@ -3412,5 +3413,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
