@@ -656,59 +656,6 @@ ${css}
 
         const s = res.stats;
 
-        // --- 🔥 YENİ EKLEME: EN ÇOK SATANLAR VERİSİNİ ÇEK ---
-        let topProductsCardHtml = "";
-        try {
-          const prodRes = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ islem: "get_top_products", email: email }),
-          }).then((r) => r.json());
-
-          let rowsHtml = "";
-          if (prodRes.success && prodRes.list.length > 0) {
-            prodRes.list.forEach((p, idx) => {
-              let rankColor =
-                idx === 0
-                  ? "#FFD700"
-                  : idx === 1
-                    ? "#C0C0C0"
-                    : idx === 2
-                      ? "#CD7F32"
-                      : "#eff6ff";
-              let rankText = idx < 3 ? "white" : "#3b82f6";
-
-              rowsHtml += `
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9;">
-                        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                            <div style="background:${rankColor}; color:${rankText}; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; flex-shrink:0;">${idx + 1}</div>
-                            <div style="font-size:12px; color:#334155; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${p.name}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:12px; font-weight:bold; color:#10b981;">+${p.earnings} ₺</div>
-                            <div style="font-size:9px; color:#64748b;">${p.qty} Adet</div>
-                        </div>
-                    </div>`;
-            });
-          } else {
-            rowsHtml = `<div style="text-align:center; padding:20px; color:#94a3b8; font-size:11px;">Henüz yeterli satış verisi yok.</div>`;
-          }
-
-          // Kartın Kendisi
-          topProductsCardHtml = `
-            <div class="p-card" style="padding:15px; margin:0; border:1px solid #e2e8f0; box-shadow:none; margin-top:15px;">
-                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
-                    <i class="fas fa-trophy" style="color:#f59e0b;"></i>
-                    <h4 style="margin:0; font-size:12px; color:#334155; text-transform:uppercase; letter-spacing:0.5px;">Senin Yıldızların</h4>
-                 </div>
-                 <div style="max-height:200px; overflow-y:auto;">
-                    ${rowsHtml}
-                 </div>
-            </div>`;
-        } catch (err) {
-          console.log("Top products error:", err);
-        }
-
         // --- VERİ HAZIRLIĞI ---
         let currentRev = parseFloat(s.totalRevenue || 0);
         let myRate = parseFloat(s.commission_rate || 10);
@@ -878,7 +825,6 @@ ${css}
                       : ""
                   }
               </div>
-              ${topProductsCardHtml}
           </div>
           `;
 
@@ -3413,5 +3359,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v3*/
 })();
