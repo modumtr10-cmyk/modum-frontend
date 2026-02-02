@@ -2512,9 +2512,12 @@ ${css}
     var productPrice = 0;
     var isProductPage = false;
 
-    // YÖNTEM 1: Senin HTML yapındaki en garanti veri (itemprop="price")
-    // <span itemprop="price" content="1209.90" ... >
-    var schemaPrice = document.querySelector('[itemprop="price"]');
+    // YÖNTEM 1: ÜRÜN DETAY SAYFASI KONTROLÜ (Kategori Sayfalarını Elemek İçin)
+    // Sadece ürün detay sayfalarında "Sepete Ekle" butonu veya stok bilgisi olur.
+    // Kategori sayfalarında liste olur ama tek bir 'availability' meta etiketi olmaz.
+    var isProductDetail = document.querySelector('meta[property="og:type"][content="product"]') || document.querySelector('.product-details-page');
+
+    var schemaPrice = isProductDetail ? document.querySelector('[itemprop="price"]') : null;
 
     if (schemaPrice && schemaPrice.getAttribute("content")) {
       // content="1209.90" değerini direkt alıyoruz (En Temiz Yöntem)
@@ -3534,5 +3537,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
