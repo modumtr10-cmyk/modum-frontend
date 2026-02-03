@@ -934,7 +934,7 @@ ${css}
           e.message +
           "</div>";
       }
-    }, // --- 1. AKILLI PAYLAŞIM MENÜSÜ ---
+    }, // --- 1. AKILLI PAYLAŞIM MENÜSÜ (DÜZELTİLMİŞ TAM SÜRÜM) ---
     openShareMenu: function (baseUrl, isCollection = false) {
       // Eski modal varsa sil
       let old = document.getElementById("mdm-share-modal");
@@ -947,6 +947,11 @@ ${css}
             <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 
                 <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
+                
+                <div style="font-size:10px; color:#16a34a; background:#dcfce7; padding:4px 8px; border-radius:4px; display:inline-block; margin-bottom:15px; font-weight:bold;">
+                    ⚡ 30 Gün Çerez Süresi Aktif
+                </div>
+
                 <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
                     Nerede paylaşacağını seç, sana özel linki oluşturalım.
                 </p>
@@ -980,7 +985,7 @@ ${css}
                 <div onclick="document.getElementById('mdm-share-modal').remove()" style="cursor:pointer; color:#94a3b8; font-size:13px; text-decoration:underline;">Vazgeç</div>
             </div>
         </div>
-        `;
+      `;
       document.body.insertAdjacentHTML("beforeend", html);
     },
 
@@ -1026,23 +1031,24 @@ ${css}
           : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
       c.innerHTML = `
-    <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-        <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
-        <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-            Hangi platformda daha güçlü olduğunu görmek için paylaşım yapacağın yeri seç.
-        </p>
-    </div>
+      <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+          <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
+          <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              Hangi platformda daha güçlü olduğunu görmek için paylaşım yapacağın yeri seç.
+          </p>
+      </div>
 
-    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
-        <div style="font-size:24px;">🛡️</div>
-        <div>
-            <div style="font-weight:bold; color:#166534; font-size:12px;">30 GÜN KAZANÇ GARANTİSİ</div>
-            <div style="font-size:11px; color:#15803d; line-height:1.3;">
-                Linkine tıklayan bir müşteri, o an almasa bile <b style="text-decoration:underline;">30 gün boyunca</b> ne zaman gelip alışveriş yaparsa yapsın komisyonu <b>SEN KAZANIRSIN!</b>
-            </div>
-        </div>
-    </div>
-    ${couponHTML}
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+          <div style="font-size:24px;">🛡️</div>
+          <div>
+              <div style="font-weight:bold; color:#166534; font-size:12px;">30 GÜN KAZANÇ GARANTİSİ</div>
+              <div style="font-size:11px; color:#15803d; line-height:1.3;">
+                  Linkine tıklayan bir müşteri, o an almasa bile <b style="text-decoration:underline;">30 gün boyunca</b> ne zaman gelip alışveriş yaparsa yapsın komisyonu <b>SEN KAZANIRSIN!</b>
+              </div>
+          </div>
+      </div>
+
+      ${couponHTML}
     
     <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Akıllı Link Oluşturucu:</p>
 
@@ -2292,7 +2298,7 @@ ${css}
         btn.innerHTML = oldText;
         btn.disabled = false;
       }
-    }, // 🔥 VİTRİN İÇİN HIZLI LİNK OLUŞTURUCU (MODAL)
+    }, // 🔥 VİTRİN İÇİN HIZLI LİNK OLUŞTURUCU (MODAL - 30 GÜN UYARISI EKLENDİ)
     openQuickLink: function (url, refCode) {
       // Eski modal varsa sil
       let old = document.getElementById("p-quick-link-modal");
@@ -2301,15 +2307,19 @@ ${css}
       let html = `
         <div id="p-quick-link-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2147483647; display:flex; justify-content:center; align-items:center; padding:20px;">
             <div style="background:white; width:100%; max-width:300px; border-radius:12px; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center;">
-                <h4 style="margin:0 0 15px 0; color:#1e293b;">Nerede Paylaşacaksın?</h4>
+                <h4 style="margin:0 0 5px 0; color:#1e293b;">Nerede Paylaşacaksın?</h4>
                 
+                <div style="font-size:9px; color:#16a34a; background:#dcfce7; padding:2px 6px; border-radius:4px; display:inline-block; margin-bottom:15px; font-weight:bold;">
+                    ⚡ 30 Gün Geçerli Link
+                </div>
+
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
                     <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'instagram_story')" class="p-btn" style="background:#e1306c; color:white; font-size:12px;"><i class="fab fa-instagram"></i> Story</button>
                     <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'whatsapp')" class="p-btn" style="background:#25D366; color:white; font-size:12px;"><i class="fab fa-whatsapp"></i> WP</button>
                     <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'telegram')" class="p-btn" style="background:#229ED9; color:white; font-size:12px;"><i class="fab fa-telegram"></i> TG</button>
                     <button onclick="PartnerApp.copyFinalLink('${url}', '${refCode}', 'other')" class="p-btn" style="background:#334155; color:white; font-size:12px;">Diğer</button>
                 </div>
-
+                
                 <div onclick="document.getElementById('p-quick-link-modal').remove()" style="font-size:12px; color:#94a3b8; cursor:pointer;">İptal</div>
             </div>
         </div>
@@ -3556,5 +3566,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
