@@ -398,6 +398,78 @@
 .tier-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
 .tier-table th { text-align:left; color:#64748b; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
 .tier-table td { padding:8px 0; border-bottom:1px solid #f1f5f9; color:#334155; font-weight:600; }
+/* --- ZAMAN ÇİZELGESİ (TIMELINE) STİLLERİ --- */
+.timeline-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    position: relative;
+    padding: 0 10px;
+}
+/* Çizgi */
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 20px;
+    right: 20px;
+    height: 3px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+.timeline-step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 25%;
+}
+.t-dot {
+    width: 30px;
+    height: 30px;
+    background: #e2e8f0;
+    color: #94a3b8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 3px solid #fff; /* Arka planla karışmasın diye */
+    transition: all 0.3s ease;
+}
+.t-label {
+    font-size: 10px;
+    color: #64748b;
+    line-height: 1.2;
+}
+.t-date {
+    font-size: 9px;
+    color: #94a3b8;
+    margin-top: 2px;
+    display: block;
+}
+
+/* Aktif ve Tamamlanmış Durumlar */
+.timeline-step.completed .t-dot {
+    background: #10b981;
+    color: white;
+}
+.timeline-step.completed .t-label {
+    color: #065f46;
+    font-weight: bold;
+}
+.timeline-step.active .t-dot {
+    background: #f59e0b;
+    color: white;
+    box-shadow: 0 0 0 3px #fef3c7; /* Yanıp sönme efekti gibi */
+}
+.timeline-step.active .t-label {
+    color: #b45309;
+    font-weight: bold;
+}
+
+/* Çizgi Doluluğu (Basitçe ilk elemanlardan sonrakilere doluluk veremiyoruz CSS ile, JS ile class ekleyeceğiz) */
 </style>
 `;
 
@@ -1564,6 +1636,13 @@ ${css}
                   <div style="font-size:11px; color:#334155;">${rawProd}</div>
               </div>`;
             }
+            // --- 🔥 YENİ EKLENEN KISIM: TIMELINE (ZAMAN ÇİZELGESİ) ---
+            let timelineHTML = "";
+            // Sadece satış işlemlerinde timeline göster
+            if (tx.type === "sale_commission") {
+              // generateTimelineHTML fonksiyonunun dosyanın en altında ekli olduğundan emin ol
+              timelineHTML = generateTimelineHTML(tx.date, tx.status);
+            }
 
             // --- 7. KART HTML OLUŞTUR ---
             historyHTML += `
@@ -1581,24 +1660,29 @@ ${css}
                 </div>
                 
                 <div style="text-align:right;">
-                    <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
-                    ${receiptBtn}
-                    <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
+                        <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
+                        ${receiptBtn}
+                        <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
+                    </div>
                 </div>
-            </div>
-            
-            <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                    <span style="color:#64748b">İşlem ID:</span>
-                    <span style="font-family:monospace; color:#334155;">#${tx.id.substring(0, 6)}</span>
+                
+                <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
+                    
+                    ${timelineHTML}
+
+                    <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"></div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                        <span style="color:#64748b">İşlem ID:</span>
+                        <span style="font-family:monospace; color:#334155;">#${tx.id.substring(0, 6)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                        <span style="color:#64748b">Durum:</span>
+                        <span style="font-weight:bold;">${tx.status === "paid" ? "ÖDENDİ ✅" : tx.status.toUpperCase()}</span>
+                    </div>
+                    ${productsHTML}
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                    <span style="color:#64748b">Durum:</span>
-                    <span style="font-weight:bold;">${tx.status === "paid" ? "ÖDENDİ ✅" : tx.status.toUpperCase()}</span>
-                </div>
-                ${productsHTML}
-            </div>
-        </div>`;
+            </div>`;
           });
         } else {
           historyHTML =
@@ -3526,6 +3610,94 @@ ${css}
       btn.disabled = false;
     }
   };
+  // --- ZAMAN ÇİZELGESİ OLUŞTURUCU ---
+  function generateTimelineHTML(txDateStr, status) {
+    // 1. Tarihleri Hesapla
+    // txDateStr formatı genelde: "DD.MM.YYYY" veya ISO gelir.
+    // Basit olması için JS Date objesine çevirelim.
+
+    let saleDate = new Date(); // Varsayılan bugün (Hata olursa)
+
+    // Tarih parse etme (GG.AA.YYYY formatını destekle)
+    if (txDateStr && txDateStr.includes(".")) {
+      const parts = txDateStr.split("."); // [14, 05, 2024]
+      // new Date(Yıl, Ay-1, Gün)
+      saleDate = new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    // 14 Gün Ekle
+    const maturityDate = new Date(saleDate);
+    maturityDate.setDate(maturityDate.getDate() + 14);
+
+    // Tahmini Ödeme (Maturity'den sonraki Çarşamba diyelim veya +3 gün)
+    const payoutDate = new Date(maturityDate);
+    payoutDate.setDate(payoutDate.getDate() + 3);
+
+    // Formatlayıcı
+    const fmt = (d) =>
+      d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+
+    // 2. Durumu Belirle (Step 1, 2, 3, 4)
+    let step = 1; // 1: Sipariş, 2: Onay, 3: Bekleme, 4: Cüzdan
+
+    if (status === "waiting_verification") step = 1;
+    else if (status === "pending_maturity")
+      step = 3; // Onaylanmış, gün sayıyor
+    else if (status === "approved" || status === "paid") step = 4; // Bitti
+
+    // Eğer iade edildiyse özel durum
+    if (status === "refunded") {
+      return `<div style="text-align:center; padding:10px; background:#fff1f2; color:#ef4444; border-radius:8px; font-size:12px;">
+                    <i class="fas fa-times-circle"></i> Bu sipariş iade edildiği için süreç iptal edildi.
+                 </div>`;
+    }
+
+    // 3. HTML Oluştur
+    // Helper: Class belirleyici
+    const getCls = (s) => {
+      if (step > s) return "completed";
+      if (step === s) return "active";
+      return "";
+    };
+
+    const getIcon = (s) => {
+      if (step > s) return "✓";
+      if (step === s && s === 3) return "⏳"; // Bekliyorsa kum saati
+      return s;
+    };
+
+    return `
+    <div class="timeline-container">
+        <div class="timeline-step ${getCls(1)}">
+            <div class="t-dot">${getIcon(1)}</div>
+            <div class="t-label">Sipariş</div>
+            <span class="t-date">${fmt(saleDate)}</span>
+        </div>
+        
+        <div class="timeline-step ${getCls(2)}">
+            <div class="t-dot">${getIcon(2)}</div>
+            <div class="t-label">Kontrol</div>
+            <span class="t-date">Otomatik</span>
+        </div>
+
+        <div class="timeline-step ${getCls(3)}">
+            <div class="t-dot">${getIcon(3)}</div>
+            <div class="t-label">14 Gün<br>Süresi</div>
+            <span class="t-date">${fmt(maturityDate)}</span>
+        </div>
+
+        <div class="timeline-step ${getCls(4)}">
+            <div class="t-dot">💰</div>
+            <div class="t-label">Cüzdana<br>Geçiş</div>
+            <span class="t-date">${fmt(payoutDate)}</span>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top:10px; font-size:10px; color:#94a3b8;">
+        ${step === 3 ? "✅ Sipariş onaylandı, iade süresinin dolması bekleniyor." : ""}
+        ${step === 4 ? "🎉 Tutar çekilebilir bakiyenize eklendi." : ""}
+    </div>
+    `;
+  }
 
   // --- SAYFA AÇILINCA ÇALIŞTIR ---
   // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
@@ -3542,5 +3714,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
