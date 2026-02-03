@@ -948,7 +948,7 @@ ${css}
                 
                 <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
                 <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
-                    Nerede paylaşacağını seç, sana özel linki oluşturalım.
+                    Nerede paylaşacağını seç, sana özel linki oluşturalım.(Linkler 30 gün Geçerlidir.)
                 </p>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
@@ -2425,7 +2425,7 @@ ${css}
                   
                   <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
                   <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
-                      Nerede paylaşacağını seç, sana özel linki oluşturalım.
+                      Nerede paylaşacağını seç, sana özel linki oluşturalım.(Linkler 30 gün Geçerlidir.)
                   </p>
 
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
@@ -3542,5 +3542,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v3*/
 })();
