@@ -1026,16 +1026,25 @@ ${css}
           : `<div class="p-card" style="border:1px dashed #cbd5e1; padding:15px; margin-bottom:20px; text-align:center; font-size:12px; color:#64748b;">Kupon tanımlanmamış.</div>`;
 
       c.innerHTML = `
-      <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-          <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
-          <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-              Hangi platformda daha güçlü olduğunu görmek için paylaşım yapacağın yeri seç.
-          </p>
-      </div>
+    <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+        <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔗 Link ve Analiz</h3>
+        <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+            Hangi platformda daha güçlü olduğunu görmek için paylaşım yapacağın yeri seç.
+        </p>
+    </div>
 
-      ${couponHTML}
-      
-      <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Akıllı Link Oluşturucu:</p>
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+        <div style="font-size:24px;">🛡️</div>
+        <div>
+            <div style="font-weight:bold; color:#166534; font-size:12px;">30 GÜN KAZANÇ GARANTİSİ</div>
+            <div style="font-size:11px; color:#15803d; line-height:1.3;">
+                Linkine tıklayan bir müşteri, o an almasa bile <b style="text-decoration:underline;">30 gün boyunca</b> ne zaman gelip alışveriş yaparsa yapsın komisyonu <b>SEN KAZANIRSIN!</b>
+            </div>
+        </div>
+    </div>
+    ${couponHTML}
+    
+    <p style="font-size:13px; color:#334155; margin-bottom:15px; font-weight:600;">📦 Akıllı Link Oluşturucu:</p>
 
       <div class="p-card" style="padding:20px; border-radius:12px; border:1px solid #e2e8f0; background:white;">
           
@@ -2420,13 +2429,18 @@ ${css}
       let title = isCollection ? "Mağaza Linkini Paylaş" : "Bu Ürünü Paylaş";
 
       let html = `
-          <div id="mdm-share-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
-              <div style="background:white; width:100%; max-width:320px; border-radius:16px; padding:25px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                  
-                  <h3 style="margin:0 0 10px 0; color:#1e293b;">${title}</h3>
-                  <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
-                      Nerede paylaşacağını seç, sana özel linki oluşturalım.
-                  </p>
+    <div id="mdm-share-modal" ...>
+        <div style="background:white; ...">
+            
+            <h3 style="margin:0 0 5px 0; color:#1e293b;">${title}</h3>
+            
+            <div style="font-size:10px; color:#16a34a; background:#dcfce7; padding:4px 8px; border-radius:4px; display:inline-block; margin-bottom:15px; font-weight:bold;">
+                ⚡ 30 Gün Çerez Süresi Aktif
+            </div>
+
+            <p style="font-size:13px; color:#64748b; margin-bottom:20px;">
+                Nerede paylaşacağını seç, sana özel linki oluşturalım.
+            </p>
 
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
                       <button onclick="PartnerApp.copySmartLink('${baseUrl}', 'instagram')" class="p-btn" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; flex-direction:column; padding:15px; font-size:12px;">
@@ -3542,5 +3556,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v1*/
 })();
