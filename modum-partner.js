@@ -1636,6 +1636,41 @@ ${css}
                   <div style="font-size:11px; color:#334155;">${rawProd}</div>
               </div>`;
             }
+            // --- 💰 VERGİ & KESİNTİ DÖKÜMÜ ---
+            let financeDetailHTML = "";
+            
+            // Eğer backend vergi verisini göndermişse (tx.taxAmount varsa)
+            if (tx.taxAmount && parseFloat(tx.taxAmount) !== 0) {
+                let brutTutar = parseFloat(tx.commissionAmount || 0); // 200 TL
+                let kesinti = parseFloat(tx.taxAmount || 0);          // 40 TL
+                let netYatan = parseFloat(tx.netPayout || 0);         // 160 TL
+                let vergiAdi = tx.taxType || "Stopaj"; // "Stopaj (-%20)" veya "KDV"
+
+                // Renk ayarı (Stopajsa kırmızı, KDV ise yeşilimsi)
+                let taxColor = vergiAdi.includes("KDV") ? "#059669" : "#dc2626"; // KDV eklenir, Stopaj düşülür
+                let taxSign = vergiAdi.includes("KDV") ? "+" : "-";
+
+                financeDetailHTML = `
+                <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+                    <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase;">📊 Finansal Döküm</div>
+                    
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px; color:#64748b;">
+                        <span>Brüt Hakediş:</span>
+                        <span>${brutTutar.toFixed(2)} ₺</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; color:${taxColor};">
+                        <span>${vergiAdi}:</span>
+                        <span>${taxSign}${Math.abs(kesinti).toFixed(2)} ₺</span>
+                    </div>
+
+                    <div style="border-top:1px solid #e2e8f0; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; font-size:12px; font-weight:bold; color:#1e293b;">
+                        <span>Cüzdana Yatan (Net):</span>
+                        <span>${netYatan.toFixed(2)} ₺</span>
+                    </div>
+                </div>
+                `;
+            }
             // --- 🔥 YENİ EKLENEN KISIM: TIMELINE (ZAMAN ÇİZELGESİ) ---
             let timelineHTML = "";
             // Sadece satış işlemlerinde timeline göster
@@ -1681,6 +1716,7 @@ ${css}
                         <span style="font-weight:bold;">${tx.status === "paid" ? "ÖDENDİ ✅" : tx.status.toUpperCase()}</span>
                     </div>
                     ${productsHTML}
+                    ${financeDetailHTML}
                 </div>
             </div>`;
           });
@@ -2663,7 +2699,7 @@ ${css}
                 <div class="hide-mobile stripe-divider"></div>
 
                 <div class="stripe-earn-box">
-                    <span class="earn-label">KAZANCIN:</span>
+                    <span class="earn-label">TAHMİNİ KAZANÇ (BRÜT):</span>
                     <span class="earn-amount">+${partnerEarnings.toFixed(2)} TL</span>
                 </div>
             </div>
@@ -3753,5 +3789,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
