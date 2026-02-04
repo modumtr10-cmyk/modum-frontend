@@ -78,48 +78,58 @@ html.intro-active body > #mdm-intro-overlay { visibility: visible !important; }
 `;
 document.head.appendChild(fastCSS);
 
-// Eğer Çekilişler sayfasındaysak hemen perdeyi indir!
-if (window.location.href.includes("cekilisler")) {
-  document.documentElement.classList.add("intro-active");
-}
+/* ======================================================
+   ÇEKİLİŞ SAYFASI ÖZEL STİL YÖNETİCİSİ (ÇAKIŞMA ÖNLEYİCİ)
+   Bu blok SADECE "cekilisler" sayfasında çalışır.
+   ====================================================== */
 (function () {
-  var css = document.createElement("style");
-  css.innerHTML = `
-/* Başlıkları ve Eski İçeriği Yok Et */
-.topic-page h1, #ph-title, .topic-title, .page-title { 
-display: none !important; 
-opacity: 0 !important;
-visibility: hidden !important;
-}
+  // 1. Önce URL Kontrolü Yapıyoruz
+  var isRafflePage = window.location.href.indexOf("cekilisler") > -1;
 
-/* Arka Planı Temizle */
-.page.topic-page, .page-container, .topic-body {
-background: transparent !important;
-border: none !important;
-box-shadow: none !important;
-padding-top: 0 !important;
-margin-top: 0 !important;
-}
-
-/* Mobilde Header ile Birleştir */
-@media (max-width: 768px) {
-  .page.topic-page {
-    position: relative;
-    top: 40px;
+  // Eğer Çekilişler sayfasındaysak perdeyi indir (Intro için)
+  if (isRafflePage) {
+    document.documentElement.classList.add("intro-active");
   }
 
-  #modum-firebase-test-root {
-    margin-top: 0 !important;
-  }
-}
+  // 2. O Agresif CSS Kodlarını SADECE Çekiliş Sayfasıysa Çalıştır
+  if (isRafflePage) {
+    var css = document.createElement("style");
+    css.innerHTML = `
+      /* Başlıkları ve Eski İçeriği Yok Et */
+      .topic-page h1, #ph-title, .topic-title, .page-title { 
+        display: none !important; 
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
 
-`;
-  document.head.appendChild(css);
-  // HTML2CANVAS KÜTÜPHANESİNİ YÜKLE
-  var scriptH2C = document.createElement("script");
-  scriptH2C.src =
-    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-  document.head.appendChild(scriptH2C);
+      /* Arka Planı Temizle */
+      .page.topic-page, .page-container, .topic-body {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      /* Mobilde Header ile Birleştir */
+      @media (max-width: 768px) {
+        .page.topic-page {
+          position: relative;
+          top: 40px;
+        }
+
+        #modum-firebase-test-root {
+          margin-top: 0 !important;
+        }
+      }
+    `;
+    document.head.appendChild(css);
+
+    // HTML2CANVAS KÜTÜPHANESİNİ YÜKLE (Sadece çekilişte lazım)
+    var scriptH2C = document.createElement("script");
+    scriptH2C.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    document.head.appendChild(scriptH2C);
+  }
   // GÜVENLİK YAMASI: Object.keys hatasını önle
   if (!Object.keys) {
     Object.keys = (function () {
@@ -12514,5 +12524,5 @@ FIRSATI YAKALA & TAMAMLA 🚀
       };
     })();
   })(); // <--- Dedektif burada biter ve otomatik çalışır.
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
