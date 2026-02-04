@@ -2878,21 +2878,20 @@ ${css}
     const ICON_3 = "https://www.modum.tr/i/m/001/0016752.jpeg";
     const FORM_SIDE_IMG = "https://www.modum.tr/i/m/001/0016756.jpeg";
 
-    // --- CSS STİLLERİ (MOBİL UYUMLU) ---
+    // --- CSS STİLLERİ (MOBİL UYUMLU & DÜZELTİLMİŞ) ---
     const style = `
   <style>
-      /* GENEL MASAÜSTÜ AYARLARI */
+      /* --- GENEL MASAÜSTÜ AYARLARI --- */
       .app-hero { width:100%; height:300px; background:url('${BANNER_IMG}') center/cover no-repeat; position:relative; display:flex; align-items:center; justify-content:center; }
       .app-hero::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
       .app-hero-content { position:relative; z-index:2; text-align:center; color:white; padding:20px; }
       .app-hero h1 { font-size:40px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:2px; }
       .app-hero p { font-size:18px; opacity:0.9; margin-top:10px; }
       
-      /* Kutuların taşmasını önleyen sihirli kod */
       .app-container * { box-sizing: border-box; }
-      .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; width:100%; overflow:hidden; }
+      .app-container { max-width:1100px; margin: -50px auto 50px; position:relative; z-index:10; padding:0 15px; width:100%; }
       
-      /* KARTLAR */
+      /* Kartlar */
       .benefit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:40px; }
       .b-card { background:white; padding:30px; border-radius:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05); transition:0.3s; }
       .b-card:hover { transform:translateY(-10px); }
@@ -2900,105 +2899,59 @@ ${css}
       .b-card h4 { font-size:18px; color:#1e293b; margin:0 0 10px; }
       .b-card p { font-size:13px; color:#64748b; line-height:1.5; }
 
-      /* FORM KUTUSU */
+      /* Form Kutusu (Masaüstü) */
       .form-box { display:flex; background:white; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.1); min-height:550px; }
-      .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; }
+      .form-left { width:40%; background:url('${FORM_SIDE_IMG}') center/cover; position:relative; flex-shrink: 0; }
       .form-left::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(to top, #0f172a, transparent); }
-      .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; }
+      .form-left-text { position:absolute; bottom:30px; left:30px; color:white; z-index:2; width: calc(100% - 60px); }
       
-      .form-right { width:60%; padding:40px; display:flex; flex-direction:column; }
+      .form-right { width:60%; padding:40px; display:flex; flex-direction:column; flex-grow: 1; }
       
-      /* ADIMLAR VE INPUTLAR */
+      /* Inputlar */
       .step-indicator { display:flex; gap:10px; margin-bottom:30px; }
       .step-dot { flex:1; height:4px; background:#e2e8f0; border-radius:4px; }
       .step-dot.active { background:#3b82f6; }
       
-      .inp-group { margin-bottom:15px; }
+      .inp-group { margin-bottom:15px; width: 100%; }
       .inp-group label { display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:5px; }
-      .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; }
+      .inp-group input, .inp-group select, .inp-group textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-family:'Inter', sans-serif; box-sizing:border-box; background: #fff; }
       .inp-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
 
       .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
       .btn-next:hover { background:#1e293b; transform:scale(1.02); }
 
-      /* 🔥 MOBİL İÇİN FİNAL DÜZELTME (V3) - BOŞLUKLAR VE FORM HATASI GİDERİLDİ */
-    @media(max-width:768px) {
-        /* 1. Banner ve Başlık Düzeni */
-        .app-hero { 
-            min-height: 220px; 
-            height: auto;
-            background-position: center top !important; 
-            padding: 30px 20px;
-            align-items: center; /* Ortala */
-            justify-content: center; /* Ortala */
-            text-align: center;
-        }
-        /* Görselin üzerine karartma atıyoruz ki yazı okunsun */
-        .app-hero::after { background: rgba(0,0,0,0.6) !important; }
+      /* 🔥 MOBİL DÜZELTMELER (TAMAMEN YENİLENDİ) */
+      @media(max-width:768px) {
+          .app-hero { min-height: 200px; height: auto; padding: 40px 20px; text-align: center; }
+          .app-hero h1 { font-size: 24px; }
+          
+          /* Kartları alt alta al */
+          .benefit-grid { grid-template-columns: 1fr; gap: 15px; }
+          .b-card { display: flex; align-items: center; gap: 15px; padding: 15px; text-align: left; }
+          .b-card img { width: 50px; height: 50px; margin: 0; }
 
-        .app-hero h1 { font-size: 22px; line-height: 1.3; margin-bottom: 10px; }
-        .app-hero p { font-size: 13px; margin: 0; opacity: 0.9; }
-        
-        /* 2. Ana Konteynır - Negatif marjini kaldırıp düz hizalıyoruz */
-        .app-container { 
-            margin: 0 auto; 
-            padding: 20px 15px; 
-            width: 100%;
-        }
+          /* Form Kutusunu Esnek Yap */
+          .form-box { flex-direction: column; height: auto !important; min-height: auto !important; border: 1px solid #e2e8f0; box-shadow: none; }
+          
+          /* Sol resmi tamamen gizle */
+          .form-left { display: none !important; width: 0 !important; height: 0 !important; }
+          
+          /* Sağ tarafı tam genişlik yap */
+          .form-right { width: 100% !important; padding: 20px 15px !important; flex: none !important; }
 
-        /* 3. Kartlar (Benefit Grid) - Alt alta tam genişlik */
-        .benefit-grid { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-        }
-        .b-card { 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            text-align: left; 
-            gap: 15px; 
-        }
-        .b-card img { width: 50px; height: 50px; margin: 0; }
-
-        /* 4. 🔥 FORM KUTUSU SORUNU ÇÖZÜMÜ */
-        /* Flex yapısını iptal edip dikey moda geçiyoruz */
-        .form-box { 
-            display: flex;
-            flex-direction: column; /* Yan yana değil alt alta */
-            height: auto !important; 
-            min-height: auto !important;
-            box-shadow: none; /* Mobilde gölgeyi azalt */
-            border: 1px solid #e2e8f0;
-        }
-        
-        /* Sol resmi tamamen yok et */
-        .form-left { 
-            display: none !important; 
-            width: 0 !important; 
-            height: 0 !important;
-        } 
-        
-        /* Sağ tarafı (Formu) tam ekran yap */
-        .form-right { 
-            width: 100% !important; 
-            padding: 20px 15px !important; 
-            box-sizing: border-box; /* Taşmayı önle */
-        }
-        
-        /* Adım Çubuklarını (Mavi Çizgiler) Hizala */
-        .step-indicator {
-            margin-bottom: 20px;
-            gap: 5px;
-        }
-
-        /* Inputları Rahatlat */
-        .inp-group input, .inp-group select, .inp-group textarea, .btn-next { 
-            font-size: 16px; /* iPhone zoom sorununu önler */
-        } 
-    }
+          /* 🔥 SIKIŞMAYI ÖNLEYEN SİHİRLİ KOD */
+          /* Kodun içindeki inline grid stillerini (1fr 1fr vb.) ezer ve tek sütuna düşürür */
+          .form-right div[style*="grid-template-columns"] {
+              grid-template-columns: 1fr !important;
+              gap: 15px !important;
+          }
+          
+          /* Input yazı boyutunu büyüt (Zoom sorununu önler) */
+          .inp-group input, .inp-group select, .inp-group textarea { font-size: 16px !important; }
+          
+          /* Adım göstergesini küçült */
+          .step-indicator { margin-bottom: 20px; }
+      }
   </style>
   `;
 
@@ -3873,5 +3826,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
