@@ -2627,6 +2627,7 @@ ${css}
 
     var pData = window.PartnerData || {};
     var myRefCode = pData.refCode;
+    var accountType = pData.accountType || "individual"; // "individual" veya "company"
 
     // Veriler yoksa gösterme
     if (!myRefCode) return;
@@ -2686,16 +2687,39 @@ ${css}
       }
     }
 
-    // --- HESAPLAMALAR ---
+    // --- 🔥 FİNANSAL HESAPLAMA MOTORU (DÜZELTİLDİ) ---
     let statsHtml = "";
 
     if (isProductPage && productPrice > 0) {
-      // Matematik: Önce müşteriye indirim yap, sonra kalan tutardan komisyon ver
+      // 1. İndirimli Fiyatı Bul
       let discountAmount = productPrice * (customerDiscountRate / 100);
       let discountedPrice = productPrice - discountAmount;
-      let partnerEarnings = discountedPrice * (myCommissionRate / 100);
 
-      // HTML ÇIKTISI (Masaüstü ve Mobil için ayrı düzen)
+      // 2. Ham Komisyonu Bul (Brüt Taban)
+      let baseEarnings = discountedPrice * (myCommissionRate / 100);
+
+      // 3. Hesap Türüne Göre Gösterilecek Rakamı ve Metni Seç
+      let displayAmount = 0;
+      let labelText = "";
+      let infoText = "";
+
+      if (accountType === "company") {
+        // KURUMSAL: KDV Ekle (%20) - Çünkü Fatura Kesecek
+        // Partner 100 TL hak ettiyse, 120 TL fatura kesecek.
+        let kdv = baseEarnings * 0.2;
+        displayAmount = baseEarnings + kdv;
+        labelText = "FATURA TUTARI:";
+        infoText = "(KDV Dahil)";
+      } else {
+        // BİREYSEL: Stopaj Düş (%20) - Çünkü Cebine Net Girecek Olan Bu
+        // Partner 100 TL hak ettiyse, 20 TL devlete gider, 80 TL alır.
+        let stopaj = baseEarnings * 0.2;
+        displayAmount = baseEarnings - stopaj;
+        labelText = "NET KAZANÇ:";
+        infoText = "(Vergi Düşüldü)";
+      }
+
+      // HTML ÇIKTISI (Çift yazma hatası düzeltildi)
       statsHtml = `
             <div class="stripe-stats-container">
                 <div class="hide-mobile stripe-detail-box">
@@ -2706,9 +2730,11 @@ ${css}
                 <div class="hide-mobile stripe-divider"></div>
 
                 <div class="stripe-earn-box">
-                    <span class="earn-label">HAKEDİŞ:</span>
-<span class="earn-amount">${partnerEarnings.toFixed(2)} TL</span>
-                    <span class="earn-amount">+${partnerEarnings.toFixed(2)} TL</span>
+                    <span class="earn-label">${labelText}</span>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <span class="earn-amount">+${displayAmount.toFixed(2)} TL</span>
+                        <span style="font-size:9px; color:#64748b;">${infoText}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -3804,5 +3830,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v1*/
 })();
