@@ -3263,14 +3263,14 @@ ${css}
     showStep2();
   };
 
-  // --- ADIM 2: KİMLİK & İLETİŞİM (PROFESYONEL) ---
+  // --- ADIM 2: KİMLİK & FİNANS (SADELEŞTİRİLMİŞ & MUHASEBE UYUMLU) ---
   window.showStep2 = function () {
     const area = document.getElementById("app-form-area");
     area.innerHTML = `
       <div class="form-left">
           <div class="form-left-text">
-              <h3 style="margin:0;">Adım 2/3</h3>
-              <p style="margin:5px 0 0; opacity:0.8;">Ödeme ve kargo bilgileri.</p>
+              <h3 style="margin:0;">Ödeme Bilgileri</h3>
+              <p style="margin:5px 0 0; opacity:0.8;">Paranı nasıl yatıralım?</p>
           </div>
       </div>
       <div class="form-right">
@@ -3278,16 +3278,46 @@ ${css}
               <div class="step-dot active"></div><div class="step-dot active"></div><div class="step-dot"></div>
           </div>
           
-          <h3 style="margin:0 0 15px 0; color:#1e293b;">Kişisel Bilgiler</h3>
+          <h3 style="margin:0 0 15px 0; color:#1e293b;">Hesap Türü</h3>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-              <div class="inp-group">
-                  <label>Adın Soyadın</label>
-                  <input type="text" id="app_name" placeholder="Tam adınız">
+          <div style="margin-bottom:20px; background:#f0f9ff; padding:15px; border-radius:10px; border:1px solid #bae6fd;">
+              <div style="display:flex; gap:20px;">
+                  <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:bold; color:#0369a1;">
+                      <input type="radio" name="accType" value="individual" checked onchange="PartnerApp.toggleTaxInput(false)"> 
+                      Bireysel (Şirketim Yok)
+                  </label>
+                  <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:bold; color:#1e40af;">
+                      <input type="radio" name="accType" value="company" onchange="PartnerApp.toggleTaxInput(true)"> 
+                      Şirket / Ajans
+                  </label>
               </div>
-              <div class="inp-group">
-                  <label>Doğum Tarihi</label>
-                  <input type="date" id="app_birthdate">
+              <div id="tax-warning" style="font-size:11px; color:#64748b; margin-top:10px; background:white; padding:8px; border-radius:6px;">
+                  ℹ️ <b>Bireysel hesaplarda:</b> Devlet adına %20 Stopaj vergisi tarafımızca kesilir ve adınıza devlete ödenir. Hesabınıza <b>NET</b> tutar yatar.
+              </div>
+          </div>
+
+          <div class="inp-group">
+              <label>Ad Soyad / Şirket Ünvanı</label>
+              <input type="text" id="app_name" placeholder="Örn: Ahmet Yılmaz">
+          </div>
+
+          <div id="individual-inputs">
+               <div class="inp-group">
+                  <label>TC Kimlik No (Zorunlu - Ödeme İçin)</label>
+                  <input type="text" id="app_tckn" maxlength="11" placeholder="11 haneli TCKN">
+              </div>
+          </div>
+
+          <div id="company-inputs" style="display:none;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <div class="inp-group">
+                      <label>Vergi Dairesi</label>
+                      <input type="text" id="app_tax_office">
+                  </div>
+                  <div class="inp-group">
+                      <label>Vergi Numarası</label>
+                      <input type="text" id="app_tax_no">
+                  </div>
               </div>
           </div>
 
@@ -3297,34 +3327,32 @@ ${css}
           </div>
 
           <hr style="margin:15px 0; border:0; border-top:1px solid #e2e8f0;">
-          <h4 style="margin:0 0 10px 0; font-size:14px; color:#1e293b;">Ödeme Bilgileri</h4>
-
+          
           <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
               <div class="inp-group">
                   <label>Banka</label>
                   <select id="app_bank_name">
-                      <option value="">Seç...</option>
+                      <option value="Garanti">Garanti BBVA</option>
                       <option value="Ziraat">Ziraat</option>
-                      <option value="Garanti">Garanti</option>
                       <option value="IsBank">İş Bankası</option>
                       <option value="Akbank">Akbank</option>
-                      <option value="Yapikredi">Yapı Kredi</option>
-                      <option value="Finansbank">QNB Finans</option>
+                      <option value="YapiKredi">Yapı Kredi</option>
+                      <option value="Finans">QNB Finansbank</option>
                       <option value="Diger">Diğer</option>
                   </select>
               </div>
               <div class="inp-group">
-                  <label>IBAN (TR...)</label>
-                  <input type="text" id="app_iban" maxlength="32" oninput="this.value = this.value.toUpperCase()">
+                  <label>IBAN (TR ile başlar)</label>
+                  <input type="text" id="app_iban" maxlength="32" oninput="this.value = this.value.toUpperCase()" placeholder="TR...">
               </div>
           </div>
 
-          <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px;">
-              <label style="color:#c2410c;">Sana Özel İndirim Kodu Ne Olsun?</label>
-              <input type="text" id="app_coupon" placeholder="Örn: MERVE15 (Takipçilerin için)" style="font-weight:bold; color:#c2410c;">
+          <div class="inp-group" style="background:#fff7ed; padding:10px; border:1px solid #fdba74; border-radius:8px; margin-top:10px;">
+              <label style="color:#c2410c;">Sana Özel İndirim Kodu</label>
+              <input type="text" id="app_coupon" placeholder="Örn: MERVE15" style="font-weight:bold; color:#c2410c;">
           </div>
 
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; margin-top:20px;">
               <button onclick="showStep1()" class="btn-next" style="background:#e2e8f0; color:#334155;">&larr; Geri</button>
               <button onclick="validateStep2()" class="btn-next">SON ADIM &rarr;</button>
           </div>
@@ -3332,48 +3360,59 @@ ${css}
     `;
   };
 
-  // --- VALIDATION (GÜNCELLENDİ) ---
+  // YARDIMCI: Alanları Aç/Kapa
+  window.PartnerApp.toggleTaxInput = function (isCompany) {
+    if (isCompany) {
+      document.getElementById("individual-inputs").style.display = "none";
+      document.getElementById("company-inputs").style.display = "block";
+      document.getElementById("tax-warning").innerHTML =
+        "ℹ️ <b>Şirket hesaplarında:</b> Hakediş tutarına <b>+KDV</b> eklenir. Ödeme alabilmek için şirketinize ait fatura kesmeniz gerekir.";
+    } else {
+      document.getElementById("individual-inputs").style.display = "block";
+      document.getElementById("company-inputs").style.display = "none";
+      document.getElementById("tax-warning").innerHTML =
+        "ℹ️ <b>Bireysel hesaplarda:</b> Devlet adına %20 Stopaj vergisi tarafımızca kesilir ve adınıza devlete ödenir. Hesabınıza <b>NET</b> tutar yatar.";
+    }
+  };
+
+  // DOĞRULAMA (KAYDETME)
   window.validateStep2 = function () {
+    const accType = document.querySelector(
+      'input[name="accType"]:checked',
+    ).value;
     const name = document.getElementById("app_name").value;
     const phone = document.getElementById("app_phone").value;
-    const birthdate = document.getElementById("app_birthdate").value;
-    const coupon = document
-      .getElementById("app_coupon")
-      .value.toUpperCase()
-      .replace(/[^A-Z0-9]/g, "");
+    const iban = document.getElementById("app_iban").value;
+    const coupon = document.getElementById("app_coupon").value;
 
-    // Banka
-    const bankName = document.getElementById("app_bank_name").value;
-    const iban = document.getElementById("app_iban").value.trim();
+    // Vergi Kontrolleri
+    let tckn = "",
+      taxOffice = "",
+      taxNo = "";
 
-    if (name.length < 3) return alert("Ad soyad giriniz.");
-    if (!phone) return alert("Telefon giriniz.");
-    if (!birthdate) return alert("Doğum tarihi giriniz.");
+    if (accType === "individual") {
+      tckn = document.getElementById("app_tckn").value;
+      if (tckn.length !== 11) return alert("TC Kimlik No 11 haneli olmalıdır.");
+    } else {
+      taxOffice = document.getElementById("app_tax_office").value;
+      taxNo = document.getElementById("app_tax_no").value;
+      if (!taxNo) return alert("Vergi numarası zorunludur.");
+    }
 
-    // Yaş Kontrolü (18 yaş altı uyarısı - Opsiyonel)
-    const age = new Date().getFullYear() - new Date(birthdate).getFullYear();
-    if (age < 16)
-      return alert(
-        "Partner programına katılmak için en az 16 yaşında olmalısınız.",
-      );
+    if (!name || !phone || !iban || !coupon)
+      return alert("Lütfen tüm alanları doldurunuz.");
 
-    if (!bankName || iban.length < 10)
-      return alert("Lütfen banka ve IBAN bilgilerini eksiksiz giriniz.");
-    if (coupon.length < 3) return alert("Lütfen bir indirim kodu belirleyin.");
-
+    // Veriyi Paketle
     window.appData.personal = {
-      name: name,
-      phone: phone,
-      birthdate: birthdate,
-      bankInfo: `${bankName} - ${iban}`,
-      customCoupon: coupon,
-      // Sebebini artık strateji kısmına aldığımız için buraya boş veya özet geçebiliriz
-      reason:
-        "Platform: " +
-        window.appData.social.platform +
-        " | Kategori: " +
-        window.appData.social.category,
+      name,
+      phone,
+      bankInfo: `Garanti - ${iban}`, // Bankayı Garanti varsayabiliriz veya seçileni alabiliriz
+      customCoupon: coupon.toUpperCase(),
+      accountType: accType, // "individual" veya "company"
+      tckn: tckn,
+      taxInfo: accType === "company" ? `${taxOffice} / ${taxNo}` : "",
     };
+
     showStep3();
   };
 
@@ -3714,5 +3753,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
