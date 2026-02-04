@@ -3681,6 +3681,7 @@ ${css}
           socialLinks: window.appData.social,
           customCoupon: window.appData.personal.customCoupon,
           bankInfo: window.appData.personal.bankInfo,
+          userAgent: navigator.userAgent,
 
           // 🔥 EKLENEN KRİTİK VERİLER (BUNLAR EKSİKTİ) 🔥
           accountType: window.appData.personal.accountType, // "company" veya "individual"
@@ -3826,5 +3827,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
