@@ -2921,60 +2921,84 @@ ${css}
       .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
       .btn-next:hover { background:#1e293b; transform:scale(1.02); }
 
-      /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (DÜZELTİLMİŞ FİNAL) */
-@media(max-width:768px) {
-    /* Banner Ayarları */
-    .app-hero { 
-        height: auto; 
-        min-height: 350px; /* Yüksekliği artırdık, görsel daha iyi görünsün */
-        background-position: center center !important; /* Görseli tam ortala */
-        padding: 20px; 
-        align-items: center; /* Yazıyı dikeyde ortala */
-        justify-content: center; /* Yazıyı yatayda ortala */
-        text-align: center;
-    }
+      /* 🔥 MOBİL İÇİN FİNAL DÜZELTME (V3) - BOŞLUKLAR VE FORM HATASI GİDERİLDİ */
+    @media(max-width:768px) {
+        /* 1. Banner ve Başlık Düzeni */
+        .app-hero { 
+            min-height: 220px; 
+            height: auto;
+            background-position: center top !important; 
+            padding: 30px 20px;
+            align-items: center; /* Ortala */
+            justify-content: center; /* Ortala */
+            text-align: center;
+        }
+        /* Görselin üzerine karartma atıyoruz ki yazı okunsun */
+        .app-hero::after { background: rgba(0,0,0,0.6) !important; }
 
-    /* Mobilde yazının okunması için arkaplanı biraz daha karartıyoruz */
-    .app-hero::after {
-        background: rgba(0,0,0,0.7) !important; /* %70 Siyah Filtre */
-    }
+        .app-hero h1 { font-size: 22px; line-height: 1.3; margin-bottom: 10px; }
+        .app-hero p { font-size: 13px; margin: 0; opacity: 0.9; }
+        
+        /* 2. Ana Konteynır - Negatif marjini kaldırıp düz hizalıyoruz */
+        .app-container { 
+            margin: 0 auto; 
+            padding: 20px 15px; 
+            width: 100%;
+        }
 
-    .app-hero-content {
-        padding: 0;
-        width: 100%;
-    }
+        /* 3. Kartlar (Benefit Grid) - Alt alta tam genişlik */
+        .benefit-grid { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+        .b-card { 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            text-align: left; 
+            gap: 15px; 
+        }
+        .b-card img { width: 50px; height: 50px; margin: 0; }
 
-    .app-hero h1 { 
-        font-size: 24px; 
-        line-height: 1.3; 
-        margin-bottom: 10px;
-    }
-    .app-hero p { 
-        font-size: 14px; 
-        opacity: 0.9;
-    }
-    
-    /* Konteynırı yukarı çekme ayarını mobilde biraz kıstık */
-    .app-container { margin-top: -30px; padding: 0 15px; }
+        /* 4. 🔥 FORM KUTUSU SORUNU ÇÖZÜMÜ */
+        /* Flex yapısını iptal edip dikey moda geçiyoruz */
+        .form-box { 
+            display: flex;
+            flex-direction: column; /* Yan yana değil alt alta */
+            height: auto !important; 
+            min-height: auto !important;
+            box-shadow: none; /* Mobilde gölgeyi azalt */
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Sol resmi tamamen yok et */
+        .form-left { 
+            display: none !important; 
+            width: 0 !important; 
+            height: 0 !important;
+        } 
+        
+        /* Sağ tarafı (Formu) tam ekran yap */
+        .form-right { 
+            width: 100% !important; 
+            padding: 20px 15px !important; 
+            box-sizing: border-box; /* Taşmayı önle */
+        }
+        
+        /* Adım Çubuklarını (Mavi Çizgiler) Hizala */
+        .step-indicator {
+            margin-bottom: 20px;
+            gap: 5px;
+        }
 
-    /* Kartları Alt Alta Diz */
-    .benefit-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
-    .b-card { 
-        padding: 20px; 
-        display: flex; 
-        flex-direction: row; /* İkon ve yazı yan yana */
-        align-items: center; 
-        text-align: left; 
-        gap: 15px; 
+        /* Inputları Rahatlat */
+        .inp-group input, .inp-group select, .inp-group textarea, .btn-next { 
+            font-size: 16px; /* iPhone zoom sorununu önler */
+        } 
     }
-    .b-card img { width: 50px; height: 50px; margin-bottom: 0; flex-shrink: 0; }
-    
-    /* Form Yapısı */
-    .form-box { flex-direction: column; min-height: auto; }
-    .form-left { display: none; } /* Mobilde yan resmi gizle */
-    .form-right { width: 100%; padding: 25px 20px; }
-    .inp-group input, .btn-next { font-size: 16px; } 
-}
   </style>
   `;
 
@@ -3849,5 +3873,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
