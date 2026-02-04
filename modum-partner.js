@@ -3652,7 +3652,7 @@ ${css}
           email: window.appData.email,
           name: window.appData.personal.name,
           phone: window.appData.personal.phone,
-          reason: window.appData.personal.reason,
+          reason: window.appData.social.strategy || "Strateji belirtilmedi",
           socialLinks: window.appData.social,
           // Eğer özel kupon isteği varsa buraya ekleyebiliriz, şimdilik boş
           customCoupon: window.appData.personal.customCoupon,
@@ -3797,5 +3797,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
