@@ -2921,41 +2921,60 @@ ${css}
       .btn-next { background:#0f172a; color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:auto; font-size:16px; transition:0.2s; }
       .btn-next:hover { background:#1e293b; transform:scale(1.02); }
 
-      /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (GÜNCELLENMİŞ) */
-      @media(max-width:768px) {
-          /* Bannerı Düzelt */
-          .app-hero { 
-              height: auto; 
-              min-height: 250px; /* Yüksekliği biraz artır */
-              background-position: top center; /* Görselin üst kısmını göster */
-              padding: 40px 15px; /* İçerik için boşluk */
-              align-items: flex-end; /* Yazıları alta it */
-          }
-          .app-hero h1 { font-size: 20px; line-height: 1.2; }
-          .app-hero p { font-size: 13px; margin-top: 5px; }
-          
-          /* Konteynırı yukarı çek */
-          .app-container { margin-top: -20px; padding: 0 15px; }
+      /* 🔥 MOBİL İÇİN ÖZEL AYARLAR (DÜZELTİLMİŞ FİNAL) */
+@media(max-width:768px) {
+    /* Banner Ayarları */
+    .app-hero { 
+        height: auto; 
+        min-height: 350px; /* Yüksekliği artırdık, görsel daha iyi görünsün */
+        background-position: center center !important; /* Görseli tam ortala */
+        padding: 20px; 
+        align-items: center; /* Yazıyı dikeyde ortala */
+        justify-content: center; /* Yazıyı yatayda ortala */
+        text-align: center;
+    }
 
-          /* Kartları daha kompakt yap (Yatay Liste Gibi) */
-          .benefit-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
-          .b-card { padding: 15px; display: flex; align-items: center; text-align: left; gap: 15px; }
-          .b-card img { width: 50px; height: 50px; margin-bottom: 0; }
-          .b-card h4 { font-size: 15px; margin-bottom: 2px; }
-          .b-card p { font-size: 11px; margin: 0; }
+    /* Mobilde yazının okunması için arkaplanı biraz daha karartıyoruz */
+    .app-hero::after {
+        background: rgba(0,0,0,0.7) !important; /* %70 Siyah Filtre */
+    }
 
-          /* Form Yapısı */
-          .form-box { flex-direction: column; min-height: auto; } /* Yüksekliği serbest bırak */
-          
-          /* 🔥 Yan resmi mobilde GİZLE */
-          .form-left { display: none; } 
-          
-          /* Sağ tarafı tam genişlik yap */
-          .form-right { width: 100%; padding: 20px 15px; }
-          
-          /* Inputları rahatlat */
-          .inp-group input, .btn-next { font-size: 16px; } 
-      }
+    .app-hero-content {
+        padding: 0;
+        width: 100%;
+    }
+
+    .app-hero h1 { 
+        font-size: 24px; 
+        line-height: 1.3; 
+        margin-bottom: 10px;
+    }
+    .app-hero p { 
+        font-size: 14px; 
+        opacity: 0.9;
+    }
+    
+    /* Konteynırı yukarı çekme ayarını mobilde biraz kıstık */
+    .app-container { margin-top: -30px; padding: 0 15px; }
+
+    /* Kartları Alt Alta Diz */
+    .benefit-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
+    .b-card { 
+        padding: 20px; 
+        display: flex; 
+        flex-direction: row; /* İkon ve yazı yan yana */
+        align-items: center; 
+        text-align: left; 
+        gap: 15px; 
+    }
+    .b-card img { width: 50px; height: 50px; margin-bottom: 0; flex-shrink: 0; }
+    
+    /* Form Yapısı */
+    .form-box { flex-direction: column; min-height: auto; }
+    .form-left { display: none; } /* Mobilde yan resmi gizle */
+    .form-right { width: 100%; padding: 25px 20px; }
+    .inp-group input, .btn-next { font-size: 16px; } 
+}
   </style>
   `;
 
@@ -3830,5 +3849,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
