@@ -3827,5 +3827,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
