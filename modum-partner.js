@@ -2703,20 +2703,22 @@ ${css}
       let labelText = "";
       let infoText = "";
 
+      // 🔥 Backend'den gelen oranı kullan (yoksa 20 varsay)
+      let dynamicTax = pData.tax_rate ? parseFloat(pData.tax_rate) : 20;
+      let taxMultiplier = dynamicTax / 100;
+
       if (accountType === "company") {
-        // KURUMSAL: KDV Ekle (%20) - Çünkü Fatura Kesecek
-        // Partner 100 TL hak ettiyse, 120 TL fatura kesecek.
-        let kdv = baseEarnings * 0.2;
+        // KURUMSAL: KDV Ekle
+        let kdv = baseEarnings * taxMultiplier;
         displayAmount = baseEarnings + kdv;
         labelText = "FATURA TUTARI:";
-        infoText = "(KDV Dahil)";
+        infoText = `(KDV Dahil %${dynamicTax})`;
       } else {
-        // BİREYSEL: Stopaj Düş (%20) - Çünkü Cebine Net Girecek Olan Bu
-        // Partner 100 TL hak ettiyse, 20 TL devlete gider, 80 TL alır.
-        let stopaj = baseEarnings * 0.2;
+        // BİREYSEL: Stopaj Düş
+        let stopaj = baseEarnings * taxMultiplier;
         displayAmount = baseEarnings - stopaj;
         labelText = "NET KAZANÇ:";
-        infoText = "(Vergi Düşüldü)";
+        infoText = `(Vergi Düşüldü %${dynamicTax})`;
       }
 
       // HTML ÇIKTISI (Çift yazma hatası düzeltildi)
@@ -3827,5 +3829,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
