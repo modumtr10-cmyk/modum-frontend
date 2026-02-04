@@ -3627,7 +3627,7 @@ ${css}
     setTimeout(() => (wrapper.style.transform = "scale(1)"), 200);
   };
 
-  // --- 🔥 BAŞVURU GÖNDER (GLOBAL WINDOW FIX) ---
+  // --- 🔥 BAŞVURU GÖNDER (DÜZELTİLMİŞ VERSİYON - VERGİ BİLGİLERİ EKLENDİ) ---
   window.submitApplication = async function () {
     if (!document.getElementById("app_terms").checked) {
       alert("⚠️ Lütfen önce sözleşmeyi okuyup onaylayınız.");
@@ -3644,19 +3644,26 @@ ${css}
 
     try {
       // Backend'e Gönder
-      const res = await fetch(API_URL, {
+      const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+        // API URL'nin doğru olduğundan emin ol (yukarıdaki global değişkeni de kullanabilirsin)
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          islem: "submit_application", // Backend fonksiyon adını kontrol et (submit_application olmalı)
+          islem: "submit_application",
+
+          // Mevcut Veriler
           email: window.appData.email,
           name: window.appData.personal.name,
           phone: window.appData.personal.phone,
           reason: window.appData.social.strategy || "Strateji belirtilmedi",
           socialLinks: window.appData.social,
-          // Eğer özel kupon isteği varsa buraya ekleyebiliriz, şimdilik boş
           customCoupon: window.appData.personal.customCoupon,
           bankInfo: window.appData.personal.bankInfo,
+
+          // 🔥 EKLENEN KRİTİK VERİLER (BUNLAR EKSİKTİ) 🔥
+          accountType: window.appData.personal.accountType, // "company" veya "individual"
+          tckn: window.appData.personal.tckn, // TC Kimlik No
+          taxInfo: window.appData.personal.taxInfo, // Vergi Dairesi / No
         }),
       });
       const data = await res.json();
@@ -3797,5 +3804,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
