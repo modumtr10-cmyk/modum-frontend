@@ -1636,36 +1636,43 @@ ${css}
                   <div style="font-size:11px; color:#334155;">${rawProd}</div>
               </div>`;
             }
-            // --- 💰 VERGİ & KESİNTİ DÖKÜMÜ ---
+            // --- 💰 AKILLI FİNANSAL DÖKÜM ---
             let financeDetailHTML = "";
-            
-            // Eğer backend vergi verisini göndermişse (tx.taxAmount varsa)
+
+            // Backend'den vergi verisi gelmişse (Yeni sistem kaydıysa)
             if (tx.taxAmount && parseFloat(tx.taxAmount) !== 0) {
-                let brutTutar = parseFloat(tx.commissionAmount || 0); // 200 TL
-                let kesinti = parseFloat(tx.taxAmount || 0);          // 40 TL
-                let netYatan = parseFloat(tx.netPayout || 0);         // 160 TL
-                let vergiAdi = tx.taxType || "Stopaj"; // "Stopaj (-%20)" veya "KDV"
+              let brutTutar = parseFloat(tx.commissionAmount || 0);
+              let kesinti = parseFloat(tx.taxAmount || 0);
+              let netYatan = parseFloat(tx.netPayout || 0);
 
-                // Renk ayarı (Stopajsa kırmızı, KDV ise yeşilimsi)
-                let taxColor = vergiAdi.includes("KDV") ? "#059669" : "#dc2626"; // KDV eklenir, Stopaj düşülür
-                let taxSign = vergiAdi.includes("KDV") ? "+" : "-";
+              // Backend'den gelen etiket: "Stopaj (-%20)" veya "KDV (+%20)"
+              let vergiAdi = tx.taxType || "Vergi/Kesinti";
 
-                financeDetailHTML = `
+              // --- ŞİRKET Mİ BİREYSEL Mİ RENGİ ---
+              // Eğer KDV ise (Para ekleniyorsa) YEŞİL olsun
+              // Eğer Stopaj ise (Para kesiliyorsa) KIRMIZI olsun
+              let isKDV = vergiAdi.includes("KDV");
+              let taxColor = isKDV ? "#059669" : "#dc2626";
+              let taxSign = isKDV ? "+" : "-"; // KDV ise +, Stopaj ise - işareti
+
+              financeDetailHTML = `
                 <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase;">📊 Finansal Döküm</div>
+                    <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase; border-bottom:1px solid #eee; padding-bottom:3px;">
+                        📊 Detaylı Hesap Dökümü
+                    </div>
                     
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px; color:#64748b;">
-                        <span>Brüt Hakediş:</span>
-                        <span>${brutTutar.toFixed(2)} ₺</span>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px; color:#334155;">
+                        <span>Komisyon Tutarı:</span>
+                        <span style="font-weight:bold;">${brutTutar.toFixed(2)} ₺</span>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; color:${taxColor};">
                         <span>${vergiAdi}:</span>
-                        <span>${taxSign}${Math.abs(kesinti).toFixed(2)} ₺</span>
+                        <span style="font-weight:bold;">${taxSign}${Math.abs(kesinti).toFixed(2)} ₺</span>
                     </div>
 
-                    <div style="border-top:1px solid #e2e8f0; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; font-size:12px; font-weight:bold; color:#1e293b;">
-                        <span>Cüzdana Yatan (Net):</span>
+                    <div style="border-top:1px solid #cbd5e1; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; font-size:12px; font-weight:800; color:#0f172a;">
+                        <span>${isKDV ? "Fatura Tutarı (KDV Dahil):" : "Hesaba Yatacak (Net):"}</span>
                         <span>${netYatan.toFixed(2)} ₺</span>
                     </div>
                 </div>
@@ -2699,7 +2706,8 @@ ${css}
                 <div class="hide-mobile stripe-divider"></div>
 
                 <div class="stripe-earn-box">
-                    <span class="earn-label">TAHMİNİ KAZANÇ (BRÜT):</span>
+                    <span class="earn-label">HAKEDİŞ:</span>
+<span class="earn-amount">${partnerEarnings.toFixed(2)} TL</span>
                     <span class="earn-amount">+${partnerEarnings.toFixed(2)} TL</span>
                 </div>
             </div>
@@ -3789,5 +3797,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
