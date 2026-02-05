@@ -485,6 +485,10 @@ ${css}
           <div class="p-nav-icon"><i class="fas fa-chart-pie"></i></div>
           <span class="p-nav-text">Özet</span>
       </div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('profile', this)">
+          <div class="p-nav-icon"><i class="fas fa-user-cog"></i></div>
+          <span class="p-nav-text">Profilim</span>
+      </div>
       <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
           <div class="p-nav-icon"><i class="fas fa-link"></i></div>
           <span class="p-nav-text">Linkler</span>
@@ -647,6 +651,7 @@ ${css}
         if (tab === "academy") this.renderAcademy(area);
         if (tab === "showcase") this.renderShowcase(area);
         if (tab === "my_collection") this.renderMyCollection(area);
+        if (tab === "profile") this.renderProfile(area);
       }, 300);
     },
 
@@ -727,6 +732,59 @@ ${css}
         }
 
         const s = res.stats;
+        // --- 🔥 BAŞLANGIÇ REHBERİ KODU (BURAYA YAPIŞTIR) ---
+        let steps = [
+          {
+            title: "Profilini Tamamla",
+            completed: !!(s.bank_info && s.phone && (s.tckn || s.taxInfo)),
+            icon: "user-check",
+          },
+          {
+            title: "İlk Koleksiyonun",
+            completed: s.my_collection && s.my_collection.length > 0,
+            icon: "store",
+          },
+          {
+            title: "İlk Tıklama",
+            completed: parseInt(s.totalClicks) > 0,
+            icon: "mouse-pointer",
+          },
+        ];
+
+        let completedCount = steps.filter((x) => x.completed).length;
+        let progressPercent = (completedCount / steps.length) * 100;
+        let onboardingHTML = "";
+
+        if (completedCount < steps.length) {
+          let stepsUI = steps
+            .map(
+              (step) => `
+              <div style="flex:1; text-align:center; opacity:${step.completed ? "0.5" : "1"};">
+                  <div style="width:30px; height:30px; margin:0 auto 5px; background:${step.completed ? "#10b981" : "#e2e8f0"}; color:${step.completed ? "white" : "#64748b"}; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px;">
+                      <i class="fas fa-${step.completed ? "check" : step.icon}"></i>
+                  </div>
+                  <div style="font-size:10px; color:${step.completed ? "#10b981" : "#334155"}; font-weight:bold;">${step.title}</div>
+              </div>
+          `,
+            )
+            .join("");
+
+          onboardingHTML = `
+            <div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <h4 style="margin:0; color:#1e293b;">🚀 Başlangıç Rehberi</h4>
+                        <p style="margin:2px 0 0; font-size:12px; color:#64748b;">Hesabını tam potansiyeliyle kullanmak için bu adımları tamamla.</p>
+                    </div>
+                    <div style="font-weight:bold; color:#3b82f6;">%${Math.round(progressPercent)}</div>
+                </div>
+                <div style="display:flex; gap:10px; position:relative;">
+                    <div style="display:flex; width:100%; justify-content:space-between;">${stepsUI}</div>
+                </div>
+                ${steps[0].completed ? "" : `<button onclick="PartnerApp.loadTab('profile')" class="p-btn" style="background:#3b82f6; color:white; margin-top:15px;">👉 Bilgilerini Tamamla</button>`}
+            </div>
+          `;
+        }
 
         // --- VERİ HAZIRLIĞI ---
         let currentRev = parseFloat(s.totalRevenue || 0);
@@ -866,7 +924,9 @@ ${css}
         // -----------------------------------------------------
 
         // --- HTML ÇIKTISI ---
-        container.innerHTML = `
+        container.innerHTML =
+          onboardingHTML +
+          `
           <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
@@ -2621,6 +2681,143 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
+    }, // --- 🔥 PROFİL SAYFASI (YENİ EKLENEN) ---
+    renderProfile: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil bilgileri yükleniyor...</div>';
+
+      var email = detectUser();
+      // Güncel veriyi çekelim
+      const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+        // API URL'ni buraya yaz veya global değişken kullan
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ islem: "get_partner_stats", email: email }),
+      }).then((r) => r.json());
+
+      if (!res.success) return (container.innerHTML = "Hata oluştu.");
+      const d = res.stats;
+
+      // Varsayılanlar
+      const accType = d.accountType || "individual";
+      const isCompany = accType === "company";
+
+      container.innerHTML = `
+            <div style="background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); overflow:hidden;">
+                <div style="background:#1e293b; padding:20px; color:white;">
+                    <h3 style="margin:0;"><i class="fas fa-user-edit"></i> Profilim ve Ödeme Bilgileri</h3>
+                    <p style="margin:5px 0 0; font-size:13px; opacity:0.8;">Ödemelerini sorunsuz alman için bu bilgileri eksiksiz doldurmalısın.</p>
+                </div>
+
+                <div style="padding:20px;">
+                    
+                    <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                        <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:10px;">HESAP TÜRÜ</label>
+                        <div style="display:flex; gap:20px;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <input type="radio" name="p_acc_type" value="individual" ${!isCompany ? "checked" : ""} onchange="document.getElementById('p-indiv-box').style.display='block'; document.getElementById('p-comp-box').style.display='none';">
+                                <span>👤 Bireysel (Stopaj Kesintili)</span>
+                            </label>
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <input type="radio" name="p_acc_type" value="company" ${isCompany ? "checked" : ""} onchange="document.getElementById('p-indiv-box').style.display='none'; document.getElementById('p-comp-box').style.display='block';">
+                                <span>🏢 Kurumsal / Şirket (+KDV Faturalı)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div>
+                            <h4 style="color:#334155; border-bottom:2px solid #e2e8f0; padding-bottom:5px; margin-bottom:15px;">İletişim Bilgileri</h4>
+                            
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Ad Soyad / Ünvan</label>
+                                <input type="text" id="p_name" value="${d.name || ""}" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; background:#f1f5f9;" readonly>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Telefon</label>
+                                <input type="tel" id="p_phone" value="${d.phone || ""}" placeholder="05XX XXX XX XX" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Açık Adres (Gider Pusulası İçin)</label>
+                                <textarea id="p_address" rows="3" placeholder="Mahalle, Sokak, No, İlçe/İl..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:inherit;">${d.address || ""}</textarea>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 style="color:#334155; border-bottom:2px solid #e2e8f0; padding-bottom:5px; margin-bottom:15px;">Finansal Bilgiler</h4>
+
+                            <div id="p-indiv-box" style="display:${!isCompany ? "block" : "none"};">
+                                <div class="form-group" style="margin-bottom:15px;">
+                                    <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">TC Kimlik No (Zorunlu)</label>
+                                    <input type="text" id="p_tckn" value="${d.tckn || ""}" maxlength="11" placeholder="11 haneli TCKN" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                </div>
+                            </div>
+
+                            <div id="p-comp-box" style="display:${isCompany ? "block" : "none"};">
+                                <div class="form-group" style="margin-bottom:15px;">
+                                    <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Vergi Dairesi ve No</label>
+                                    <input type="text" id="p_tax_info" value="${d.taxInfo || ""}" placeholder="Örn: Beyoğlu VD - 1234567890" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label style="display:block; font-size:12px; font-weight:bold; color:#64748b; margin-bottom:5px;">Banka / IBAN Bilgisi</label>
+                                <textarea id="p_bank_info" rows="3" placeholder="TR..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; color:#1e40af;">${d.bank_info || ""}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button onclick="PartnerApp.saveProfile()" class="p-btn" style="background:#10b981; color:white; width:auto; padding:12px 30px; font-size:14px; display:inline-block;">
+                            <i class="fas fa-save"></i> Kaydet ve Güncelle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    saveProfile: async function () {
+      const btn = event.target;
+      btn.innerText = "Kaydediliyor...";
+      btn.disabled = true;
+
+      const email = detectUser();
+      const accType = document.querySelector(
+        'input[name="p_acc_type"]:checked',
+      ).value;
+
+      const payload = {
+        islem: "update_partner_own_profile",
+        email: email,
+        accountType: accType,
+        phone: document.getElementById("p_phone").value,
+        address: document.getElementById("p_address").value,
+        bankInfo: document.getElementById("p_bank_info").value,
+        tckn: document.getElementById("p_tckn").value,
+        taxInfo: document.getElementById("p_tax_info").value,
+      };
+
+      try {
+        const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).then((r) => r.json());
+
+        if (res.success) {
+          alert("✅ Bilgileriniz başarıyla güncellendi.");
+        } else {
+          alert("Hata: " + res.message);
+        }
+      } catch (e) {
+        alert("Bağlantı hatası.");
+      } finally {
+        btn.innerText = "Kaydet ve Güncelle";
+        btn.disabled = false;
+      }
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -3920,5 +4117,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v1*/
 })();
