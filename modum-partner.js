@@ -1746,25 +1746,6 @@ ${css}
 
         let safeBalance = parseFloat(pStats.balance || 0);
         let pendingVal = parseFloat(pStats.pending_balance || 0);
-        // --- 🔥 YENİ BUTON MANTIĞI BAŞLANGIÇ ---
-      let payoutBtnHtml = "";
-      // 500 TL altındaysa
-      if (safeBalance < 500) {
-          payoutBtnHtml = `<div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block; margin-top:5px;">500 TL Alt Limit</div>`;
-      } 
-      else {
-          // Eğer Şirketse (company) -> Fatura Butonu
-          if (pStats.accountType === "company") {
-              payoutBtnHtml = `
-                  <button onclick="PartnerApp.openInvoiceModal('${safeBalance}')" class="p-btn" style="background:white; color:#059669; margin-top:10px; height:30px; font-size:11px; width:100%;">
-                      📄 Fatura Yükle & Çek
-                  </button>`;
-          } else {
-              // Bireyselse -> Otomatik Bilgisi
-              payoutBtnHtml = `<div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block; margin-top:5px;">Çarşamba günü otomatik yatar</div>`;
-          }
-      }
-      // --- 🔥 YENİ BUTON MANTIĞI BİTİŞ ---
 
         // 🔥 YENİ BAŞLIK EKLENDİ
         container.innerHTML = `
@@ -1779,7 +1760,7 @@ ${css}
       <div class="p-card" style="text-align:center; padding:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2); margin:0;">
           <div style="font-size:10px; opacity:0.9; font-weight:bold;">ÇEKİLEBİLİR BAKİYE</div>
           <div class="p-stat-val" style="color:white; font-size:28px; margin:5px 0;">${safeBalance.toLocaleString("tr-TR")} ₺</div> 
-          ${payoutBtnHtml}
+          <div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block;">Otomatik Ödenir</div>
       </div>
 
       <div class="p-card" style="text-align:center; padding:20px; background:#fffbeb; border:1px solid #fcd34d; color:#b45309; margin:0;">
@@ -2640,97 +2621,6 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
-    }, // --- 💰 KURUMSAL İÇİN FATURA YÜKLEME PENCERESİ ---
-    openInvoiceModal: function (balance) {
-      // Eski modal varsa sil
-      var old = document.getElementById("p-invoice-modal");
-      if (old) old.remove();
-
-      var html = `
-        <div id="p-invoice-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2147483650; display:flex; align-items:center; justify-content:center; padding:20px;">
-            <div style="background:white; width:100%; max-width:400px; border-radius:12px; padding:25px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0; color:#1e293b;">🏢 Fatura Yükle</h3>
-                    <span onclick="document.getElementById('p-invoice-modal').remove()" style="cursor:pointer; font-size:24px;">&times;</span>
-                </div>
-                
-                <div style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px; border-radius:6px; font-size:12px; margin-bottom:15px;">
-                    <b>Kurumsal Ortak:</b> Ödeme alabilmek için ${balance} TL tutarında (KDV Dahil) kestiğiniz faturayı yüklemeniz gerekmektedir.
-                </div>
-                
-                <div style="margin-bottom:20px;">
-                    <label style="display:block; font-size:11px; font-weight:bold; color:#334155; margin-bottom:5px;">Fatura Görseli (PDF/JPG/PNG)</label>
-                    <input type="file" id="p-invoice-file" accept="image/*,application/pdf" style="width:100%; font-size:12px; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
-                    <small style="color:#ef4444; display:none;" id="p-inv-error">Lütfen dosya seçiniz!</small>
-                </div>
-
-                <button onclick="PartnerApp.submitInvoicePayout('${balance}')" class="p-btn" style="background:#3b82f6; color:white; width:100%; justify-content:center;">
-                    Faturayı Gönder ve Ödeme İste 🚀
-                </button>
-            </div>
-        </div>`;
-
-      document.body.insertAdjacentHTML("beforeend", html);
-    },
-
-    submitInvoicePayout: function (amount) {
-      var fileInput = document.getElementById("p-invoice-file");
-      var btn = event.target;
-
-      if (fileInput.files.length === 0) {
-        document.getElementById("p-inv-error").style.display = "block";
-        return;
-      }
-
-      // Dosya Boyut Kontrolü (Maks 1MB - Firestore limiti için)
-      var file = fileInput.files[0];
-      if (file.size > 1024 * 1024) {
-        alert(
-          "Dosya boyutu çok büyük! Lütfen 1MB'dan küçük bir görsel veya PDF yükleyin.",
-        );
-        return;
-      }
-
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yükleniyor...';
-      btn.disabled = true;
-
-      var reader = new FileReader();
-      reader.onloadend = async function () {
-        var base64data = reader.result;
-        var email =
-          JSON.parse(localStorage.getItem("mdm_user_cache") || "{}").email ||
-          document.querySelector('input[name="Email"]')?.value;
-
-        try {
-          const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              islem: "request_payout",
-              email: email,
-              amount: amount, // Tüm bakiyeyi çekiyor
-              invoiceData: base64data,
-              fileType: file.type.includes("pdf") ? "pdf" : "image",
-            }),
-          });
-
-          const data = await res.json();
-          if (data.success) {
-            alert("✅ " + data.message);
-            document.getElementById("p-invoice-modal").remove();
-            PartnerApp.loadTab("wallet"); // Ekranı yenile
-          } else {
-            alert("Hata: " + data.message);
-            btn.innerHTML = "Tekrar Dene";
-            btn.disabled = false;
-          }
-        } catch (e) {
-          alert("Bağlantı hatası.");
-          btn.innerHTML = "Tekrar Dene";
-          btn.disabled = false;
-        }
-      };
-      reader.readAsDataURL(file);
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -4030,5 +3920,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v10*/
 })();
