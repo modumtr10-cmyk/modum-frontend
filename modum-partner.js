@@ -1780,6 +1780,9 @@ ${css}
       <button onclick="PartnerApp.downloadPDFStatement()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#1e293b; color:white; border:none;">
           <i class="fas fa-file-pdf"></i> Ekstre İndir (PDF)
       </button>
+      <button onclick='PartnerApp.downloadReceiptPDF(${JSON.stringify(tx)})' class="btn-sm btn-outline">
+   <i class="fas fa-file-invoice"></i> Makbuz
+</button>
   </div>    
   ${historyHTML}
 `;
@@ -3813,6 +3816,74 @@ ${css}
     </div>
     `;
   }
+  // modum-partner.js içine eklenecek fonksiyon:
+
+  PartnerApp.downloadReceiptPDF = function (transaction) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Şirket Logosu ve Başlık
+    doc.setFontSize(22);
+    doc.text("MODUMNET", 20, 20);
+    doc.setFontSize(12);
+    doc.text("GİDER PUSULASI / HAKEDİŞ RAPORU", 20, 30);
+
+    // Çizgi
+    doc.line(20, 35, 190, 35);
+
+    // Detaylar
+    doc.setFontSize(10);
+    doc.text(`İşlem Tarihi: ${transaction.date}`, 20, 50);
+    doc.text(`İşlem ID: #${transaction.id.substring(0, 8)}`, 20, 55);
+    doc.text(`Partner Adı: ${window.PartnerData.name}`, 20, 60);
+
+    // Finansal Tablo
+    let y = 80;
+    doc.text("Hakediş Detayı:", 20, y);
+    y += 10;
+
+    // Brüt
+    doc.text("Brüt Komisyon Tutarı:", 20, y);
+    doc.text(`${transaction.commission} ₺`, 150, y, { align: "right" });
+    y += 8;
+
+    // Vergi
+    // Verinin backend'den "grossAmount", "taxAmount" olarak geldiğini varsayıyorum.
+    // Şimdilik görselden yola çıkarak hesaplıyoruz:
+    let amount = parseFloat(transaction.commission);
+    let tax = amount * 0.2; // Varsayılan Stopaj
+    let net = amount - tax;
+
+    doc.setTextColor(200, 0, 0); // Kırmızı
+    doc.text(`Gelir Vergisi (Stopaj %20):`, 20, y);
+    doc.text(`-${tax.toFixed(2)} ₺`, 150, y, { align: "right" });
+    y += 10;
+    doc.line(20, y - 5, 190, y - 5); // Ara çizgi
+
+    // Net
+    doc.setTextColor(0, 150, 0); // Yeşil
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text("HESABA YATAN NET:", 20, y);
+    doc.text(`${net.toFixed(2)} ₺`, 150, y, { align: "right" });
+
+    // Yasal Uyarı
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.setFont(undefined, "normal");
+    doc.text(
+      "Bu belge ModumNet iş ortaklığı sistemi tarafından dijital olarak üretilmiştir.",
+      20,
+      130,
+    );
+    doc.text(
+      "Resmi muhasebe kayıtlarınızda bilgi fişi olarak kullanabilirsiniz.",
+      20,
+      135,
+    );
+
+    doc.save(`Modum_Makbuz_${transaction.date}.pdf`);
+  };
 
   // --- SAYFA AÇILINCA ÇALIŞTIR ---
   // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
@@ -3829,5 +3900,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
