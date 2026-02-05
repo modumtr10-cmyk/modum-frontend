@@ -1599,6 +1599,10 @@ ${css}
             if (tx.receiptUrl && tx.receiptUrl.length > 5) {
               receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block; margin-top:2px; font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 6px; border-radius:4px; text-decoration:none; font-weight:bold; border:1px solid #dbeafe;">📄 Dekont</a>`;
             }
+            // --- 🔥 YENİ: MAKBUZ BUTONU ---
+            // Sadece güvenli veri gönderiyoruz, tırnak hatalarını önlemek için encode ediyoruz
+            let safeTx = encodeURIComponent(JSON.stringify(tx));
+            let pdfBtn = `<button onclick="PartnerApp.downloadReceiptPDF(JSON.parse(decodeURIComponent('${safeTx}'))); event.stopPropagation();" style="display:inline-block; margin-top:2px; margin-left:3px; font-size:10px; background:#f0fdf4; color:#15803d; padding:2px 6px; border-radius:4px; border:1px solid #bbf7d0; cursor:pointer;">🧾 Makbuz</button>`;
 
             // --- 🔥 5. KAYNAK ETİKETİ (YENİ EKLENDİ) ---
             let sourceBadge = "";
@@ -1702,10 +1706,9 @@ ${css}
                 </div>
                 
                 <div style="text-align:right;">
-                        <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
-                        ${receiptBtn}
-                        <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
-                    </div>
+    <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
+    ${receiptBtn} ${pdfBtn}  <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
+</div>
                 </div>
                 
                 <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
@@ -1779,10 +1782,7 @@ ${css}
       <h4 style="margin:0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
       <button onclick="PartnerApp.downloadPDFStatement()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#1e293b; color:white; border:none;">
           <i class="fas fa-file-pdf"></i> Ekstre İndir (PDF)
-      </button>
-      <button onclick='PartnerApp.downloadReceiptPDF(${JSON.stringify(tx)})' class="btn-sm btn-outline">
-   <i class="fas fa-file-invoice"></i> Makbuz
-</button>
+      </button>      
   </div>    
   ${historyHTML}
 `;
@@ -3900,5 +3900,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
