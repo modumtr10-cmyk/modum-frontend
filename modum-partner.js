@@ -3822,41 +3822,57 @@ ${css}
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // 🔥 TÜRKÇE KARAKTER DÜZELTİCİ FONKSİYON
+    const trFix = (str) => {
+      if (!str) return "";
+      return String(str)
+        .replace(/Ğ/g, "G")
+        .replace(/ğ/g, "g")
+        .replace(/Ü/g, "U")
+        .replace(/ü/g, "u")
+        .replace(/Ş/g, "S")
+        .replace(/ş/g, "s")
+        .replace(/İ/g, "I")
+        .replace(/ı/g, "i")
+        .replace(/Ö/g, "O")
+        .replace(/ö/g, "o")
+        .replace(/Ç/g, "C")
+        .replace(/ç/g, "c");
+    };
+
     // Şirket Logosu ve Başlık
     doc.setFontSize(22);
     doc.text("MODUMNET", 20, 20);
     doc.setFontSize(12);
-    doc.text("GİDER PUSULASI / HAKEDİŞ RAPORU", 20, 30);
+    doc.text(trFix("GİDER PUSULASI / HAKEDİŞ RAPORU"), 20, 30);
 
     // Çizgi
     doc.line(20, 35, 190, 35);
 
     // Detaylar
     doc.setFontSize(10);
-    doc.text(`İşlem Tarihi: ${transaction.date}`, 20, 50);
-    doc.text(`İşlem ID: #${transaction.id.substring(0, 8)}`, 20, 55);
-    doc.text(`Partner Adı: ${window.PartnerData.name}`, 20, 60);
+    doc.text(trFix(`İşlem Tarihi: ${transaction.date}`), 20, 50);
+    doc.text(trFix(`İşlem ID: #${transaction.id.substring(0, 8)}`), 20, 55);
+    doc.text(trFix(`Partner Adı: ${window.PartnerData.name}`), 20, 60);
 
     // Finansal Tablo
     let y = 80;
-    doc.text("Hakediş Detayı:", 20, y);
+    doc.text(trFix("Hakediş Detayı:"), 20, y);
     y += 10;
 
     // Brüt
-    doc.text("Brüt Komisyon Tutarı:", 20, y);
-    doc.text(`${transaction.commission} ₺`, 150, y, { align: "right" });
+    doc.text(trFix("Brüt Komisyon Tutarı:"), 20, y);
+    doc.text(`${transaction.commission} TL`, 150, y, { align: "right" });
     y += 8;
 
-    // Vergi
-    // Verinin backend'den "grossAmount", "taxAmount" olarak geldiğini varsayıyorum.
-    // Şimdilik görselden yola çıkarak hesaplıyoruz:
+    // Vergi Hesaplama
     let amount = parseFloat(transaction.commission);
     let tax = amount * 0.2; // Varsayılan Stopaj
     let net = amount - tax;
 
     doc.setTextColor(200, 0, 0); // Kırmızı
-    doc.text(`Gelir Vergisi (Stopaj %20):`, 20, y);
-    doc.text(`-${tax.toFixed(2)} ₺`, 150, y, { align: "right" });
+    doc.text(trFix("Gelir Vergisi (Stopaj %20):"), 20, y);
+    doc.text(`-${tax.toFixed(2)} TL`, 150, y, { align: "right" });
     y += 10;
     doc.line(20, y - 5, 190, y - 5); // Ara çizgi
 
@@ -3864,20 +3880,24 @@ ${css}
     doc.setTextColor(0, 150, 0); // Yeşil
     doc.setFontSize(14);
     doc.setFont(undefined, "bold");
-    doc.text("HESABA YATAN NET:", 20, y);
-    doc.text(`${net.toFixed(2)} ₺`, 150, y, { align: "right" });
+    doc.text(trFix("HESABA YATAN NET:"), 20, y);
+    doc.text(`${net.toFixed(2)} TL`, 150, y, { align: "right" });
 
     // Yasal Uyarı
     doc.setFontSize(8);
     doc.setTextColor(100);
     doc.setFont(undefined, "normal");
     doc.text(
-      "Bu belge ModumNet iş ortaklığı sistemi tarafından dijital olarak üretilmiştir.",
+      trFix(
+        "Bu belge ModumNet iş ortaklığı sistemi tarafından dijital olarak üretilmiştir.",
+      ),
       20,
       130,
     );
     doc.text(
-      "Resmi muhasebe kayıtlarınızda bilgi fişi olarak kullanabilirsiniz.",
+      trFix(
+        "Resmi muhasebe kayıtlarınızda bilgi fişi olarak kullanabilirsiniz.",
+      ),
       20,
       135,
     );
@@ -3900,5 +3920,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
