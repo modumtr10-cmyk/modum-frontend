@@ -672,17 +672,17 @@ ${css}
               <tbody>
                   <tr>
                       <td>🥉 <b style="color:#CD7F32">Bronz</b></td>
-                      <td>0 - 10.000 ₺</td>
+                      <td>0 - 50.000 ₺</td>
                       <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%10</span></td>
                   </tr>
                   <tr>
                       <td>🥈 <b style="color:#94a3b8">Gümüş</b></td>
-                      <td>10.000₺ - 49.999₺</td>
+                      <td>50.000₺ - 119.999₺</td>
                       <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px;">%15</span></td>
                   </tr>
                   <tr>
                       <td>👑 <b style="color:#d97706">Altın</b></td>
-                      <td>50.000+ ₺</td>
+                      <td>120.000+ ₺</td>
                       <td><span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px;">%20</span></td>
                   </tr>
               </tbody>
@@ -803,23 +803,27 @@ ${css}
           sourceHtml = `<div style="text-align:center; color:#94a3b8; font-size:11px; padding:15px; background:#f8fafc; border-radius:8px;">Henüz trafik verisi oluşmadı.<br>Linklerinizi paylaşmaya başlayın!</div>`;
         }
 
-        // Seviye İlerleme Çubuğu
+        // Seviye İlerleme Çubuğu (YENİ LİMİTLER)
         let nextTarget = 0;
         let progress = 0;
         let barColor = "#fbbf24";
 
-        if (currentRev < 10000) {
-          nextTarget = 10000;
-          progress = (currentRev / 10000) * 100;
-          barColor = "#94a3b8";
-        } else if (currentRev < 50000) {
+        if (currentRev < 50000) {
+          // Bronz -> Gümüş Hedefi (50.000)
           nextTarget = 50000;
-          progress = ((currentRev - 10000) / 40000) * 100;
-          barColor = "#fbbf24";
+          progress = (currentRev / 50000) * 100;
+          barColor = "#b45309"; // Bronz Rengi
+        } else if (currentRev < 120000) {
+          // Gümüş -> Altın Hedefi (120.000)
+          nextTarget = 120000;
+          // İlerleme hesabı: (Mevcut - AltLimit) / (ÜstLimit - AltLimit)
+          progress = ((currentRev - 50000) / 70000) * 100;
+          barColor = "#94a3b8"; // Gümüş Rengi
         } else {
+          // Zirve (Altın)
           nextTarget = currentRev;
           progress = 100;
-          barColor = "#ef4444";
+          barColor = "#fbbf24"; // Altın Rengi
         }
         // --- 🔥 YENİ: EN ÇOK SATANLAR VERİSİNİ ÇEK ---
         let topProductsHtml =
@@ -3920,5 +3924,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v1*/
 })();
