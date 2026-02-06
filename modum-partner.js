@@ -2830,34 +2830,48 @@ ${css}
         `;
     },
 
-    // --- KYC HTML YARDIMCISI ---
+    // --- KYC HTML YARDIMCISI (DÜZELTİLMİŞ) ---
     renderKycSection: function (pData, isCompany) {
       let kycStatus = pData.kycStatus || "none";
 
-      if (kycStatus === "verified")
-        return '<div style="background:#f0fdf4; color:#166534; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-check-circle" style="font-size:24px; margin-bottom:5px;"></i><br>Tüm belgeleriniz onaylandı.</div>';
-      if (kycStatus === "pending")
-        return '<div style="background:#fffbeb; color:#b45309; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-clock" style="font-size:24px; margin-bottom:5px;"></i><br>Belgeleriniz inceleniyor.</div>';
+      // Onaylandıysa sadece başarı mesajı göster
+      if (kycStatus === "verified") {
+        return '<div style="background:#f0fdf4; color:#166534; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-check-circle" style="font-size:24px; margin-bottom:5px;"></i><br>Tüm belgeleriniz onaylandı.<br>Ödeme alabilirsiniz.</div>';
+      }
 
-      let docLabel1 = isCompany ? "Vergi Levhası" : "Kimlik Ön Yüzü";
+      // Değişkenleri Hazırla
+      let docLabel1 = isCompany ? "Vergi Levhası (Zorunlu)" : "Kimlik Ön Yüzü";
       let docType1 = isCompany ? "tax_plate" : "id_front";
+
       let docLabel2 = isCompany
         ? "İmza Sirküleri (Opsiyonel)"
         : "Kimlik Arka Yüzü";
       let docType2 = isCompany ? "signature_circular" : "id_back";
 
+      // Durum Mesajı
+      let statusMsg = "";
+      if (kycStatus === "pending") {
+        statusMsg =
+          '<div style="background:#fffbeb; color:#b45309; padding:10px; border-radius:6px; margin-bottom:15px; font-size:11px; border:1px solid #fcd34d;"><i class="fas fa-clock"></i> Belgeleriniz inceleniyor. Eksik belgeniz varsa yüklemeye devam edebilirsiniz.</div>';
+      }
+      if (pData.kycRejectionReason) {
+        statusMsg = `<div style="background:#fee2e2; color:#991b1b; padding:10px; border-radius:6px; margin-bottom:15px; font-size:11px; border:1px solid #fca5a5;"><i class="fas fa-exclamation-circle"></i> <b>Red Nedeni:</b> ${pData.kycRejectionReason}</div>`;
+      }
+
       return `
-            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
+            ${statusMsg}
+
+            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px; background:#fff;">
                 <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel1}</label>
                 <input type="file" id="kyc-file-1" accept="image/*" style="font-size:12px; width:100%;">
-                <button onclick="PartnerApp.uploadDoc('${docType1}', 'kyc-file-1')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
+                <button onclick="PartnerApp.uploadDoc('${docType1}', 'kyc-file-1')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle / Güncelle</button>
             </div>
-            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
+
+            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px; background:#fff;">
                  <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel2}</label>
                 <input type="file" id="kyc-file-2" accept="image/*" style="font-size:12px; width:100%;">
-                 <button onclick="PartnerApp.uploadDoc('${docType2}', 'kyc-file-2')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
+                 <button onclick="PartnerApp.uploadDoc('${docType2}', 'kyc-file-2')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle / Güncelle</button>
             </div>
-            ${pData.kycRejectionReason ? `<div style="color:red; font-size:11px; margin-top:10px;">Red Sebebi: ${pData.kycRejectionReason}</div>` : ""}
         `;
     },
 
@@ -4296,5 +4310,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
