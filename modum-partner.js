@@ -1737,6 +1737,11 @@ ${css}
                 </div>
                 `;
             }
+            // Timeline 
+            let timelineHTML = "";
+            if (tx.type === "sale_commission") {
+              timelineHTML = generateTimelineHTML(tx.date, tx.status);
+            }
             // 🔥 YENİ: VADE TARİHİ KARTI (Sadece Bekleyen Satışlar İçin)
             let maturityHTML = "";
             if (tx.status === "pending_maturity" && tx.maturityDateStr) {
@@ -4336,5 +4341,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
