@@ -728,6 +728,8 @@ ${css}
 
         const s = res.stats;
 
+        var pData = window.PartnerData || {};
+
         // --- VERİ HAZIRLIĞI ---
         let currentRev = parseFloat(s.totalRevenue || 0);
         let myRate = parseFloat(s.commission_rate || 10);
@@ -3966,5 +3968,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
