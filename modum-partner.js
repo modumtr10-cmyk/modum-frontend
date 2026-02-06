@@ -759,7 +759,7 @@ ${css}
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                     <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #fcd34d; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
                          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))">
+                         onclick="PartnerApp.loadTab('profile', document.querySelector(\`.p-nav-item[onclick*='profile']\`))">
                          <div style="font-size:20px; margin-bottom:5px;">🪪</div>
                          <div style="font-weight:bold; font-size:11px; color:#b45309;">Belge Yükle</div>
                          <div style="font-size:9px; color:#6b7280; margin-top:2px;">Ödeme için zorunlu</div>
@@ -767,7 +767,7 @@ ${css}
 
                     <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
                          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('links', document.querySelector('.p-nav-item:nth-child(3)'))">
+                         onclick="PartnerApp.loadTab('links', document.querySelector(\`.p-nav-item[onclick*='links']\`))">
                         <div style="font-size:20px; margin-bottom:5px;">🔗</div>
                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
@@ -775,7 +775,7 @@ ${css}
 
                     <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
                          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(4)'))">
+                         onclick="PartnerApp.loadTab('showcase', document.querySelector(\`.p-nav-item[onclick*='showcase']\`))">
                          <div style="font-size:20px; margin-bottom:5px;">🔥</div>
                          <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
                          <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
@@ -4312,5 +4312,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
