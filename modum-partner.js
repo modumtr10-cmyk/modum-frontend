@@ -556,7 +556,8 @@ ${css}
     document.body.insertAdjacentHTML("beforeend", html);
 
     // Açılış
-    window.PartnerApp.loadTab("home");
+    var homeBtn = document.querySelector("#p-nav-container .p-nav-item");
+    window.PartnerApp.loadTab("home", homeBtn);
   }
   // --- CANVAS YARDIMCISI: RESİM YÜKLEME ---
   // Bir görselin canvas'a çizilebilmesi için tamamen yüklenmiş olması gerekir.
@@ -740,7 +741,7 @@ ${css}
         let myRate = parseFloat(s.commission_rate || 10);
         let tClicks = parseInt(s.totalClicks || 0);
         let tSales = parseInt(s.totalSales || 0);
-        // --- 🚀 YENİ BAŞLANGIÇ REHBERİ (ONBOARDING) ---
+        // --- 🚀 YENİ BAŞLANGIÇ REHBERİ (ONBOARDING - GÜNCELLENDİ) ---
         // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
         let onboardingHTML = "";
 
@@ -752,13 +753,21 @@ ${css}
                 
                 <h3 style="margin:0 0 10px 0; color:#3730a3; font-size:16px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
                 <p style="margin:0 0 15px 0; color:#4338ca; font-size:12px; max-width:85%; line-height:1.5;">
-                    Sisteme harika bir giriş yaptın. İlk kazancını elde etmek için aşağıdaki 3 adımı takip etmen yeterli. Hadi başlayalım!
+                    Sisteme harika bir giriş yaptın. Ödeme alabilmen için yasal zorunluluk olan <b>Belge Yükleme</b> işlemini tamamlaman gerekiyor. Aşağıdaki adımları takip et:
                 </p>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #fcd34d; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))">
+                         <div style="font-size:20px; margin-bottom:5px;">🪪</div>
+                         <div style="font-weight:bold; font-size:11px; color:#b45309;">Belge Yükle</div>
+                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Ödeme için zorunlu</div>
+                    </div>
+
                     <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
                          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('links', document.querySelector('.p-nav-item:nth-child(2)'))">
+                         onclick="PartnerApp.loadTab('links', document.querySelector('.p-nav-item:nth-child(3)'))">
                         <div style="font-size:20px; margin-bottom:5px;">🔗</div>
                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
@@ -766,17 +775,10 @@ ${css}
 
                     <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
                          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(3)'))">
+                         onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(4)'))">
                          <div style="font-size:20px; margin-bottom:5px;">🔥</div>
                          <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
                          <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
-                    </div>
-
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onclick="PartnerApp.loadTab('academy', document.querySelector('.p-nav-item:nth-child(7)'))">
-                         <div style="font-size:20px; margin-bottom:5px;">🎓</div>
-                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Eğitim Al</div>
-                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Taktikleri öğren</div>
                     </div>
                 </div>
             </div>
@@ -2923,7 +2925,7 @@ ${css}
           // Ekranı yenile
           this.loadTab(
             "profile",
-            document.querySelector(".p-nav-item:nth-child(8)"),
+            document.querySelector(".p-nav-item[onclick*='profile']"),
           );
         } else {
           alert("Uyarı: " + res.message);
@@ -4310,5 +4312,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
