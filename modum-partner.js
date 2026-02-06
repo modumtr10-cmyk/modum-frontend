@@ -2674,129 +2674,145 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
-    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON) ---
+    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON - BANKA & SÜRE KONTROLLÜ) ---
     renderProfile: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil yükleniyor...</div>';
 
       var email = detectUser();
 
-      // Verileri taze çekelim (Güncelleme sonrası için)
+      // Verileri taze çek
       try {
         const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-          // API URL'ni buraya yaz
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ islem: "get_partner_stats", email: email }),
         });
         const data = await res.json();
-        window.PartnerData = data.stats; // Veriyi güncelle
+        window.PartnerData = data.stats;
       } catch (e) {
         console.log(e);
       }
 
       var pData = window.PartnerData || {};
 
-      // KYC Durumuna Göre Renk/Mesaj
+      // KYC ve Şirket Durumu
       let kycStatus = pData.kycStatus || "none";
-      let kycBadge = "";
-      let uploadEnabled = true;
-
-      if (kycStatus === "verified") {
-        kycBadge =
-          '<span class="badge badge-success" style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:6px;">✅ HESAP DOĞRULANDI</span>';
-        uploadEnabled = false;
-      } else if (kycStatus === "pending") {
-        kycBadge =
-          '<span class="badge badge-warning" style="background:#fffbeb; color:#b45309; padding:5px 10px; border-radius:6px;">⏳ İNCELEMEDE</span>';
-        uploadEnabled = false;
-      } else if (kycStatus === "rejected") {
-        kycBadge =
-          '<span class="badge badge-danger" style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:6px;">❌ REDDEDİLDİ</span>';
-      } else {
-        kycBadge =
-          '<span class="badge badge-secondary" style="background:#f1f5f9; color:#64748b; padding:5px 10px; border-radius:6px;">⚠️ DOĞRULANMADI</span>';
-      }
-
-      let rejectionMsg = pData.kycRejectionReason
-        ? `<div style="background:#fee2e2; color:#991b1b; padding:10px; border-radius:6px; margin-bottom:15px; font-size:12px;"><b>Red Nedeni:</b> ${pData.kycRejectionReason}</div>`
-        : "";
-
-      // Şirket mi Bireysel mi?
       let isCompany = pData.accountType === "company";
       let accountLabel = isCompany ? "🏢 KURUMSAL HESAP" : "👤 BİREYSEL HESAP";
 
-      // Belge Etiketleri
-      let docLabel1 = isCompany ? "Vergi Levhası" : "Kimlik Ön Yüzü";
-      let docType1 = isCompany ? "tax_plate" : "id_front";
+      // 30 Gün Kilidi Kontrolü
+      let lastUpdate = pData.lastProfileUpdate || 0;
+      let now = Date.now();
+      let diffDays = (now - lastUpdate) / (1000 * 60 * 60 * 24);
+      let isLocked = diffDays < 30;
+      let remainingDays = Math.ceil(30 - diffDays);
 
-      let docLabel2 = isCompany
-        ? "İmza Sirküleri (Opsiyonel)"
-        : "Kimlik Arka Yüzü";
-      let docType2 = isCompany ? "signature_circular" : "id_back";
+      // Değerler
+      let valPhone = pData.phone || "";
+      let fullBankInfo = pData.bank_info || "";
 
-      // Değerler (Undefined Kontrolü)
-      let valPhone =
-        pData.phone && pData.phone !== "undefined" ? pData.phone : "";
-      let valBank =
-        pData.bank_info && pData.bank_info !== "undefined"
-          ? pData.bank_info
-          : "";
+      // Banka Adı ve IBAN Ayrıştırma (Örn: "Garanti - TR..." ise ayır)
+      let selectedBank = "Garanti";
+      let valIban = fullBankInfo;
+
+      if (fullBankInfo.includes(" - ")) {
+        let parts = fullBankInfo.split(" - ");
+        selectedBank = parts[0];
+        valIban = parts[1];
+      }
+
       let valTax = isCompany ? pData.taxInfo || "" : pData.tckn || "";
 
-      // Önce stil bloğunu ekleyelim (Fonksiyonun başına)
+      // Kilit Mesajı
+      let lockMsg = isLocked
+        ? `<div style="background:#fff7ed; color:#c2410c; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #fdba74;">
+                 <i class="fas fa-lock"></i> Bilgilerinizi güvenlik nedeniyle <b>${remainingDays} gün</b> sonra güncelleyebilirsiniz.
+               </div>`
+        : `<div style="background:#f0fdf4; color:#15803d; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #bbf7d0;">
+                 <i class="fas fa-lock-open"></i> Bilgileriniz güncellenebilir durumda.
+               </div>`;
+
+      // Input Durumu
+      let disabledAttr = isLocked
+        ? 'disabled style="background:#f3f4f6; color:#9ca3af;"'
+        : "";
+      let btnStyle = isLocked
+        ? "background:#9ca3af; cursor:not-allowed;"
+        : "background:#3b82f6;";
+      let btnText = isLocked
+        ? `Kilitli (${remainingDays} Gün)`
+        : '<i class="fas fa-save"></i> Bilgileri Kaydet';
+      let btnAction = isLocked ? "" : 'onclick="PartnerApp.saveProfile()"';
+
+      // Stil
       const style = `
-<style>
-    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 768px) {
-        .profile-grid { grid-template-columns: 1fr !important; }
-        .p-card { padding: 15px !important; } /* Mobilde padding'i azalt */
-    }
-</style>
-`;
+        <style>
+            .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            @media (max-width: 768px) {
+                .profile-grid { grid-template-columns: 1fr !important; }
+                .p-card { padding: 15px !important; }
+            }
+            .inp-row { margin-bottom:15px; }
+            .inp-label { font-size:10px; color:#64748b; font-weight:bold; display:block; margin-bottom:4px; }
+            .inp-field { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box; }
+        </style>
+        `;
 
       container.innerHTML =
         style +
         `
-    <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-            <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
-            <p style="margin:0; font-size:12px; color:#64748b;">Bilgilerinizi güncel tutunuz.</p>
-        </div>
-        ${kycBadge}
-    </div>
+            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
+                    <p style="margin:0; font-size:12px; color:#64748b;">Kişisel ve yasal bilgileriniz.</p>
+                </div>
+            </div>
 
-    <div class="profile-grid">
-        <div class="p-card" style="padding:20px;">
+            <div class="profile-grid">
+                <div class="p-card" style="padding:20px;">
                     <h4 style="margin:0 0 15px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Kimlik & İletişim</h4>
                     
-                    <div style="margin-bottom:15px;">
-                        <label style="font-size:10px; color:#64748b; font-weight:bold;">AD SOYAD / ÜNVAN</label>
-                        <input type="text" value="${pData.name}" disabled style="width:100%; padding:10px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; color:#64748b; font-weight:bold;">
+                    ${lockMsg}
+
+                    <div class="inp-row">
+                        <label class="inp-label">AD SOYAD / ÜNVAN</label>
+                        <input type="text" value="${pData.name}" disabled class="inp-field" style="background:#f1f5f9;">
                     </div>
 
-                    <div style="margin-bottom:15px;">
-                        <label style="font-size:10px; color:#64748b; font-weight:bold;">E-POSTA</label>
-                         <input type="text" value="${email}" disabled style="width:100%; padding:10px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; color:#64748b;">
+                    <div class="inp-row">
+                        <label class="inp-label">E-POSTA</label>
+                         <input type="text" value="${email}" disabled class="inp-field" style="background:#f1f5f9;">
                     </div>
 
-                    <div style="margin-bottom:15px;">
-                        <label style="font-size:10px; color:#64748b; font-weight:bold;">TELEFON</label>
-                        <input type="text" id="edit-phone" value="${valPhone}" placeholder="0555..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <div class="inp-row">
+                        <label class="inp-label">TELEFON (Zorunlu)</label>
+                        <input type="text" id="edit-phone" value="${valPhone}" placeholder="0555..." class="inp-field" ${disabledAttr}>
                     </div>
 
-                     <div style="margin-bottom:15px;">
-                        <label style="font-size:10px; color:#64748b; font-weight:bold;">${isCompany ? "VERGİ DAİRESİ / NO" : "TC KİMLİK NO"}</label>
-                        <input type="text" id="edit-tax" value="${valTax}" placeholder="${isCompany ? "Daire / No" : "11 Haneli TCKN"}" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                     <div class="inp-row">
+                        <label class="inp-label">${isCompany ? "VERGİ DAİRESİ / NO" : "TC KİMLİK NO"}</label>
+                        <input type="text" id="edit-tax" value="${valTax}" placeholder="${isCompany ? "Daire / No" : "11 Haneli TCKN"}" class="inp-field" ${disabledAttr}>
                     </div>
 
-                    <div style="margin-bottom:15px;">
-                        <label style="font-size:10px; color:#64748b; font-weight:bold;">BANKA / IBAN</label>
-                        <textarea id="edit-bank" rows="2" placeholder="TR..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">${valBank}</textarea>
+                    <div class="inp-row">
+                        <label class="inp-label">BANKA BİLGİLERİ</label>
+                        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                            <select id="edit-bank-name" class="inp-field" ${disabledAttr}>
+                                <option value="Garanti" ${selectedBank.includes("Garanti") ? "selected" : ""}>Garanti</option>
+                                <option value="Ziraat" ${selectedBank.includes("Ziraat") ? "selected" : ""}>Ziraat</option>
+                                <option value="IsBank" ${selectedBank.includes("İş") || selectedBank.includes("Is") ? "selected" : ""}>İş Bankası</option>
+                                <option value="Akbank" ${selectedBank.includes("Akbank") ? "selected" : ""}>Akbank</option>
+                                <option value="YapiKredi" ${selectedBank.includes("Yapı") ? "selected" : ""}>Yapı Kredi</option>
+                                <option value="Finans" ${selectedBank.includes("Finans") ? "selected" : ""}>QNB Finans</option>
+                                <option value="Diger" ${selectedBank.includes("Diger") ? "selected" : ""}>Diğer</option>
+                            </select>
+                            <input type="text" id="edit-iban" value="${valIban}" placeholder="TR..." maxlength="32" class="inp-field" ${disabledAttr}>
+                        </div>
                     </div>
 
-                    <button onclick="PartnerApp.saveProfile()" class="p-btn" style="background:#3b82f6; color:white; margin-top:10px;">
-                        <i class="fas fa-save"></i> Bilgileri Kaydet
+                    <button ${btnAction} class="p-btn" style="${btnStyle} color:white; margin-top:10px;">
+                        ${btnText}
                     </button>
                 </div>
 
@@ -2804,57 +2820,81 @@ ${css}
                     <div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
                         <h4 style="margin:0;">Belge Yükleme</h4>
                     </div>
-                    
-                    ${rejectionMsg}
-
                     <p style="font-size:11px; color:#666; margin-bottom:15px;">
                         ${isCompany ? "Kurumsal hesaplar için Vergi Levhası zorunludur." : "Ödeme alabilmek için Kimlik Ön/Arka yüzünü yüklemelisiniz."}
-                        Tüm veriler KVKK kapsamında şifrelenerek saklanır.
                     </p>
-
-                    ${
-                      !uploadEnabled
-                        ? ""
-                        : `
-                    <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
-                        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel1}</label>
-                        <input type="file" id="kyc-file-1" accept="image/*" style="font-size:12px; width:100%;">
-                        <button onclick="PartnerApp.uploadDoc('${docType1}', 'kyc-file-1')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
-                    </div>
-
-                    <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
-                         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel2}</label>
-                        <input type="file" id="kyc-file-2" accept="image/*" style="font-size:12px; width:100%;">
-                         <button onclick="PartnerApp.uploadDoc('${docType2}', 'kyc-file-2')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
-                    </div>
-                    `
-                    }
                     
-                    ${kycStatus === "verified" ? '<div style="background:#f0fdf4; color:#166534; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-check-circle" style="font-size:24px; margin-bottom:5px;"></i><br>Tüm belgeleriniz onaylandı.<br>Ödeme alabilirsiniz.</div>' : ""}
-                    ${kycStatus === "pending" ? '<div style="background:#fffbeb; color:#b45309; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-clock" style="font-size:24px; margin-bottom:5px;"></i><br>Belgeleriniz inceleniyor.<br>Lütfen bekleyiniz.</div>' : ""}
+                    ${this.renderKycSection(pData, isCompany)} 
                 </div>
             </div>
         `;
     },
 
-    // --- PROFİL KAYDETME FONKSİYONU ---
+    // --- KYC HTML YARDIMCISI ---
+    renderKycSection: function (pData, isCompany) {
+      let kycStatus = pData.kycStatus || "none";
+
+      if (kycStatus === "verified")
+        return '<div style="background:#f0fdf4; color:#166534; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-check-circle" style="font-size:24px; margin-bottom:5px;"></i><br>Tüm belgeleriniz onaylandı.</div>';
+      if (kycStatus === "pending")
+        return '<div style="background:#fffbeb; color:#b45309; padding:15px; border-radius:8px; text-align:center;"><i class="fas fa-clock" style="font-size:24px; margin-bottom:5px;"></i><br>Belgeleriniz inceleniyor.</div>';
+
+      let docLabel1 = isCompany ? "Vergi Levhası" : "Kimlik Ön Yüzü";
+      let docType1 = isCompany ? "tax_plate" : "id_front";
+      let docLabel2 = isCompany
+        ? "İmza Sirküleri (Opsiyonel)"
+        : "Kimlik Arka Yüzü";
+      let docType2 = isCompany ? "signature_circular" : "id_back";
+
+      return `
+            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel1}</label>
+                <input type="file" id="kyc-file-1" accept="image/*" style="font-size:12px; width:100%;">
+                <button onclick="PartnerApp.uploadDoc('${docType1}', 'kyc-file-1')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
+            </div>
+            <div style="margin-bottom:15px; border:1px dashed #cbd5e1; padding:10px; border-radius:8px;">
+                 <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px; color:#334155;">📄 ${docLabel2}</label>
+                <input type="file" id="kyc-file-2" accept="image/*" style="font-size:12px; width:100%;">
+                 <button onclick="PartnerApp.uploadDoc('${docType2}', 'kyc-file-2')" class="p-btn" style="background:#1e293b; color:white; padding:6px 12px; font-size:11px; width:auto; display:inline-block; margin-top:8px;">Yükle</button>
+            </div>
+            ${pData.kycRejectionReason ? `<div style="color:red; font-size:11px; margin-top:10px;">Red Sebebi: ${pData.kycRejectionReason}</div>` : ""}
+        `;
+    },
+
+    // --- PROFİL KAYDETME FONKSİYONU (GÜNCELLENMİŞ) ---
     saveProfile: async function () {
       const btn = event.target;
       const oldText = btn.innerHTML;
+
+      // 1. Validasyon
+      const phone = document.getElementById("edit-phone").value;
+      const tax = document.getElementById("edit-tax").value;
+      const bankName = document.getElementById("edit-bank-name").value;
+      const iban = document.getElementById("edit-iban").value;
+
+      if (!phone || phone.length < 10)
+        return alert("Lütfen geçerli bir telefon numarası giriniz.");
+      if (!tax || tax.length < 5)
+        return alert("Lütfen TCKN veya Vergi Numarasını giriniz.");
+      if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 10)
+        return alert("Lütfen geçerli bir TR IBAN giriniz.");
+
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
       btn.disabled = true;
 
       var pData = window.PartnerData || {};
       var isCompany = pData.accountType === "company";
 
+      // Banka bilgisini birleştir
+      const fullBankInfo = `${bankName} - ${iban.toUpperCase()}`;
+
       const payload = {
         islem: "update_own_profile",
         email: detectUser(),
-        phone: document.getElementById("edit-phone").value,
-        bankInfo: document.getElementById("edit-bank").value,
-        // Hesap türüne göre doğru alanı doldur
-        tckn: !isCompany ? document.getElementById("edit-tax").value : null,
-        taxInfo: isCompany ? document.getElementById("edit-tax").value : null,
+        phone: phone,
+        bankInfo: fullBankInfo,
+        tckn: !isCompany ? tax : null,
+        taxInfo: isCompany ? tax : null,
       };
 
       try {
@@ -2866,13 +2906,13 @@ ${css}
 
         if (res.success) {
           alert("✅ " + res.message);
-          // Ekranı yenilemek için
+          // Ekranı yenile
           this.loadTab(
             "profile",
             document.querySelector(".p-nav-item:nth-child(8)"),
           );
         } else {
-          alert("Hata: " + res.message);
+          alert("Uyarı: " + res.message);
         }
       } catch (e) {
         alert("Bağlantı hatası.");
@@ -4256,5 +4296,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
