@@ -485,6 +485,10 @@ ${css}
           <div class="p-nav-icon"><i class="fas fa-chart-pie"></i></div>
           <span class="p-nav-text">Özet</span>
       </div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('profile', this)">
+     <div class="p-nav-icon"><i class="fas fa-id-card"></i></div>
+     <span class="p-nav-text">Profil & KYC</span>
+</div>
       <div class="p-nav-item" onclick="PartnerApp.loadTab('links', this)">
           <div class="p-nav-icon"><i class="fas fa-link"></i></div>
           <span class="p-nav-text">Linkler</span>
@@ -647,6 +651,7 @@ ${css}
         if (tab === "academy") this.renderAcademy(area);
         if (tab === "showcase") this.renderShowcase(area);
         if (tab === "my_collection") this.renderMyCollection(area);
+        if (tab === "profile") this.renderProfile(area);
       }, 300);
     },
 
@@ -2669,6 +2674,192 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
+    }, // --- 👤 PROFİL & KYC YÖNETİMİ ---
+    renderProfile: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil yükleniyor...</div>';
+
+      var email = detectUser();
+      var pData = window.PartnerData || {};
+
+      // KYC Durumuna Göre Renk/Mesaj
+      let kycStatus = pData.kycStatus || "none"; // none, pending, verified, rejected
+      let kycBadge = "";
+      let uploadEnabled = true;
+
+      if (kycStatus === "verified") {
+        kycBadge =
+          '<span class="badge badge-success" style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:6px;">✅ HESAP DOĞRULANDI</span>';
+        uploadEnabled = false; // Onaylıysa yüklemeyi kapat
+      } else if (kycStatus === "pending") {
+        kycBadge =
+          '<span class="badge badge-warning" style="background:#fffbeb; color:#b45309; padding:5px 10px; border-radius:6px;">⏳ İNCELEMEDE</span>';
+        uploadEnabled = false;
+      } else if (kycStatus === "rejected") {
+        kycBadge =
+          '<span class="badge badge-danger" style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:6px;">❌ REDDEDİLDİ</span>';
+      } else {
+        kycBadge =
+          '<span class="badge badge-secondary" style="background:#f1f5f9; color:#64748b; padding:5px 10px; border-radius:6px;">⚠️ DOĞRULANMADI</span>';
+      }
+
+      let rejectionMsg = pData.kycRejectionReason
+        ? `<div style="background:#fee2e2; color:#991b1b; padding:10px; border-radius:6px; margin-bottom:15px; font-size:12px;"><b>Red Nedeni:</b> ${pData.kycRejectionReason}</div>`
+        : "";
+
+      // Şirket mi Bireysel mi?
+      let isCompany = pData.accountType === "company";
+      let docLabel1 = "Kimlik Ön Yüzü";
+      let docLabel2 = "Kimlik Arka Yüzü";
+
+      if (isCompany) {
+        docLabel1 = "Vergi Levhası";
+        docLabel2 = "İmza Sirküleri (Opsiyonel)";
+      }
+
+      container.innerHTML = `
+            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">👤 Partner Profili</h3>
+                <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                    Kişisel bilgilerinizi ve ödeme alabilmek için gerekli yasal belgeleri buradan yönetebilirsiniz.
+                </p>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div class="p-card" style="padding:20px;">
+                    <h4 style="margin:0 0 15px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Kimlik Bilgileri</h4>
+                    
+                    <div style="margin-bottom:15px;">
+                        <label style="font-size:10px; color:#64748b; font-weight:bold;">AD SOYAD / ÜNVAN</label>
+                        <div style="font-size:14px; font-weight:bold; color:#333;">${pData.name}</div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="font-size:10px; color:#64748b; font-weight:bold;">E-POSTA</label>
+                        <div style="font-size:14px; color:#333;">${email}</div>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="font-size:10px; color:#64748b; font-weight:bold;">TELEFON</label>
+                        <div style="font-size:14px; color:#333;">${pData.phone}</div>
+                    </div>
+                     <div style="margin-bottom:15px;">
+                        <label style="font-size:10px; color:#64748b; font-weight:bold;">${isCompany ? "VERGİ NO" : "TC KİMLİK NO"}</label>
+                        <div style="font-size:14px; color:#333; font-family:monospace;">${isCompany ? pData.taxInfo : pData.tckn || "-"}</div>
+                    </div>
+                </div>
+
+                <div class="p-card" style="padding:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
+                        <h4 style="margin:0;">Doğrulama (KYC)</h4>
+                        ${kycBadge}
+                    </div>
+                    
+                    ${rejectionMsg}
+
+                    <p style="font-size:11px; color:#666; margin-bottom:15px;">
+                        Ödeme alabilmek için yasal zorunluluk gereği kimlik doğrulaması yapmanız gerekmektedir. Bilgileriniz KVKK kapsamında korunur.
+                    </p>
+
+                    ${
+                      !uploadEnabled
+                        ? ""
+                        : `
+                    <div style="margin-bottom:15px;">
+                        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">${docLabel1}</label>
+                        <input type="file" id="kyc-file-1" accept="image/*" style="font-size:12px;">
+                        <button onclick="PartnerApp.uploadDoc('id_front', 'kyc-file-1')" class="p-btn" style="background:#3b82f6; color:white; padding:5px 10px; font-size:11px; width:auto; display:inline-block; margin-top:5px;">Yükle</button>
+                    </div>
+
+                    <div style="margin-bottom:15px;">
+                         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">${docLabel2}</label>
+                        <input type="file" id="kyc-file-2" accept="image/*" style="font-size:12px;">
+                         <button onclick="PartnerApp.uploadDoc('id_back', 'kyc-file-2')" class="p-btn" style="background:#3b82f6; color:white; padding:5px 10px; font-size:11px; width:auto; display:inline-block; margin-top:5px;">Yükle</button>
+                    </div>
+                    `
+                    }
+                    
+                    ${kycStatus === "verified" ? '<div style="color:green; font-size:12px; text-align:center;">🎉 Tüm belgeleriniz onaylandı.</div>' : ""}
+                </div>
+            </div>
+        `;
+    },
+
+    // Belge Yükleme Motoru (Client-Side Resize)
+    uploadDoc: async function (type, inputId) {
+      const input = document.getElementById(inputId);
+      if (!input.files || !input.files[0])
+        return alert("Lütfen bir dosya seçin.");
+
+      const file = input.files[0];
+      const btn = event.target;
+      const oldText = btn.innerText;
+      btn.innerText = "⏳";
+      btn.disabled = true;
+
+      // 1. Resmi Küçült (Canvas ile)
+      const resizeImage = (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              // Max boyut 800px
+              let width = img.width;
+              let height = img.height;
+              if (width > height) {
+                if (width > 800) {
+                  height *= 800 / width;
+                  width = 800;
+                }
+              } else {
+                if (height > 800) {
+                  width *= 800 / height;
+                  height = 800;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.7)); // %70 Kalite JPG
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      try {
+        const base64 = await resizeImage(file);
+
+        // 2. API'ye Gönder
+        const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "upload_kyc_document",
+            email: detectUser(),
+            fileBase64: base64,
+            fileType: type,
+          }),
+        }).then((r) => r.json());
+
+        if (res.success) {
+          alert("✅ Belge başarıyla gönderildi!");
+          // Sayfayı yenile
+          this.loadTab(
+            "profile",
+            document.querySelector(".p-nav-item:nth-child(8)"),
+          ); // 8. eleman olduğunu varsayıyoruz
+        } else {
+          alert("Hata: " + res.message);
+        }
+      } catch (e) {
+        alert("Yükleme hatası: " + e);
+      } finally {
+        btn.innerText = oldText;
+        btn.disabled = false;
+      }
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -3968,5 +4159,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
