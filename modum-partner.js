@@ -2744,17 +2744,30 @@ ${css}
           : "";
       let valTax = isCompany ? pData.taxInfo || "" : pData.tckn || "";
 
-      container.innerHTML = `
-            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
-                    <p style="margin:0; font-size:12px; color:#64748b;">Bilgilerinizi güncel tutunuz.</p>
-                </div>
-                ${kycBadge}
-            </div>
+      // Önce stil bloğunu ekleyelim (Fonksiyonun başına)
+      const style = `
+<style>
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) {
+        .profile-grid { grid-template-columns: 1fr !important; }
+        .p-card { padding: 15px !important; } /* Mobilde padding'i azalt */
+    }
+</style>
+`;
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; @media(max-width:768px){grid-template-columns: 1fr;}">
-                <div class="p-card" style="padding:20px;">
+      container.innerHTML =
+        style +
+        `
+    <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
+            <p style="margin:0; font-size:12px; color:#64748b;">Bilgilerinizi güncel tutunuz.</p>
+        </div>
+        ${kycBadge}
+    </div>
+
+    <div class="profile-grid">
+        <div class="p-card" style="padding:20px;">
                     <h4 style="margin:0 0 15px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Kimlik & İletişim</h4>
                     
                     <div style="margin-bottom:15px;">
@@ -4243,5 +4256,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
