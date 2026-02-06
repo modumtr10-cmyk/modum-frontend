@@ -1737,12 +1737,18 @@ ${css}
                 </div>
                 `;
             }
-            // --- 🔥 YENİ EKLENEN KISIM: TIMELINE (ZAMAN ÇİZELGESİ) ---
-            let timelineHTML = "";
-            // Sadece satış işlemlerinde timeline göster
-            if (tx.type === "sale_commission") {
-              // generateTimelineHTML fonksiyonunun dosyanın en altında ekli olduğundan emin ol
-              timelineHTML = generateTimelineHTML(tx.date, tx.status);
+            // 🔥 YENİ: VADE TARİHİ KARTI (Sadece Bekleyen Satışlar İçin)
+            let maturityHTML = "";
+            if (tx.status === "pending_maturity" && tx.maturityDateStr) {
+              maturityHTML = `
+                <div style="margin-top:15px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fcd34d; display:flex; align-items:center; gap:10px;">
+                    <div style="font-size:20px;">📅</div>
+                    <div>
+                        <div style="font-size:10px; color:#b45309; font-weight:bold;">TAHMİNİ SERBEST KALMA TARİHİ</div>
+                        <div style="font-size:13px; color:#d97706; font-weight:bold;">${tx.maturityDateStr}</div>
+                        <div style="font-size:10px; color:#b45309;">(İade süresi dolunca otomatik cüzdana geçer)</div>
+                    </div>
+                </div>`;
             }
 
             // --- 7. KART HTML OLUŞTUR ---
@@ -1767,8 +1773,8 @@ ${css}
                 </div>
                 
                 <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
-                    
-                    ${timelineHTML}
+    ${timelineHTML}
+    ${maturityHTML}
 
                     <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"></div>
 
@@ -2332,27 +2338,22 @@ ${css}
         card.style.opacity = "1";
       }
     },
-    // 🔥 YENİ: PDF HAKEDİŞ RAPORU OLUŞTURUCU
     downloadPDFStatement: async function () {
       var email = detectUser();
       var pData = window.PartnerData || {};
       var name = pData.name || "Sayın Ortağımız";
 
-      // Butona basıldığını hissettir
       const btn = event.target;
       const oldText = btn.innerHTML;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...';
       btn.disabled = true;
 
       try {
-        // 1. Verileri Çek (Son 100 işlem)
+        // 1. Verileri Çek
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            islem: "get_partner_history",
-            email: email,
-          }),
+          body: JSON.stringify({ islem: "get_partner_history", email: email }),
         });
         const data = await res.json();
 
@@ -2367,103 +2368,126 @@ ${css}
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // --- TASARIM BAŞLIYOR ---
-
-        // Logo & Başlık (Mavi Şerit)
-        doc.setFillColor(30, 41, 59); // Koyu Lacivert (#1e293b)
-        doc.rect(0, 0, 210, 40, "F"); // Üst şerit
-
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.setFont("helvetica", "bold");
-        doc.text("MODUMNET", 15, 20);
-
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text("PARTNER HAKEDIS EKSTRESI", 15, 28);
-
-        // Sağ Üst Bilgi
-        doc.setFontSize(9);
-        doc.text("Tarih: " + new Date().toLocaleDateString("tr-TR"), 195, 20, {
-          align: "right",
-        });
-        doc.text("Ortak: " + name, 195, 28, { align: "right" });
-        doc.text("E-Posta: " + email, 195, 33, { align: "right" });
-
-        // Özet Bilgi Kutusu
-        doc.setTextColor(50, 50, 50);
-        doc.setFontSize(10);
-        doc.text(
-          `Sayin ${name}, asagida ModumNet ortaklik programi kapsaminda gerceklesen`,
-          15,
-          50,
-        );
-        doc.text(
-          `satis ve hakedis islemlerinizin dokumu yer almaktadir.`,
-          15,
-          55,
-        );
-
-        // Tablo Verisini Hazırla
-        let tableRows = [];
-        data.list.forEach((tx) => {
-          let amount = parseFloat(tx.commission || tx.amount || 0).toFixed(2);
-          let type =
-            tx.type === "payout_request" ? "ODEME CIKISI" : "SATIS KAZANCI";
-          let status =
-            tx.status === "paid"
-              ? "ODENDI"
-              : tx.status === "pending"
-                ? "BEKLIYOR"
-                : "ONAYLANDI";
-          let sign = tx.type === "payout_request" ? "-" : "+";
-
-          // Türkçe karakter sorununu aşmak için basit replace (jsPDF default fontu TR karakter sevmez)
-          let desc = (tx.desc || "")
-            .replace(/İ/g, "I")
-            .replace(/ı/g, "i")
+        const trFix = (str) => {
+          if (!str) return "";
+          return String(str)
+            .replace(/Ğ/g, "G")
+            .replace(/ğ/g, "g")
+            .replace(/Ü/g, "U")
+            .replace(/ü/g, "u")
             .replace(/Ş/g, "S")
             .replace(/ş/g, "s")
-            .replace(/Ğ/g, "G")
-            .replace(/ğ/g, "g");
+            .replace(/İ/g, "I")
+            .replace(/ı/g, "i")
+            .replace(/Ö/g, "O")
+            .replace(/ö/g, "o")
+            .replace(/Ç/g, "C")
+            .replace(/ç/g, "c");
+        };
 
-          tableRows.push([tx.date, type, desc, status, sign + amount + " TL"]);
+        // 1. Header (Kurumsal Başlık)
+        doc.setFillColor(30, 41, 59); // Lacivert
+        doc.rect(0, 0, 210, 40, "F");
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.setFont("helvetica", "bold");
+        doc.text("MODUMNET", 15, 20);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("PARTNER HESAP EKSTRESI", 15, 28);
+
+        // Tarih ve Bilgi
+        doc.text(
+          trFix(`Tarih: ${new Date().toLocaleDateString("tr-TR")}`),
+          195,
+          20,
+          { align: "right" },
+        );
+        doc.text(trFix(`Ortak: ${name}`), 195, 28, { align: "right" });
+
+        // 2. Özet Tablosu (Toplam Kazanç / Ödenen)
+        let totalEarned = 0;
+        let totalPaid = 0;
+
+        let tableRows = [];
+        data.list.forEach((tx) => {
+          let amount = parseFloat(tx.commission || tx.amount || 0);
+          if (tx.type === "sale_commission" && tx.status !== "refunded")
+            totalEarned += amount;
+          if (tx.type === "payout_request" && tx.status === "paid")
+            totalPaid += amount;
+
+          // Tablo Satırı Hazırla
+          let typeStr = tx.type === "payout_request" ? "ODEME" : "SATIS";
+          let statusStr =
+            tx.status === "paid"
+              ? "ODENDI"
+              : tx.status === "refunded"
+                ? "IADE"
+                : "ONAYLI";
+          let sign = tx.type === "payout_request" ? "-" : "+";
+
+          tableRows.push([
+            tx.date,
+            typeStr,
+            trFix(tx.desc),
+            statusStr,
+            sign + amount.toFixed(2) + " TL",
+          ]);
         });
 
-        // Tabloyu Çiz
+        // Özet Kutusu
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
+        doc.text("HESAP OZETI", 15, 55);
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(15, 58, 195, 58);
+
+        doc.setFontSize(10);
+        doc.text(trFix("Toplam Kazanilan Komisyon:"), 15, 65);
+        doc.text(`${totalEarned.toFixed(2)} TL`, 80, 65, { align: "right" });
+
+        doc.text(trFix("Hesaba Yatan Tutar:"), 15, 72);
+        doc.text(`${totalPaid.toFixed(2)} TL`, 80, 72, { align: "right" });
+
+        doc.setFont("helvetica", "bold");
+        doc.text(trFix("Guncel Bakiye:"), 15, 79);
+        doc.setTextColor(0, 150, 0);
+        doc.text(`${(totalEarned - totalPaid).toFixed(2)} TL`, 80, 79, {
+          align: "right",
+        });
+
+        // 3. Detaylı Tablo
         doc.autoTable({
-          startY: 65,
-          head: [["Tarih", "Islem Tipi", "Aciklama", "Durum", "Tutar"]],
+          startY: 90,
+          head: [["Tarih", "Islem", "Aciklama", "Durum", "Tutar"]],
           body: tableRows,
-          theme: "grid",
-          headStyles: {
-            fillColor: [67, 97, 238],
-            textColor: 255,
-            fontStyle: "bold",
-          }, // Mavi başlık
+          theme: "striped",
+          headStyles: { fillColor: [30, 41, 59], textColor: 255 },
           styles: { fontSize: 8, cellPadding: 3 },
-          alternateRowStyles: { fillColor: [241, 245, 249] }, // Açık gri satırlar
+          alternateRowStyles: { fillColor: [245, 247, 250] },
         });
 
-        // Alt Bilgi (Footer)
-        let finalY = doc.lastAutoTable.finalY + 20;
+        // Footer
+        let finalY = doc.lastAutoTable.finalY + 15;
         doc.setFontSize(8);
         doc.setTextColor(150);
+        doc.setFont("helvetica", "italic");
         doc.text(
-          "Bu belge bilgilendirme amaclidir. Resmi fatura yerine gecmez.",
+          trFix(
+            "Bu belge ModumNet is ortakligi sistemi tarafindan otomatik uretilmistir.",
+          ),
           105,
           finalY,
           { align: "center" },
         );
-        doc.text("ModumNet E-Ticaret Sistemleri", 105, finalY + 5, {
-          align: "center",
-        });
 
-        // İndir
         doc.save(`Modum_Ekstre_${new Date().toISOString().slice(0, 10)}.pdf`);
       } catch (e) {
         console.error("PDF Hatası:", e);
-        alert("PDF oluşturulurken bir hata oluştu.");
+        alert("PDF oluşturulurken hata: " + e.message);
       } finally {
         btn.innerHTML = oldText;
         btn.disabled = false;
@@ -4312,5 +4336,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v1*/
 })();
