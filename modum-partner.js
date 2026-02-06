@@ -733,6 +733,48 @@ ${css}
         let myRate = parseFloat(s.commission_rate || 10);
         let tClicks = parseInt(s.totalClicks || 0);
         let tSales = parseInt(s.totalSales || 0);
+        // --- 🚀 YENİ BAŞLANGIÇ REHBERİ (ONBOARDING) ---
+        // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
+        let onboardingHTML = "";
+
+        // Mantık: Hiç tıklama yoksa veya 0.00 TL ciro varsa göster
+        if (tClicks === 0 || currentRev === 0) {
+          onboardingHTML = `
+            <div style="background:linear-gradient(120deg, #e0e7ff, #f3e8ff); border:1px solid #c7d2fe; padding:20px; border-radius:12px; margin-bottom:25px; position:relative; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                <div style="position:absolute; right:-10px; top:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events:none;">🚀</div>
+                
+                <h3 style="margin:0 0 10px 0; color:#3730a3; font-size:16px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
+                <p style="margin:0 0 15px 0; color:#4338ca; font-size:12px; max-width:85%; line-height:1.5;">
+                    Sisteme harika bir giriş yaptın. İlk kazancını elde etmek için aşağıdaki 3 adımı takip etmen yeterli. Hadi başlayalım!
+                </p>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('links', document.querySelector('.p-nav-item:nth-child(2)'))">
+                        <div style="font-size:20px; margin-bottom:5px;">🔗</div>
+                        <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
+                        <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
+                    </div>
+
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(3)'))">
+                         <div style="font-size:20px; margin-bottom:5px;">🔥</div>
+                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
+                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
+                    </div>
+
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onclick="PartnerApp.loadTab('academy', document.querySelector('.p-nav-item:nth-child(7)'))">
+                         <div style="font-size:20px; margin-bottom:5px;">🎓</div>
+                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Eğitim Al</div>
+                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Taktikleri öğren</div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
 
         // 1. Dönüşüm Oranı (CR)
         let conversionRate =
@@ -871,7 +913,7 @@ ${css}
 
         // --- HTML ÇIKTISI ---
         container.innerHTML = `
-          <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
+          ${onboardingHTML} <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
                       <div style="font-size:10px; opacity:0.7; letter-spacing:1px; font-weight:600;">SEVİYE</div>
@@ -3924,5 +3966,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
