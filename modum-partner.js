@@ -3185,7 +3185,7 @@ ${css}
     <style>
         /* Ana Çubuk */
         #mdm-stripe-bar {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60px; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; 
             background: #0f172a; color: white; z-index: 2147483640; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
@@ -3234,7 +3234,7 @@ ${css}
         /* MOBİL UYUM */
         @media (max-width: 768px) {
             .hide-mobile { display: none !important; }
-            #mdm-stripe-bar { height: 50px; padding: 0 10px; }
+            #mdm-stripe-bar { height: 60px; padding: 0 10px; }
             .mdm-btn { padding: 0 10px; height: 32px; }
             .earn-amount { font-size: 13px; }
             .stripe-stats-container { padding: 4px 8px; }
@@ -4341,5 +4341,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
