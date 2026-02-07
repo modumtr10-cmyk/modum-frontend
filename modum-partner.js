@@ -1672,28 +1672,58 @@ ${css}
               sourceBadge = `<span style="background:#f3e8ff; color:#7c3aed; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid #ddd6fe;">🏷️ ${tx.sourceTag}</span>`;
             }
 
-            // --- 6. ÜRÜN LİSTESİ ---
+            // --- 6. ÜRÜN LİSTESİ (YENİ SİSTEM) ---
             let productsHTML = "";
-            let rawProd = "";
 
+            // A) EĞER YENİ SİSTEM VERİSİ VARSA (TABLO YAP)
             if (
-              tx.soldItemsList &&
-              Array.isArray(tx.soldItemsList) &&
-              tx.soldItemsList.length > 0
+              tx.itemsDetail &&
+              Array.isArray(tx.itemsDetail) &&
+              tx.itemsDetail.length > 0
             ) {
-              rawProd = tx.soldItemsList.join(", ");
-            } else if (tx.soldItems) {
-              rawProd = tx.soldItems;
-            }
+              let rows = "";
+              tx.itemsDetail.forEach((item) => {
+                let itemStatus =
+                  item.status === "refunded"
+                    ? '<span style="color:red; font-size:9px;">(İADE)</span>'
+                    : '<span style="color:green; font-size:9px;">✔</span>';
 
-            if (rawProd.includes("%") || rawProd === "") {
-              if (tx.type === "sale_commission")
+                let itemStyle =
+                  item.status === "refunded"
+                    ? "text-decoration:line-through; color:#999;"
+                    : "color:#333;";
+
+                rows += `
+                        <tr>
+                            <td style="border-bottom:1px dashed #eee; padding:3px; ${itemStyle} font-size:10px;">${item.qty}x ${item.name}</td>
+                            <td style="border-bottom:1px dashed #eee; padding:3px; text-align:right; font-size:10px;">${parseFloat(item.unitPrice).toLocaleString()}₺</td>
+                            <td style="border-bottom:1px dashed #eee; padding:3px; text-align:right;">${itemStatus}</td>
+                        </tr>
+                    `;
+              });
+
+              productsHTML = `
+                    <div style="margin-top:10px; background:white; padding:5px; border-radius:6px; border:1px solid #e2e8f0;">
+                        <div style="font-size:9px; font-weight:bold; color:#64748b; margin-bottom:3px; padding-left:3px;">📦 SEPET DETAYI:</div>
+                        <table style="width:100%; border-collapse:collapse;">${rows}</table>
+                    </div>
+                `;
+            }
+            // B) ESKİ SİSTEM VERİSİ VARSA (DÜZ YAZI YAP - BACKWARD COMPATIBILITY)
+            else {
+              let rawProd =
+                tx.soldItemsList && tx.soldItemsList.length > 0
+                  ? tx.soldItemsList.join(", ")
+                  : tx.soldItems || "";
+
+              if (rawProd && !rawProd.includes("%")) {
+                productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
+                          <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 ÜRÜNLER:</div>
+                          <div style="font-size:11px; color:#334155;">${rawProd}</div>
+                     </div>`;
+              } else if (tx.type === "sale_commission") {
                 productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
-            } else {
-              productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
-                  <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 SATILAN ÜRÜNLER:</div>
-                  <div style="font-size:11px; color:#334155;">${rawProd}</div>
-              </div>`;
+              }
             }
             // --- 💰 AKILLI FİNANSAL DÖKÜM ---
             let financeDetailHTML = "";
@@ -1737,7 +1767,7 @@ ${css}
                 </div>
                 `;
             }
-            // Timeline 
+            // Timeline
             let timelineHTML = "";
             if (tx.type === "sale_commission") {
               timelineHTML = generateTimelineHTML(tx.date, tx.status);
@@ -4341,5 +4371,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
