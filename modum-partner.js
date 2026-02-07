@@ -3185,7 +3185,7 @@ ${css}
     <style>
         /* Ana Çubuk */
         #mdm-stripe-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 60px; 
             background: #0f172a; color: white; z-index: 2147483640; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
@@ -4341,5 +4341,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v2*/
+  /*sistem güncellendi v3*/
 })();
