@@ -1905,8 +1905,9 @@ ${css}
           <div style="font-size:10px; color:#d97706; opacity:0.8;">İade süresi dolunca aktarılır</div>
       </div>
   </div>
+  ${calendarHTML}
   
-  ${calendarHTML} <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+  <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
       <div style="font-size:20px;">🗓️</div>
       <div>
           <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
