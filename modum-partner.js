@@ -4220,50 +4220,46 @@ ${css}
       btn.disabled = false;
     }
   };
-  // --- ZAMAN ÇİZELGESİ OLUŞTURUCU ---
+  // --- ZAMAN ÇİZELGESİ OLUŞTURUCU (Çakışma Önleyici Fix) ---
   function generateTimelineHTML(txDateStr, status) {
     // 1. Tarihleri Hesapla
-    // txDateStr formatı genelde: "DD.MM.YYYY" veya ISO gelir.
-    // Basit olması için JS Date objesine çevirelim.
+    let saleDate = new Date();
 
-    let saleDate = new Date(); // Varsayılan bugün (Hata olursa)
-
-    // Tarih parse etme (GG.AA.YYYY formatını destekle)
-    if (txDateStr && txDateStr.includes(".")) {
-      const parts = txDateStr.split("."); // [14, 05, 2024]
-      // new Date(Yıl, Ay-1, Gün)
-      saleDate = new Date(parts[2], parts[1] - 1, parts[0]);
+    if (txDateStr) {
+      if (typeof txDateStr === "string" && txDateStr.includes(".")) {
+        const parts = txDateStr.split(".");
+        if (parts.length === 3) {
+          saleDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+      } else {
+        let tryDate = new Date(txDateStr);
+        if (!isNaN(tryDate.getTime())) {
+          saleDate = tryDate;
+        }
+      }
     }
 
-    // 14 Gün Ekle
     const maturityDate = new Date(saleDate);
     maturityDate.setDate(maturityDate.getDate() + 14);
 
-    // Tahmini Ödeme (Maturity'den sonraki Çarşamba diyelim veya +3 gün)
     const payoutDate = new Date(maturityDate);
     payoutDate.setDate(payoutDate.getDate() + 3);
 
-    // Formatlayıcı
     const fmt = (d) =>
       d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 
-    // 2. Durumu Belirle (Step 1, 2, 3, 4)
-    let step = 1; // 1: Sipariş, 2: Onay, 3: Bekleme, 4: Cüzdan
-
+    // 2. Durumu Belirle
+    let step = 1;
     if (status === "waiting_verification") step = 1;
-    else if (status === "pending_maturity")
-      step = 3; // Onaylanmış, gün sayıyor
-    else if (status === "approved" || status === "paid") step = 4; // Bitti
+    else if (status === "pending_maturity") step = 3;
+    else if (status === "approved" || status === "paid") step = 4;
 
-    // Eğer iade edildiyse özel durum
     if (status === "refunded") {
-      return `<div style="text-align:center; padding:10px; background:#fff1f2; color:#ef4444; border-radius:8px; font-size:12px;">
-                    <i class="fas fa-times-circle"></i> Bu sipariş iade edildiği için süreç iptal edildi.
-                 </div>`;
+      return `<div style="text-align:center; padding:10px; background:#fff1f2; color:#ef4444; border-radius:8px; font-size:12px; border:1px solid #fecaca;">
+                 <i class="fas fa-times-circle"></i> Bu sipariş iade edildiği için süreç iptal edildi.
+              </div>`;
     }
 
-    // 3. HTML Oluştur
-    // Helper: Class belirleyici
     const getCls = (s) => {
       if (step > s) return "completed";
       if (step === s) return "active";
@@ -4272,39 +4268,45 @@ ${css}
 
     const getIcon = (s) => {
       if (step > s) return "✓";
-      if (step === s && s === 3) return "⏳"; // Bekliyorsa kum saati
+      if (step === s && s === 3) return "⏳";
       return s;
     };
 
+    // 🔥 DÜZELTME BURADA: Class adını 'mdm-timeline-box' yaptık ve width:100% !important ekledik.
     return `
-    <div class="timeline-container">
-        <div class="timeline-step ${getCls(1)}">
+    <div class="mdm-timeline-box" style="display: flex; justify-content: space-between; margin-top: 20px; position: relative; padding: 0 10px; width: 100% !important; max-width: 100% !important; box-sizing: border-box;">
+        
+        <div style="position: absolute; top: 14px; left: 35px; right: 35px; height: 3px; background: #e2e8f0; z-index: 1;"></div>
+        
+        <div class="timeline-step ${getCls(1)}" style="position: relative; z-index: 2; text-align: center; width: 25%;">
             <div class="t-dot">${getIcon(1)}</div>
             <div class="t-label">Sipariş</div>
-            <span class="t-date">${fmt(saleDate)}</span>
+            <span class="t-date" style="font-size:10px; color:#94a3b8;">${fmt(saleDate)}</span>
         </div>
         
-        <div class="timeline-step ${getCls(2)}">
+        <div class="timeline-step ${getCls(2)}" style="position: relative; z-index: 2; text-align: center; width: 25%;">
             <div class="t-dot">${getIcon(2)}</div>
             <div class="t-label">Kontrol</div>
-            <span class="t-date">Otomatik</span>
+            <span class="t-date" style="font-size:10px; color:#94a3b8;">Otomatik</span>
         </div>
 
-        <div class="timeline-step ${getCls(3)}">
+        <div class="timeline-step ${getCls(3)}" style="position: relative; z-index: 2; text-align: center; width: 25%;">
             <div class="t-dot">${getIcon(3)}</div>
-            <div class="t-label">14 Gün<br>Süresi</div>
-            <span class="t-date">${fmt(maturityDate)}</span>
+            <div class="t-label">14 Gün</div>
+            <span class="t-date" style="font-size:10px; color:#94a3b8;">${fmt(maturityDate)}</span>
         </div>
 
-        <div class="timeline-step ${getCls(4)}">
+        <div class="timeline-step ${getCls(4)}" style="position: relative; z-index: 2; text-align: center; width: 25%;">
             <div class="t-dot">💰</div>
-            <div class="t-label">Cüzdana<br>Geçiş</div>
-            <span class="t-date">${fmt(payoutDate)}</span>
+            <div class="t-label">Bakiye</div>
+            <span class="t-date" style="font-size:10px; color:#94a3b8;">${fmt(payoutDate)}</span>
         </div>
     </div>
-    <div style="text-align:center; margin-top:10px; font-size:10px; color:#94a3b8;">
+    
+    <div style="text-align:center; margin-top:15px; font-size:11px; color:#64748b; background:#f8fafc; padding:5px; border-radius:6px;">
         ${step === 3 ? "✅ Sipariş onaylandı, iade süresinin dolması bekleniyor." : ""}
         ${step === 4 ? "🎉 Tutar çekilebilir bakiyenize eklendi." : ""}
+        ${step === 1 ? "⏳ Siparişin sistem tarafından onaylanması bekleniyor." : ""}
     </div>
     `;
   }
@@ -4412,5 +4414,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
