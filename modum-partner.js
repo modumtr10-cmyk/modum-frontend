@@ -1619,9 +1619,9 @@ ${css}
         // --- 🔥 HAKEDİŞ TAKVİMİ HTML'İ HAZIRLA ---
         let calendarHTML = "";
         if (data.calendar && data.calendar.length > 0) {
-            let rows = "";
-            data.calendar.forEach(day => {
-                rows += `
+          let rows = "";
+          data.calendar.forEach((day) => {
+            rows += `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="background:#fffbeb; color:#d97706; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; border:1px solid #fcd34d;">
@@ -1637,9 +1637,9 @@ ${css}
                         <div style="font-size:9px; color:#94a3b8;">Tahmini</div>
                     </div>
                 </div>`;
-            });
+          });
 
-            calendarHTML = `
+          calendarHTML = `
             <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:20px; margin-bottom:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
                 <h4 style="margin:0 0 15px 0; color:#334155; font-size:14px; display:flex; align-items:center; gap:8px;">
                     <i class="fas fa-calendar-alt" style="color:#f59e0b;"></i> Yaklaşan Hakedişler
@@ -1652,8 +1652,8 @@ ${css}
                 </div>
             </div>`;
         } else {
-             // Takvim boşsa, motive edici boş durum gösterelim (opsiyonel)
-             // Şimdilik boş bırakıyoruz ki yer kaplamasın.
+          // Takvim boşsa, motive edici boş durum gösterelim (opsiyonel)
+          // Şimdilik boş bırakıyoruz ki yer kaplamasın.
         }
 
         let historyHTML = "";
@@ -1906,7 +1906,7 @@ ${css}
       </div>
   </div>
   
-  <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+  ${calendarHTML} <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
       <div style="font-size:20px;">🗓️</div>
       <div>
           <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
@@ -4411,5 +4411,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
