@@ -45,7 +45,7 @@
   // --- BAŞLATICI (API'den Gerçek Veriyi Çeker) ---
   async function initPartnerSystem() {
     var email = detectUser();
-    if (!email || email === "") return; // Giriş yapmamışsa hiçbir şey gösterme
+    if (!email) return; // Giriş yapmamışsa hiçbir şey gösterme
 
     try {
       const response = await fetch(API_URL, {
@@ -4414,5 +4414,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v8*/
 })();
