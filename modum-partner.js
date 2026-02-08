@@ -1616,6 +1616,46 @@ ${css}
         });
         const data = await res.json();
 
+        // --- 🔥 HAKEDİŞ TAKVİMİ HTML'İ HAZIRLA ---
+        let calendarHTML = "";
+        if (data.calendar && data.calendar.length > 0) {
+            let rows = "";
+            data.calendar.forEach(day => {
+                rows += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="background:#fffbeb; color:#d97706; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; border:1px solid #fcd34d;">
+                            📅
+                        </div>
+                        <div>
+                            <div style="font-size:13px; color:#1e293b; font-weight:700;">${day.date}</div>
+                            <div style="font-size:10px; color:#64748b;">${day.count} adet satışın vadesi doluyor</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:14px; font-weight:800; color:#059669;">+${day.amount} ₺</div>
+                        <div style="font-size:9px; color:#94a3b8;">Tahmini</div>
+                    </div>
+                </div>`;
+            });
+
+            calendarHTML = `
+            <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:20px; margin-bottom:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                <h4 style="margin:0 0 15px 0; color:#334155; font-size:14px; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-calendar-alt" style="color:#f59e0b;"></i> Yaklaşan Hakedişler
+                </h4>
+                <div style="background:#f8fafc; border-radius:8px; padding:0 15px; border:1px solid #f1f5f9;">
+                    ${rows}
+                </div>
+                <div style="margin-top:10px; font-size:10px; color:#64748b; text-align:center;">
+                    * Bu tutarlar iade süresi dolduğunda otomatik olarak "Çekilebilir Bakiye"nize eklenecektir.
+                </div>
+            </div>`;
+        } else {
+             // Takvim boşsa, motive edici boş durum gösterelim (opsiyonel)
+             // Şimdilik boş bırakıyoruz ki yer kaplamasın.
+        }
+
         let historyHTML = "";
         if (data.success && data.list.length > 0) {
           data.list.forEach((tx) => {
@@ -4371,5 +4411,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
