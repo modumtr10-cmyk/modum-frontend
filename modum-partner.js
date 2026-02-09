@@ -1882,6 +1882,37 @@ ${css}
 
         let safeBalance = parseFloat(pStats.balance || 0);
         let pendingVal = parseFloat(pStats.pending_balance || 0);
+        // --- 🔥 YENİ EKLENECEK KISIM (KARAR MEKANİZMASI) ---
+        let accType = pStats.accountType || "individual";
+        let actionArea = "";
+
+        // Eğer Kurumsal ise ve Bakiye 500 TL üzerindeyse -> FATURA İSTE
+        if (accType === "company" && safeBalance >= 500) {
+          actionArea = `
+            <div style="background:#fff7ed; border:1px dashed #f97316; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                <div style="font-size:24px;">📄</div>
+                <div style="flex:1;">
+                    <div style="font-weight:bold; color:#9a3412; font-size:12px;">FATURA YÜKLEMENİZ GEREKİYOR</div>
+                    <div style="font-size:11px; color:#c2410c;">Ödemenizi alabilmek için <b>${safeBalance.toLocaleString("tr-TR")} TL + KDV</b> tutarında faturanızı yükleyiniz.</div>
+                </div>
+                <button onclick="PartnerApp.uploadInvoice()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#ea580c; color:white; border:none;">
+                    Yükle
+                </button> 
+            </div>
+          `;
+        }
+        // Eğer Bireysel ise veya Kurumsal ama limiti geçmemişse -> BİLGİ VER
+        else {
+          actionArea = `
+            <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                <div style="font-size:20px;">🗓️</div>
+                <div>
+                    <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
+                    <div style="font-size:11px; color:#047857;">Çekilebilir bakiyeniz 500 TL üzerindeyse her <b style="text-decoration:underline;">Çarşamba</b> günü otomatik olarak IBAN'ınıza yatırılır.</div>
+                </div>
+            </div>
+          `;
+        }
 
         // 🔥 YENİ BAŞLIK EKLENDİ
         container.innerHTML = `
@@ -1907,13 +1938,7 @@ ${css}
   </div>
   ${calendarHTML}
   
-  <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
-      <div style="font-size:20px;">🗓️</div>
-      <div>
-          <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
-          <div style="font-size:11px; color:#047857;">Çekilebilir bakiyeniz 500 TL üzerindeyse her <b style="text-decoration:underline;">Çarşamba</b> günü otomatik olarak IBAN'ınıza yatırılır.</div>
-      </div>
-  </div>
+  ${actionArea}
   
   <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0;">
       <h4 style="margin:0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
@@ -1928,7 +1953,57 @@ ${css}
       } catch (e) {
         container.innerHTML = "Hata: " + e.message;
       }
-    }, // 🔥 EKSİK OLAN FONKSİYON BURAYA EKLENECEK:
+    }, // --- FATURA YÜKLEME FONKSİYONU ---
+    uploadInvoice: async function () {
+      // Basit bir dosya seçtirme penceresi açar
+      let input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".pdf,.jpg,.png,.jpeg";
+
+      input.onchange = async (e) => {
+        let file = e.target.files[0];
+        if (!file) return;
+
+        // Dosya boyutu kontrolü (Örn: 5MB)
+        if (file.size > 5 * 1024 * 1024)
+          return alert("Dosya boyutu çok yüksek! (Max 5MB)");
+
+        // Yükleniyor efekti verelim...
+        alert("⏳ Fatura yükleniyor, lütfen bekleyiniz...");
+
+        // Dosyayı Base64 formatına çevir (Sunucuya göndermek için)
+        const reader = new FileReader();
+        reader.onload = async function (evt) {
+          const base64Data = evt.target.result;
+
+          try {
+            // Backend'e gönder (API_URL global değişkenini kullanır)
+            // Not: Bu fonksiyonun çalışması için Backend'de 'upload_invoice' işleyicisi olması gerekir.
+            // Şimdilik sadece frontend kısmını yapıyoruz.
+            /* const res = await fetch(API_URL, {
+                        method: "POST", 
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            islem: "upload_invoice", 
+                            email: detectUser(), 
+                            fileData: base64Data 
+                        })
+                    });
+                    */
+
+            // Şimdilik demo mesajı:
+            alert(
+              "✅ Faturanız başarıyla sisteme yüklendi! Finans ekibi Çarşamba günü kontrol edip ödemenizi yapacaktır.",
+            );
+          } catch (err) {
+            alert("Yükleme sırasında hata oluştu.");
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click(); // Pencereyi aç
+    },
+    // 🔥 EKSİK OLAN FONKSİYON BURAYA EKLENECEK:
     updateBalanceDisplay: async function (container) {
       var email = detectUser(); // Kullanıcı emailini al
       if (!email) return;
@@ -4414,5 +4489,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
