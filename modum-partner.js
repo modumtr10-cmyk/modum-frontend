@@ -2374,7 +2374,12 @@ ${css}
 
       var pData = window.PartnerData || {};
       var myRefCode = pData.refCode;
-      var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
+
+      // --- 🔥 DEĞİŞİKLİK BURADA: ARTIK POPUP DEĞİL, SAYFA LİNKİ VERİYORUZ ---
+      // Eskisi: var collectionLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
+      var collectionLink =
+        "https://www.modum.tr/partner-magaza?ref=" + myRefCode;
+      // ----------------------------------------------------------------------
 
       try {
         // Kendi koleksiyonunu çek
@@ -2971,6 +2976,23 @@ ${css}
                         <label class="inp-label">${isCompany ? "VERGİ DAİRESİ / NO" : "TC KİMLİK NO"}</label>
                         <input type="text" id="edit-tax" value="${valTax}" placeholder="${isCompany ? "Daire / No" : "11 Haneli TCKN"}" class="inp-field" ${disabledAttr}>
                     </div>
+                    <div class="p-card" style="padding:20px; border:1px solid #e0f2fe; background:#f0f9ff; margin-bottom:15px;">
+    <h4 style="margin:0 0 10px 0; color:#0369a1; font-size:13px;">🏪 Mağaza Görünümü (Vitrin Ayarları)</h4>
+    
+    <div class="inp-row">
+        <label class="inp-label">MAĞAZA BAŞLIĞI</label>
+        <input type="text" id="edit-store-title" value="${pData.store_title || pData.name + " Vitrini"}" placeholder="Örn: Ayşe'nin Seçtikleri" class="inp-field" ${disabledAttr}>
+    </div>
+
+    <div class="inp-row">
+        <label class="inp-label">MAĞAZA AÇIKLAMASI (BIO)</label>
+        <textarea id="edit-store-bio" rows="2" placeholder="Takipçilerine bir mesaj yaz..." class="inp-field" ${disabledAttr}>${pData.store_bio || ""}</textarea>
+    </div>
+    
+    <div style="font-size:10px; color:#64748b;">
+        * Bu bilgiler paylaştığınız <b>partner-magaza</b> sayfasında en üstte görünür.
+    </div>
+</div>
 
                     <div class="inp-row">
                         <label class="inp-label">BANKA BİLGİLERİ</label>
@@ -3062,6 +3084,8 @@ ${css}
       const tax = document.getElementById("edit-tax").value;
       const bankName = document.getElementById("edit-bank-name").value;
       const iban = document.getElementById("edit-iban").value;
+      const storeTitle = document.getElementById("edit-store-title").value;
+      const storeBio = document.getElementById("edit-store-bio").value;
 
       if (!phone || phone.length < 10)
         return alert("Lütfen geçerli bir telefon numarası giriniz.");
@@ -3086,6 +3110,8 @@ ${css}
         bankInfo: fullBankInfo,
         tckn: !isCompany ? tax : null,
         taxInfo: isCompany ? tax : null,
+        store_title: storeTitle,
+        store_bio: storeBio
       };
 
       try {
@@ -3314,7 +3340,7 @@ ${css}
 
     // Linkler
     var currentPageLink = window.location.href.split("?")[0];
-    var myStoreLink = "https://www.modum.tr/?koleksiyon=" + myRefCode;
+    var myStoreLink = "https://www.modum.tr/partner-magaza?ref=" + myRefCode;
 
     // Koleksiyon Butonu (Sadece ürün sayfasındaysa görünür)
     var collectionBtnHtml = "";
@@ -4473,6 +4499,309 @@ ${css}
 
     doc.save(`Modum_Makbuz_${transaction.date}.pdf`);
   };
+  // ============================================================
+  // 🛍️ PARTNER MAĞAZA SAYFASI (LANDING PAGE MODU)
+  // ============================================================
+  async function initPartnerStorePage() {
+    // 1. Sayfa Kontrolü
+    if (!window.location.href.includes("partner-magaza")) return;
+
+    // 2. Kök element kontrolü
+    const root = document.getElementById("mdm-partner-store-root");
+    if (!root) return;
+
+    // 3. URL'den Ref Kodunu Al
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get("ref");
+
+    // --- 🔥 GÜVENLİK KONTROLÜ: KOD YOKSA ---
+    if (!refCode) {
+      root.innerHTML = `
+            <div style="text-align:center; padding:100px 20px; font-family:'Inter',sans-serif;">
+                <div style="font-size:50px; margin-bottom:20px;">🏪</div>
+                <h2 style="color:#1e293b; margin:0 0 10px 0;">Partner Mağazası Bulunamadı</h2>
+                <p style="color:#64748b; font-size:14px; margin-bottom:30px;">
+                    Görünüşe göre eksik bir link ile geldiniz. Bir partnerin özel mağazasını gezmek için<br>onun paylaştığı bağlantıya tıklamanız gerekir.
+                </p>
+                <a href="/" style="background:#3b82f6; color:white; text-decoration:none; padding:12px 30px; border-radius:8px; font-weight:bold;">
+                    Ana Sayfaya Dön
+                </a>
+            </div>
+        `;
+      return; // İşlemi durdur
+    }
+
+    // 4. Verileri Çek (Public Collection + Partner Bilgisi)
+    try {
+      // API'den partnerin koleksiyonunu ve bilgilerini iste
+      // (API tarafında get_public_collection zaten partner adını dönüyor,
+      //  buna profil fotosu ve bio da eklersen harika olur.)
+      const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "get_public_collection",
+          refCode: refCode,
+        }),
+      }).then((r) => r.json());
+
+      if (res.success) {
+        // Referans kodunu tarayıcıya kaydet (Satış olursa bu kişiye yazsın)
+        localStorage.setItem("mdm_affiliate_ref", refCode);
+
+        // Sayfayı Çiz
+        renderFullPageStore(root, res, refCode);
+      } else {
+        root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>😔 Üzgünüz</h3><p>${res.message}</p></div>`;
+      }
+    } catch (e) {
+      console.error(e);
+      root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>Hata</h3><p>Bağlantı sorunu oluştu.</p></div>`;
+    }
+  }
+
+  // --- TAM SAYFA TASARIM ÇİZİCİ (TRENDYOL STİLİ) ---
+  function renderFullPageStore(container, data, refCode) {
+    const products = data.products || [];
+    const pName = data.partnerName || "Modum Partner";
+
+    // Varsayılan Avatar (İsminin baş harfi)
+    const avatarLetter = pName.charAt(0).toUpperCase();
+    const avatarHtml = `<div style="width:80px; height:80px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; color:#333; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.1); border:4px solid white;">${avatarLetter}</div>`;
+
+    // Ürün Listesi HTML'i (Mevcut fonksiyonu kullanabiliriz veya buraya özel yazabiliriz)
+    let productGrid = "";
+
+    if (products.length === 0) {
+      productGrid = `<div style="text-align:center; grid-column:span 4; padding:50px; color:#999;">Bu partner henüz vitrinine ürün eklememiş.</div>`;
+    } else {
+      products.forEach((p) => {
+        productGrid += `
+            <div style="background:white; border-radius:8px; overflow:hidden; border:1px solid #f1f5f9; transition:transform 0.2s;">
+                <a href="${p.url}?ref=${refCode}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
+                    <div style="position:relative; padding-top:120%;">
+                        <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div style="padding:10px;">
+                        <div style="font-size:12px; color:#334155; margin-bottom:5px; height:32px; overflow:hidden; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
+                        <div style="font-weight:900; color:#10b981; font-size:15px;">${p.price}</div>
+                    </div>
+                </a>
+            </div>
+            `;
+      });
+    }
+
+    // --- LANDING PAGE TASARIMI ---
+    const html = `
+    <style>
+        .influencer-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .influencer-avatar-box {
+            margin-bottom: 10px;
+            display: flex; justify-content: center;
+        }
+        .inf-name { font-size: 24px; font-weight: 800; margin: 0; }
+        .inf-badge { background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: bold; vertical-align: middle; margin-left: 5px; }
+        .inf-bio { font-size: 14px; opacity: 0.8; max-width: 600px; margin: 5px auto 0; }
+        
+        .inf-grid {
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            padding: 0 10px;
+        }
+        @media (min-width: 768px) {
+            .inf-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 0 20px; max-width: 1200px; margin: 0 auto; }
+        }
+    </style>
+
+    <div style="background:#f8fafc; min-height:80vh; padding-bottom:50px;">
+        <div class="influencer-header">
+            <div class="influencer-avatar-box">
+                ${avatarHtml}
+            </div>
+            <h1 class="inf-name">
+                ${pName} <span class="inf-badge">Doğrulanmış Partner</span>
+            </h1>
+            <p class="inf-bio">
+                ${pName}'in seçtiği favori ürünleri burada bulabilirsin. Beğendiklerini sepete ekle, fırsatları kaçırma!
+            </p>
+        </div>
+
+        <div class="inf-grid">
+            ${productGrid}
+        </div>
+        
+        <div style="text-align:center; margin-top:40px; color:#94a3b8; font-size:12px;">
+            Güvenli Alışveriş • ModumNet Garantisiyle
+        </div>
+    </div>
+    `;
+
+    // İçeriği Faprika sayfasına bas
+    container.innerHTML = html;
+  }
+
+  // Sayfa yüklendiğinde veya DOM değiştiğinde çalıştır
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPartnerStorePage);
+  } else {
+    initPartnerStorePage();
+  }
+  // ============================================================
+  // 🛍️ PARTNER MAĞAZA SAYFASI (LANDING PAGE MODU)
+  // ============================================================
+  async function initPartnerStorePage() {
+    // 1. Doğru sayfada mıyız kontrol et
+    // Faprika'da oluşturduğun sayfanın linki içinde "partner-magaza" geçiyor mu?
+    if (!window.location.href.includes("partner-magaza")) return;
+
+    console.log("🏪 Partner Mağaza Sayfası Tespit Edildi!");
+
+    // 2. Kök elementi bul
+    const root = document.getElementById("mdm-partner-store-root");
+    if (!root) return; // Sayfada bizim div yoksa dur.
+
+    // 3. URL'den Ref Kodunu Al (?ref=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get("ref");
+
+    if (!refCode) {
+      root.innerHTML = `<div style="text-align:center; padding:50px; color:#666;"><h3>⚠️ Mağaza Bulunamadı</h3><p>Lütfen geçerli bir partner linki ile geliniz.</p><a href="/" class="mdm-btn btn-store" style="display:inline-block; margin-top:10px;">Ana Sayfaya Dön</a></div>`;
+      return;
+    }
+
+    // 4. Verileri Çek (Public Collection + Partner Bilgisi)
+    try {
+      // API'den partnerin koleksiyonunu ve bilgilerini iste
+      // (API tarafında get_public_collection zaten partner adını dönüyor,
+      //  buna profil fotosu ve bio da eklersen harika olur.)
+      const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          islem: "get_public_collection",
+          refCode: refCode,
+        }),
+      }).then((r) => r.json());
+
+      if (res.success) {
+        // Referans kodunu tarayıcıya kaydet (Satış olursa bu kişiye yazsın)
+        localStorage.setItem("mdm_affiliate_ref", refCode);
+
+        // Sayfayı Çiz
+        renderFullPageStore(root, res, refCode);
+      } else {
+        root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>😔 Üzgünüz</h3><p>${res.message}</p></div>`;
+      }
+    } catch (e) {
+      console.error(e);
+      root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>Hata</h3><p>Bağlantı sorunu oluştu.</p></div>`;
+    }
+  }
+
+  // --- TAM SAYFA TASARIM ÇİZİCİ (TRENDYOL STİLİ) ---
+  function renderFullPageStore(container, data, refCode) {
+    const products = data.products || [];
+    const pName = data.partnerName || "Modum Partner";
+
+    // Varsayılan Avatar (İsminin baş harfi)
+    const avatarLetter = pName.charAt(0).toUpperCase();
+    const avatarHtml = `<div style="width:80px; height:80px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; color:#333; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.1); border:4px solid white;">${avatarLetter}</div>`;
+
+    // Ürün Listesi HTML'i (Mevcut fonksiyonu kullanabiliriz veya buraya özel yazabiliriz)
+    let productGrid = "";
+
+    if (products.length === 0) {
+      productGrid = `<div style="text-align:center; grid-column:span 4; padding:50px; color:#999;">Bu partner henüz vitrinine ürün eklememiş.</div>`;
+    } else {
+      products.forEach((p) => {
+        productGrid += `
+            <div style="background:white; border-radius:8px; overflow:hidden; border:1px solid #f1f5f9; transition:transform 0.2s;">
+                <a href="${p.url}?ref=${refCode}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
+                    <div style="position:relative; padding-top:120%;">
+                        <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div style="padding:10px;">
+                        <div style="font-size:12px; color:#334155; margin-bottom:5px; height:32px; overflow:hidden; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
+                        <div style="font-weight:900; color:#10b981; font-size:15px;">${p.price}</div>
+                    </div>
+                </a>
+            </div>
+            `;
+      });
+    }
+
+    // --- LANDING PAGE TASARIMI ---
+    const html = `
+    <style>
+        .influencer-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .influencer-avatar-box {
+            margin-bottom: 10px;
+            display: flex; justify-content: center;
+        }
+        .inf-name { font-size: 24px; font-weight: 800; margin: 0; }
+        .inf-badge { background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; font-weight: bold; vertical-align: middle; margin-left: 5px; }
+        .inf-bio { font-size: 14px; opacity: 0.8; max-width: 600px; margin: 5px auto 0; }
+        
+        .inf-grid {
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            padding: 0 10px;
+        }
+        @media (min-width: 768px) {
+            .inf-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 0 20px; max-width: 1200px; margin: 0 auto; }
+        }
+    </style>
+
+    <div style="background:#f8fafc; min-height:80vh; padding-bottom:50px;">
+        <div class="influencer-header">
+            <div class="influencer-avatar-box">
+                ${avatarHtml}
+            </div>
+            <h1 class="inf-name">
+                ${pName} <span class="inf-badge">Doğrulanmış Partner</span>
+            </h1>
+            <p class="inf-bio">
+                ${pName}'in seçtiği favori ürünleri burada bulabilirsin. Beğendiklerini sepete ekle, fırsatları kaçırma!
+            </p>
+        </div>
+
+        <div class="inf-grid">
+            ${productGrid}
+        </div>
+        
+        <div style="text-align:center; margin-top:40px; color:#94a3b8; font-size:12px;">
+            Güvenli Alışveriş • ModumNet Garantisiyle
+        </div>
+    </div>
+    `;
+
+    // İçeriği Faprika sayfasına bas
+    container.innerHTML = html;
+  }
+
+  // Sayfa yüklendiğinde veya DOM değiştiğinde çalıştır
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPartnerStorePage);
+  } else {
+    initPartnerStorePage();
+  }
 
   // --- SAYFA AÇILINCA ÇALIŞTIR ---
   // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
@@ -4489,5 +4818,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
