@@ -745,44 +745,98 @@ ${css}
         // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
         let onboardingHTML = "";
 
-        // Mantık: Hiç tıklama yoksa veya 0.00 TL ciro varsa göster
+        // --- 🚀 AKILLI ONBOARDING (TRENDYOL MODELİ - GAMIFIED) ---
         if (tClicks === 0 || currentRev === 0) {
+          // 1. Durumları Kontrol Et
+          var step1_Approve = true; // Zaten içerideyse onaylıdır
+          var step2_Bank = pData.bank_info && pData.bank_info.length > 5;
+          var step3_Kyc =
+            pData.kycStatus === "verified" || pData.kycStatus === "pending";
+          // Koleksiyon oluşturdu mu? (LocalStorage'dan kontrol edelim veya tıklama varsa var sayalım)
+          var step4_Coll =
+            localStorage.getItem("mdm_coll_tutorial_seen") === "true" ||
+            tClicks > 0;
+          var step5_Click = tClicks > 0;
+
+          // 2. İlerleme Puanı Hesapla (Her adım 20 Puan)
+          var progress = 20; // Başlangıç (Onay)
+          if (step2_Bank) progress += 20;
+          if (step3_Kyc) progress += 20;
+          if (step4_Coll) progress += 20;
+          if (step5_Click) progress += 20;
+
+          // Renk ve Mesaj Ayarları
+          var progColor = progress === 100 ? "#10b981" : "#3b82f6";
+          var welcomeMsg =
+            progress === 100
+              ? "🎉 Harikasın! Artık tam donanımlı bir partnersin."
+              : "👋 Hoş geldin! Tam kazanmaya başlamak için şu adımları tamamla:";
+
+          // 3. HTML Oluştur
           onboardingHTML = `
-            <div style="background:linear-gradient(120deg, #e0e7ff, #f3e8ff); border:1px solid #c7d2fe; padding:20px; border-radius:12px; margin-bottom:25px; position:relative; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                <div style="position:absolute; right:-10px; top:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events:none;">🚀</div>
+            <div style="background:white; border:1px solid #e2e8f0; padding:20px; border-radius:16px; margin-bottom:25px; box-shadow:0 10px 30px rgba(0,0,0,0.03); position:relative; overflow:hidden;">
                 
-                <h3 style="margin:0 0 10px 0; color:#3730a3; font-size:16px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
-                <p style="margin:0 0 15px 0; color:#4338ca; font-size:12px; max-width:85%; line-height:1.5;">
-                    Sisteme harika bir giriş yaptın. Ödeme alabilmen için yasal zorunluluk olan <b>Belge Yükleme</b> işlemini tamamlaman gerekiyor. Aşağıdaki adımları takip et:
-                </p>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #fcd34d; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('profile', document.querySelector(\`.p-nav-item[onclick*='profile']\`))">
-                         <div style="font-size:20px; margin-bottom:5px;">🪪</div>
-                         <div style="font-weight:bold; font-size:11px; color:#b45309;">Belge Yükle</div>
-                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Ödeme için zorunlu</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <h3 style="margin:0; color:#1e293b; font-size:16px;">${welcomeMsg}</h3>
+                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Kurulum: <b>%${progress} Tamamlandı</b></div>
                     </div>
-
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('links', document.querySelector(\`.p-nav-item[onclick*='links']\`))">
-                        <div style="font-size:20px; margin-bottom:5px;">🔗</div>
-                        <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
-                        <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
-                    </div>
-
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('showcase', document.querySelector(\`.p-nav-item[onclick*='showcase']\`))">
-                         <div style="font-size:20px; margin-bottom:5px;">🔥</div>
-                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
-                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
-                    </div>
+                    <div style="font-size:24px;">${progress === 100 ? "🏆" : "🚀"}</div>
                 </div>
-            </div>
-            `;
+
+                <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; margin-bottom:20px; overflow:hidden;">
+                    <div style="width:${progress}%; height:100%; background:${progColor}; transition:width 1s ease;"></div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    
+                    <div style="display:flex; align-items:center; gap:10px; opacity:0.5;">
+                        <div style="color:#10b981; font-size:18px;"><i class="fas fa-check-circle"></i></div>
+                        <div style="flex:1; text-decoration:line-through; color:#64748b; font-size:13px;">Partner Başvurun Onaylandı</div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="color:${step2_Bank ? "#10b981" : "#cbd5e1"}; font-size:18px;">
+                            ${step2_Bank ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+                        </div>
+                        <div style="flex:1; font-size:13px; color:${step2_Bank ? "#64748b" : "#1e293b"}; ${step2_Bank ? "text-decoration:line-through;" : "font-weight:bold;"}">
+                            Ödeme Bilgilerini Gir
+                        </div>
+                        ${!step2_Bank ? `<button onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#3b82f6; color:white; border:none;">GİR</button>` : ""}
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="color:${step3_Kyc ? "#10b981" : "#cbd5e1"}; font-size:18px;">
+                            ${step3_Kyc ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+                        </div>
+                        <div style="flex:1; font-size:13px; color:${step3_Kyc ? "#64748b" : "#1e293b"}; ${step3_Kyc ? "text-decoration:line-through;" : "font-weight:bold;"}">
+                            Yasal Belgeleri Yükle (KYC)
+                        </div>
+                        ${!step3_Kyc ? `<button onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#f59e0b; color:white; border:none;">YÜKLE</button>` : ""}
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="color:${step4_Coll ? "#10b981" : "#cbd5e1"}; font-size:18px;">
+                            ${step4_Coll ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+                        </div>
+                        <div style="flex:1; font-size:13px; color:${step4_Coll ? "#64748b" : "#1e293b"}; ${step4_Coll ? "text-decoration:line-through;" : "font-weight:bold;"}">
+                            İlk Koleksiyonunu Oluştur
+                        </div>
+                        ${!step4_Coll ? `<button onclick="PartnerApp.showCollectionTutorial()" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#8b5cf6; color:white; border:none;">NASIL YAPILIR?</button>` : ""}
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="color:${step5_Click ? "#10b981" : "#cbd5e1"}; font-size:18px;">
+                            ${step5_Click ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+                        </div>
+                        <div style="flex:1; font-size:13px; color:${step5_Click ? "#64748b" : "#1e293b"}; ${step5_Click ? "text-decoration:line-through;" : "font-weight:bold;"}">
+                            İlk Tıklamanı Al (Link Paylaş)
+                        </div>
+                        ${!step5_Click ? `<button onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(4)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#1e293b; color:white; border:none;">LİNK AL</button>` : ""}
+                    </div>
+
+                </div>
+            </div>`;
         }
 
         // 1. Dönüşüm Oranı (CR)
@@ -3218,6 +3272,56 @@ ${css}
         btn.innerText = oldText;
         btn.disabled = false;
       }
+    }, // --- 🎓 KOLEKSİYON EĞİTİM MODALI ---
+    showCollectionTutorial: function () {
+      // Bunu gördüğünü kaydet ki bir daha sormasın (Progress Bar ilerlesin)
+      localStorage.setItem("mdm_coll_tutorial_seen", "true");
+
+      // Mevcut modalı kapatmadan üzerine açabiliriz veya temizleyebiliriz
+      // Şimdilik temiz bir modal açalım
+      let html = `
+        <div id="p-tutorial-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2147483660; display:flex; justify-content:center; align-items:center; padding:20px;">
+            <div style="background:white; width:100%; max-width:400px; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                
+                <div style="background:#8b5cf6; padding:20px; color:white; text-align:center;">
+                    <div style="font-size:40px; margin-bottom:10px;">🛍️</div>
+                    <h3 style="margin:0; font-size:18px;">Mağazanı Nasıl Doldurursun?</h3>
+                </div>
+
+                <div style="padding:25px;">
+                    <div style="display:flex; gap:15px; margin-bottom:20px;">
+                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">1</div>
+                        <div style="font-size:13px; color:#374151; line-height:1.4;">
+                            Sitemizdeki <b>herhangi bir ürüne</b> git. (Tişört, Pantolon vb.)
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; margin-bottom:20px;">
+                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">2</div>
+                        <div style="font-size:13px; color:#374151; line-height:1.4;">
+                            Sayfanın en üstünde çıkan siyah <b>Partner Çubuğu</b>'na bak.
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; margin-bottom:20px;">
+                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">3</div>
+                        <div style="font-size:13px; color:#374151; line-height:1.4;">
+                            <span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">+ Koleksiyona Ekle</span> butonuna bas.
+                        </div>
+                    </div>
+                    
+                    <div style="text-align:center; background:#eff6ff; padding:10px; border-radius:8px; border:1px dashed #3b82f6; font-size:11px; color:#1e40af; margin-bottom:20px;">
+                        Bu ürünler "Mağazam" sekmesine otomatik eklenir ve linkini paylaştığında bu ürünler en üstte görünür.
+                    </div>
+
+                    <button onclick="document.getElementById('p-tutorial-modal').remove(); PartnerApp.loadTab('home');" class="p-btn" style="background:#1e293b; color:white; width:100%;">
+                        Anladım, Teşekkürler 👍
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+      document.body.insertAdjacentHTML("beforeend", html);
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -4666,5 +4770,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v11*/
 })();
