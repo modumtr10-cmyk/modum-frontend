@@ -1814,16 +1814,46 @@ ${css}
             }
             // 🔥 YENİ: VADE TARİHİ KARTI (Sadece Bekleyen Satışlar İçin)
             let maturityHTML = "";
+            // --- 🔥 GELİŞMİŞ GERİ SAYIM SAYACI ---
             if (tx.status === "pending_maturity" && tx.maturityDateStr) {
+              // 1. Tarihi Parse Et (TR formatı: Gün.Ay.Yıl)
+              let parts = tx.maturityDateStr.split(".");
+              let targetDate = new Date(
+                parts[2],
+                parts[1] - 1,
+                parts[0],
+                23,
+                59,
+                0,
+              ); // O günün gecesi
+              let now = new Date();
+
+              // 2. Kalan Zamanı Hesapla
+              let diffMs = targetDate - now;
+              let days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              let hours = Math.floor(
+                (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+              );
+
+              let timeText = "";
+              let timeColor = "#d97706"; // Turuncu
+
+              if (diffMs < 0) {
+                timeText = "✅ İşlem Sırasında (Bugün)";
+                timeColor = "#10b981"; // Yeşil
+              } else {
+                timeText = `⏳ ${days} Gün ${hours} Saat Kaldı`;
+              }
+
               maturityHTML = `
-                <div style="margin-top:15px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fcd34d; display:flex; align-items:center; gap:10px;">
-                    <div style="font-size:20px;">📅</div>
-                    <div>
-                        <div style="font-size:10px; color:#b45309; font-weight:bold;">TAHMİNİ SERBEST KALMA TARİHİ</div>
-                        <div style="font-size:13px; color:#d97706; font-weight:bold;">${tx.maturityDateStr}</div>
-                        <div style="font-size:10px; color:#b45309;">(İade süresi dolunca otomatik cüzdana geçer)</div>
-                    </div>
-                </div>`;
+    <div style="margin-top:15px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fcd34d; display:flex; align-items:center; gap:10px;">
+        <div style="font-size:20px;">⏱️</div>
+        <div>
+            <div style="font-size:10px; color:#b45309; font-weight:bold;">SERBEST KALMA SÜRESİ</div>
+            <div style="font-size:14px; color:${timeColor}; font-weight:800;">${timeText}</div>
+            <div style="font-size:10px; color:#b45309; opacity:0.8;">Hedef Tarih: ${tx.maturityDateStr}</div>
+        </div>
+    </div>`;
             }
 
             // --- 7. KART HTML OLUŞTUR ---
@@ -4636,5 +4666,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
