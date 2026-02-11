@@ -2934,7 +2934,7 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
-    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON - FİNAL) ---
+    }, // --- 👤 PROFİL & KYC YÖNETİMİ (DÜZELTİLMİŞ & FİREBASE UYUMLU) ---
     renderProfile: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil yükleniyor...</div>';
@@ -2956,9 +2956,9 @@ ${css}
 
       var pData = window.PartnerData || {};
 
-      // KYC ve Şirket Durumu
-      let kycStatus = pData.kycStatus || "none";
+      // --- DURUM ANALİZİ ---
       let isCompany = pData.accountType === "company";
+      let accountLabel = isCompany ? "🏢 KURUMSAL HESAP" : "👤 BİREYSEL HESAP";
 
       // 30 Gün Kilidi Kontrolü
       let lastUpdate = pData.lastProfileUpdate || 0;
@@ -2967,12 +2967,13 @@ ${css}
       let isLocked = diffDays < 30;
       let remainingDays = Math.ceil(30 - diffDays);
 
-      // Değerler
+      // --- VERİLERİ AYRIŞTIRMA (PARSING) ---
       let valPhone = pData.phone || "";
-      let fullBankInfo = pData.bank_info || "";
 
-      // Banka Adı ve IBAN Ayrıştırma
-      let selectedBank = "Garanti";
+      // 1. BANKA BİLGİSİ AYRIŞTIRMA
+      // Veritabanında bazen sadece IBAN, bazen "Banka - IBAN" olabilir.
+      let fullBankInfo = pData.bank_info || "";
+      let selectedBank = "Garanti"; // Varsayılan
       let valIban = fullBankInfo;
 
       if (fullBankInfo.includes(" - ")) {
@@ -2981,18 +2982,21 @@ ${css}
         valIban = parts[1];
       }
 
-      // Vergi Bilgilerini Ayrıştır (Vergi Dairesi / No)
+      // 2. VERGİ BİLGİSİ AYRIŞTIRMA (Firebase 'taxInfo' alanı)
+      // Format: "Vergi Dairesi - Vergi No" olarak kaydedeceğiz.
       let valTckn = pData.tckn || "";
       let valTaxOffice = "";
       let valTaxNo = "";
 
       if (isCompany && pData.taxInfo) {
-        if (pData.taxInfo.includes(" / ")) {
-          let tParts = pData.taxInfo.split(" / ");
-          valTaxOffice = tParts[0];
-          valTaxNo = tParts[1];
+        // Eğer tire ile ayrılmışsa böl
+        if (pData.taxInfo.includes(" - ")) {
+          let tParts = pData.taxInfo.split(" - ");
+          valTaxOffice = tParts[0]; // İlk kısım Daire
+          valTaxNo = tParts[1]; // İkinci kısım No
         } else {
-          valTaxNo = pData.taxInfo;
+          // Eğer tire yoksa (eski veri), tamamını Daire adına yazalım ki kaybolmasın
+          valTaxOffice = pData.taxInfo;
         }
       }
 
@@ -3033,9 +3037,11 @@ ${css}
       container.innerHTML =
         style +
         `
-            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-                <h3 style="margin:0; font-size:16px; color:#1e293b;">Profil Ayarları</h3>
-                <p style="margin:0; font-size:12px; color:#64748b;">Kişisel, yasal ve ödeme bilgilerinizi buradan yönetebilirsiniz.</p>
+            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
+                    <p style="margin:0; font-size:12px; color:#64748b;">Kişisel ve yasal bilgileriniz.</p>
+                </div>
             </div>
 
             <div class="profile-grid">
@@ -3174,7 +3180,7 @@ ${css}
         `;
     },
 
-    // --- PROFİL KAYDETME FONKSİYONU (YENİLENMİŞ) ---
+    // --- PROFİL KAYDETME FONKSİYONU (DÜZELTİLMİŞ & BİRLEŞTİRMELİ) ---
     saveProfile: async function () {
       const btn = event.target;
       const oldText = btn.innerHTML;
@@ -3187,7 +3193,7 @@ ${css}
       const bankName = document.getElementById("edit-bank-name").value;
       const iban = document.getElementById("edit-iban").value;
 
-      // 2. Validasyon
+      // 2. Temel Validasyon
       if (!phone || phone.length < 10)
         return alert("Geçerli bir telefon numarası giriniz.");
       if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 15)
@@ -3196,16 +3202,21 @@ ${css}
       let tcknVal = "";
       let taxInfoVal = "";
 
+      // 3. Hesap Türüne Göre Validasyon ve Birleştirme
       if (accType === "individual") {
         tcknVal = document.getElementById("edit-tckn").value;
         if (!tcknVal || tcknVal.length !== 11)
           return alert("11 haneli TC Kimlik No giriniz.");
       } else {
+        // Kurumsal ise Daire ve No'yu alıp birleştir
         const taxOffice = document.getElementById("edit-tax-office").value;
         const taxNo = document.getElementById("edit-tax-no").value;
+
         if (!taxOffice || !taxNo)
           return alert("Vergi Dairesi ve Vergi Numarası zorunludur.");
-        taxInfoVal = `${taxOffice} / ${taxNo}`;
+
+        // 🔥 KRİTİK: Birleştirip gönderiyoruz (Firestore yapısına uygun)
+        taxInfoVal = `${taxOffice} - ${taxNo}`;
       }
 
       if (
@@ -3218,7 +3229,7 @@ ${css}
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
       btn.disabled = true;
 
-      // Banka bilgisini birleştir
+      // Banka bilgisini birleştir (Ad - IBAN)
       const fullBankInfo = `${bankName} - ${iban.toUpperCase()}`;
 
       const payload = {
@@ -3226,9 +3237,9 @@ ${css}
         email: detectUser(),
         phone: phone,
         bankInfo: fullBankInfo,
-        accountType: accType, // 🔥 YENİ
+        accountType: accType,
         tckn: tcknVal,
-        taxInfo: taxInfoVal,
+        taxInfo: taxInfoVal, // "Daire - No" şeklinde gidecek
       };
 
       try {
@@ -4829,5 +4840,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v13*/
+  /*sistem güncellendi v14*/
 })();
