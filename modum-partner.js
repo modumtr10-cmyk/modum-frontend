@@ -749,9 +749,9 @@ ${css}
         let isKycDone = pData.kycStatus === "verified";
         let isKycPending = pData.kycStatus === "pending";
 
-        // 🔥 YENİ MANTIK: Adımları parçaladık
-        let isSetupDone = tClicks > 0; // En az 1 kere linke tıklatmış mı? (Deneme yapmış mı?)
-        let isTrafficFlowing = tClicks >= 10; // 10 Tıklama barajını geçmiş mi? (Trafik akıyor mu?)
+        // Adımları parçaladık
+        let isSetupDone = tClicks > 0; // En az 1 kere linke tıklatmış mı?
+        let isTrafficFlowing = tClicks >= 10; // 10 Tıklama barajını geçmiş mi?
         let isSaleDone = currentRev > 0; // Satış yapmış mı?
 
         // 2. İlerleme Yüzdesi (Her adım %25)
@@ -766,7 +766,7 @@ ${css}
         let kycTitle =
           accType === "company" ? "Vergi Levhası Yükle" : "Kimlik Doğrulama";
 
-        // EĞER %100 OLMADIYSA GÖSTER
+        // EĞER %100 OLMADIYSA GÖSTER (Tamamlanınca kaybolur)
         if (progressPercent < 100) {
           onboardingHTML = `
             <div style="background:white; border-radius:16px; padding:25px; margin-bottom:25px; box-shadow:0 10px 30px rgba(0,0,0,0.03); border:1px solid #e2e8f0; position:relative; overflow:hidden;">
@@ -4727,5 +4727,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v12*/
+  /*sistem güncellendi v13*/
 })();
