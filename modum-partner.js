@@ -741,48 +741,95 @@ ${css}
         let myRate = parseFloat(s.commission_rate || 10);
         let tClicks = parseInt(s.totalClicks || 0);
         let tSales = parseInt(s.totalSales || 0);
-        // --- 🚀 YENİ BAŞLANGIÇ REHBERİ (ONBOARDING - GÜNCELLENDİ) ---
-        // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
+        // --- 🚀 YENİ AKILLI BAŞLANGIÇ REHBERİ (ONBOARDING v3.0) ---
+        // Sadece görevler tamamlanmadıysa (Tık yoksa veya ciro 0 ise veya KYC yoksa) göster
+
         let onboardingHTML = "";
 
-        // Mantık: Hiç tıklama yoksa veya 0.00 TL ciro varsa göster
-        if (tClicks === 0 || currentRev === 0) {
+        // 1. Durumları Kontrol Et
+        let isKycDone = pData.kycStatus === "verified"; // Belge onayı
+        let isKycPending = pData.kycStatus === "pending"; // Yüklemiş ama onay bekliyor
+        let isClickDone = tClicks > 0; // Link paylaşmış mı?
+        let isSaleDone = currentRev > 0; // Satış yapmış mı?
+
+        // 2. İlerleme Yüzdesi Hesapla
+        let progressPercent = 0;
+        if (isKycDone || isKycPending) progressPercent += 33;
+        if (isClickDone) progressPercent += 33;
+        if (isSaleDone) progressPercent += 34;
+
+        // 3. Metinleri Hazırla (Hesap Türüne Göre)
+        let accType = pData.accountType || "individual";
+        let kycTitle =
+          accType === "company" ? "Vergi Levhası Yükle" : "Kimlik Doğrulama";
+        let kycDesc =
+          accType === "company"
+            ? "Yasal ödeme yapabilmemiz için vergi levhanız gereklidir."
+            : "Ödemelerin banka hesabınıza güvenle yatması ve vergilendirme (stopaj) için yasal zorunluluktur.";
+
+        // EĞER HER ŞEY TAMAM DEĞİLSE BU REHBERİ GÖSTER
+        if (progressPercent < 100) {
           onboardingHTML = `
-            <div style="background:linear-gradient(120deg, #e0e7ff, #f3e8ff); border:1px solid #c7d2fe; padding:20px; border-radius:12px; margin-bottom:25px; position:relative; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                <div style="position:absolute; right:-10px; top:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events:none;">🚀</div>
+            <div style="background:white; border-radius:16px; padding:25px; margin-bottom:25px; box-shadow:0 10px 30px rgba(0,0,0,0.03); border:1px solid #e2e8f0; position:relative; overflow:hidden;">
                 
-                <h3 style="margin:0 0 10px 0; color:#3730a3; font-size:16px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
-                <p style="margin:0 0 15px 0; color:#4338ca; font-size:12px; max-width:85%; line-height:1.5;">
-                    Sisteme harika bir giriş yaptın. Ödeme alabilmen için yasal zorunluluk olan <b>Belge Yükleme</b> işlemini tamamlaman gerekiyor. Aşağıdaki adımları takip et:
-                </p>
+                <div style="position:absolute; top:-20px; right:-20px; font-size:120px; opacity:0.03; transform:rotate(10deg); pointer-events:none;">🚀</div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #fcd34d; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('profile', document.querySelector(\`.p-nav-item[onclick*='profile']\`))">
-                         <div style="font-size:20px; margin-bottom:5px;">🪪</div>
-                         <div style="font-weight:bold; font-size:11px; color:#b45309;">Belge Yükle</div>
-                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Ödeme için zorunlu</div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:15px;">
+                    <div>
+                        <h3 style="margin:0; color:#1e293b; font-size:18px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
+                        <p style="margin:5px 0 0; color:#64748b; font-size:13px;">Kazanmaya başlamak için bu 3 adımı tamamla.</p>
                     </div>
-
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('links', document.querySelector(\`.p-nav-item[onclick*='links']\`))">
-                        <div style="font-size:20px; margin-bottom:5px;">🔗</div>
-                        <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
-                        <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
-                    </div>
-
-                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
-                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
-                         onclick="PartnerApp.loadTab('showcase', document.querySelector(\`.p-nav-item[onclick*='showcase']\`))">
-                         <div style="font-size:20px; margin-bottom:5px;">🔥</div>
-                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
-                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:bold; color:#3b82f6; font-size:14px;">%${progressPercent} Hazır</div>
                     </div>
                 </div>
-            </div>
-            `;
+
+                <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; overflow:hidden; margin-bottom:25px;">
+                    <div style="width:${progressPercent}%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6); transition:width 1s ease;"></div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px;">
+                    
+                    <div onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(8)'))" 
+                         style="cursor:pointer; background:${isKycDone ? "#f0fdf4" : isKycPending ? "#fffbeb" : "#fff"}; border:1px solid ${isKycDone ? "#bbf7d0" : isKycPending ? "#fcd34d" : "#e2e8f0"}; border-radius:12px; padding:15px; position:relative; transition:0.2s; box-shadow:0 2px 5px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                        
+                        ${isKycDone ? '<div style="position:absolute; top:10px; right:10px; color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:bold;">TAMAMLANDI</div>' : ""}
+                        ${isKycPending ? '<div style="position:absolute; top:10px; right:10px; color:#b45309; background:#fef3c7; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:bold;">ONAY BEKLİYOR</div>' : ""}
+                        
+                        <div style="font-size:28px; margin-bottom:10px;">🪪</div>
+                        <div style="font-weight:bold; color:#1e293b; font-size:14px; margin-bottom:5px;">1. ${kycTitle}</div>
+                        <p style="font-size:11px; color:#64748b; line-height:1.4; margin:0;">${kycDesc}</p>
+                        ${!isKycDone && !isKycPending ? '<div style="margin-top:10px; font-size:11px; color:#3b82f6; font-weight:600;">Yüklemek için tıkla &rarr;</div>' : ""}
+                    </div>
+
+                    <div onclick="PartnerApp.loadTab('academy', document.querySelector('.p-nav-item:nth-child(7)'))" 
+                         style="cursor:pointer; background:${isClickDone ? "#f0fdf4" : "#fff"}; border:1px solid ${isClickDone ? "#bbf7d0" : "#e2e8f0"}; border-radius:12px; padding:15px; position:relative; transition:0.2s; box-shadow:0 2px 5px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                        
+                        ${isClickDone ? '<div style="position:absolute; top:10px; right:10px; color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:bold;">BAŞLADIN!</div>' : ""}
+
+                        <div style="font-size:28px; margin-bottom:10px;">🎓</div>
+                        <div style="font-weight:bold; color:#1e293b; font-size:14px; margin-bottom:5px;">2. Akademi & Koleksiyon</div>
+                        <p style="font-size:11px; color:#64748b; line-height:1.4; margin:0;">
+                           Önce <b>Akademi</b> sekmesindeki taktikleri izle. Sonra siteye gidip beğendiğin ürünlerdeki <b>"Koleksiyona Ekle"</b> butonuyla kendi mağazanı oluştur.
+                        </p>
+                        ${!isClickDone ? '<div style="margin-top:10px; font-size:11px; color:#3b82f6; font-weight:600;">Eğitime git &rarr;</div>' : ""}
+                    </div>
+
+                    <div style="background:${isSaleDone ? "#f0fdf4" : "#fff"}; border:1px solid ${isSaleDone ? "#bbf7d0" : "#e2e8f0"}; border-radius:12px; padding:15px; position:relative; opacity:${isSaleDone ? "1" : "0.8"}; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                        
+                        ${isSaleDone ? '<div style="position:absolute; top:10px; right:10px; color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:bold;">TEBRİKLER!</div>' : ""}
+
+                        <div style="font-size:28px; margin-bottom:10px;">💰</div>
+                        <div style="font-weight:bold; color:#1e293b; font-size:14px; margin-bottom:5px;">3. İlk Kazanç</div>
+                        <p style="font-size:11px; color:#64748b; line-height:1.4; margin:0;">
+                            Oluşturduğun linkleri paylaş. İlk satışın geldiğinde burası yeşil olacak ve seviye atlayacaksın!
+                        </p>
+                    </div>
+
+                </div>
+            </div>`;
         }
 
         // 1. Dönüşüm Oranı (CR)
@@ -4666,5 +4713,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v11*/
 })();
