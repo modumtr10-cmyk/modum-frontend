@@ -745,97 +745,44 @@ ${css}
         // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
         let onboardingHTML = "";
 
-        // --- 🚀 AKILLI ONBOARDING (DÜZELTİLMİŞ) ---
+        // Mantık: Hiç tıklama yoksa veya 0.00 TL ciro varsa göster
         if (tClicks === 0 || currentRev === 0) {
-          // 1. Durumları Kontrol Et
-          var step1_Approve = true;
-          var step2_Bank = pData.bank_info && pData.bank_info.length > 5;
-          var step3_Kyc =
-            pData.kycStatus === "verified" || pData.kycStatus === "pending";
-          var step4_Coll =
-            localStorage.getItem("mdm_coll_tutorial_seen") === "true" ||
-            tClicks > 0;
-          var step5_Click = tClicks > 0;
-
-          // 2. İlerleme Puanı Hesapla (DEĞİŞKEN ADI DÜZELTİLDİ: setupProgress)
-          var setupProgress = 20; // Başlangıç
-          if (step2_Bank) setupProgress += 20;
-          if (step3_Kyc) setupProgress += 20;
-          if (step4_Coll) setupProgress += 20;
-          if (step5_Click) setupProgress += 20;
-
-          // Renk ve Mesaj Ayarları
-          var setupColor = setupProgress === 100 ? "#10b981" : "#3b82f6";
-          var welcomeMsg =
-            setupProgress === 100
-              ? "🎉 Harikasın! Artık tam donanımlı bir partnersin."
-              : "👋 Hoş geldin! Tam kazanmaya başlamak için şu adımları tamamla:";
-
-          // 3. HTML Oluştur
           onboardingHTML = `
-            <div style="background:white; border:1px solid #e2e8f0; padding:20px; border-radius:16px; margin-bottom:25px; box-shadow:0 10px 30px rgba(0,0,0,0.03); position:relative; overflow:hidden;">
+            <div style="background:linear-gradient(120deg, #e0e7ff, #f3e8ff); border:1px solid #c7d2fe; padding:20px; border-radius:12px; margin-bottom:25px; position:relative; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                <div style="position:absolute; right:-10px; top:-20px; font-size:100px; opacity:0.1; transform:rotate(15deg); pointer-events:none;">🚀</div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <div>
-                        <h3 style="margin:0; color:#1e293b; font-size:16px;">${welcomeMsg}</h3>
-                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Kurulum: <b>%${setupProgress} Tamamlandı</b></div>
+                <h3 style="margin:0 0 10px 0; color:#3730a3; font-size:16px;">👋 Aramıza Hoş Geldin, ${pData.name || "Ortak"}!</h3>
+                <p style="margin:0 0 15px 0; color:#4338ca; font-size:12px; max-width:85%; line-height:1.5;">
+                    Sisteme harika bir giriş yaptın. Ödeme alabilmen için yasal zorunluluk olan <b>Belge Yükleme</b> işlemini tamamlaman gerekiyor. Aşağıdaki adımları takip et:
+                </p>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #fcd34d; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('profile', document.querySelector(\`.p-nav-item[onclick*='profile']\`))">
+                         <div style="font-size:20px; margin-bottom:5px;">🪪</div>
+                         <div style="font-weight:bold; font-size:11px; color:#b45309;">Belge Yükle</div>
+                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Ödeme için zorunlu</div>
                     </div>
-                    <div style="font-size:24px;">${setupProgress === 100 ? "🏆" : "🚀"}</div>
+
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('links', document.querySelector(\`.p-nav-item[onclick*='links']\`))">
+                        <div style="font-size:20px; margin-bottom:5px;">🔗</div>
+                        <div style="font-weight:bold; font-size:11px; color:#3730a3;">Link Oluştur</div>
+                        <div style="font-size:9px; color:#6b7280; margin-top:2px;">İlk linkini paylaş</div>
+                    </div>
+
+                    <div style="background:white; padding:12px; border-radius:8px; text-align:center; cursor:pointer; border:1px solid #eef2ff; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);"
+                         onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"
+                         onclick="PartnerApp.loadTab('showcase', document.querySelector(\`.p-nav-item[onclick*='showcase']\`))">
+                         <div style="font-size:20px; margin-bottom:5px;">🔥</div>
+                         <div style="font-weight:bold; font-size:11px; color:#3730a3;">Vitrini Gez</div>
+                         <div style="font-size:9px; color:#6b7280; margin-top:2px;">Hazır ürünleri seç</div>
+                    </div>
                 </div>
-
-                <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; margin-bottom:20px; overflow:hidden;">
-                    <div style="width:${setupProgress}%; height:100%; background:${setupColor}; transition:width 1s ease;"></div>
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    
-                    <div style="display:flex; align-items:center; gap:10px; opacity:0.5;">
-                        <div style="color:#10b981; font-size:18px;"><i class="fas fa-check-circle"></i></div>
-                        <div style="flex:1; text-decoration:line-through; color:#64748b; font-size:13px;">Partner Başvurun Onaylandı</div>
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="color:${step2_Bank ? "#10b981" : "#cbd5e1"}; font-size:18px;">
-                            ${step2_Bank ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
-                        </div>
-                        <div style="flex:1; font-size:13px; color:${step2_Bank ? "#64748b" : "#1e293b"}; ${step2_Bank ? "text-decoration:line-through;" : "font-weight:bold;"}">
-                            Ödeme Bilgilerini Gir
-                        </div>
-                        ${!step2_Bank ? `<button onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#3b82f6; color:white; border:none;">GİR</button>` : ""}
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="color:${step3_Kyc ? "#10b981" : "#cbd5e1"}; font-size:18px;">
-                            ${step3_Kyc ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
-                        </div>
-                        <div style="flex:1; font-size:13px; color:${step3_Kyc ? "#64748b" : "#1e293b"}; ${step3_Kyc ? "text-decoration:line-through;" : "font-weight:bold;"}">
-                            Yasal Belgeleri Yükle (KYC)
-                        </div>
-                        ${!step3_Kyc ? `<button onclick="PartnerApp.loadTab('profile', document.querySelector('.p-nav-item:nth-child(2)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#f59e0b; color:white; border:none;">YÜKLE</button>` : ""}
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="color:${step4_Coll ? "#10b981" : "#cbd5e1"}; font-size:18px;">
-                            ${step4_Coll ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
-                        </div>
-                        <div style="flex:1; font-size:13px; color:${step4_Coll ? "#64748b" : "#1e293b"}; ${step4_Coll ? "text-decoration:line-through;" : "font-weight:bold;"}">
-                            İlk Koleksiyonunu Oluştur
-                        </div>
-                        ${!step4_Coll ? `<button onclick="PartnerApp.showCollectionTutorial()" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#8b5cf6; color:white; border:none;">NASIL?</button>` : ""}
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="color:${step5_Click ? "#10b981" : "#cbd5e1"}; font-size:18px;">
-                            ${step5_Click ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
-                        </div>
-                        <div style="flex:1; font-size:13px; color:${step5_Click ? "#64748b" : "#1e293b"}; ${step5_Click ? "text-decoration:line-through;" : "font-weight:bold;"}">
-                            İlk Tıklamanı Al (Link Paylaş)
-                        </div>
-                        ${!step5_Click ? `<button onclick="PartnerApp.loadTab('showcase', document.querySelector('.p-nav-item:nth-child(4)'))" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#1e293b; color:white; border:none;">LİNK AL</button>` : ""}
-                    </div>
-
-                </div>
-            </div>`;
+            </div>
+            `;
         }
 
         // 1. Dönüşüm Oranı (CR)
@@ -2934,7 +2881,7 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
-    }, // --- 👤 PROFİL & KYC YÖNETİMİ (DÜZELTİLMİŞ & FİREBASE UYUMLU) ---
+    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON - BANKA & SÜRE KONTROLLÜ) ---
     renderProfile: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil yükleniyor...</div>';
@@ -2956,7 +2903,8 @@ ${css}
 
       var pData = window.PartnerData || {};
 
-      // --- DURUM ANALİZİ ---
+      // KYC ve Şirket Durumu
+      let kycStatus = pData.kycStatus || "none";
       let isCompany = pData.accountType === "company";
       let accountLabel = isCompany ? "🏢 KURUMSAL HESAP" : "👤 BİREYSEL HESAP";
 
@@ -2967,13 +2915,12 @@ ${css}
       let isLocked = diffDays < 30;
       let remainingDays = Math.ceil(30 - diffDays);
 
-      // --- VERİLERİ AYRIŞTIRMA (PARSING) ---
+      // Değerler
       let valPhone = pData.phone || "";
-
-      // 1. BANKA BİLGİSİ AYRIŞTIRMA
-      // Veritabanında bazen sadece IBAN, bazen "Banka - IBAN" olabilir.
       let fullBankInfo = pData.bank_info || "";
-      let selectedBank = "Garanti"; // Varsayılan
+
+      // Banka Adı ve IBAN Ayrıştırma (Örn: "Garanti - TR..." ise ayır)
+      let selectedBank = "Garanti";
       let valIban = fullBankInfo;
 
       if (fullBankInfo.includes(" - ")) {
@@ -2982,33 +2929,18 @@ ${css}
         valIban = parts[1];
       }
 
-      // 2. VERGİ BİLGİSİ AYRIŞTIRMA (Firebase 'taxInfo' alanı)
-      // Format: "Vergi Dairesi - Vergi No" olarak kaydedeceğiz.
-      let valTckn = pData.tckn || "";
-      let valTaxOffice = "";
-      let valTaxNo = "";
+      let valTax = isCompany ? pData.taxInfo || "" : pData.tckn || "";
 
-      if (isCompany && pData.taxInfo) {
-        // Eğer tire ile ayrılmışsa böl
-        if (pData.taxInfo.includes(" - ")) {
-          let tParts = pData.taxInfo.split(" - ");
-          valTaxOffice = tParts[0]; // İlk kısım Daire
-          valTaxNo = tParts[1]; // İkinci kısım No
-        } else {
-          // Eğer tire yoksa (eski veri), tamamını Daire adına yazalım ki kaybolmasın
-          valTaxOffice = pData.taxInfo;
-        }
-      }
-
-      // Kilit Mesajı ve Input Durumu
+      // Kilit Mesajı
       let lockMsg = isLocked
         ? `<div style="background:#fff7ed; color:#c2410c; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #fdba74;">
                  <i class="fas fa-lock"></i> Bilgilerinizi güvenlik nedeniyle <b>${remainingDays} gün</b> sonra güncelleyebilirsiniz.
-           </div>`
+               </div>`
         : `<div style="background:#f0fdf4; color:#15803d; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #bbf7d0;">
-                 <i class="fas fa-lock-open"></i> Bilgileriniz güncellenebilir durumda. (Değişiklik yaparsanız 30 gün kilitlenir)
-           </div>`;
+                 <i class="fas fa-lock-open"></i> Bilgileriniz güncellenebilir durumda.
+               </div>`;
 
+      // Input Durumu
       let disabledAttr = isLocked
         ? 'disabled style="background:#f3f4f6; color:#9ca3af;"'
         : "";
@@ -3050,20 +2982,6 @@ ${css}
                     
                     ${lockMsg}
 
-                    <div class="inp-row" style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
-                         <label class="inp-label" style="margin-bottom:8px;">HESAP TÜRÜ</label>
-                         <div style="display:flex; gap:15px;">
-                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:12px; font-weight:bold;">
-                                <input type="radio" name="editAccType" value="individual" ${!isCompany ? "checked" : ""} ${disabledAttr} onchange="PartnerApp.toggleProfileTaxInput(false)"> 
-                                Bireysel
-                            </label>
-                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:12px; font-weight:bold;">
-                                <input type="radio" name="editAccType" value="company" ${isCompany ? "checked" : ""} ${disabledAttr} onchange="PartnerApp.toggleProfileTaxInput(true)"> 
-                                Kurumsal (Şirket)
-                            </label>
-                         </div>
-                    </div>
-
                     <div class="inp-row">
                         <label class="inp-label">AD SOYAD / ÜNVAN</label>
                         <input type="text" value="${pData.name}" disabled class="inp-field" style="background:#f1f5f9;">
@@ -3079,24 +2997,9 @@ ${css}
                         <input type="text" id="edit-phone" value="${valPhone}" placeholder="0555..." class="inp-field" ${disabledAttr}>
                     </div>
 
-                    <div id="edit-individual-inputs" style="display:${isCompany ? "none" : "block"};">
-                         <div class="inp-row">
-                            <label class="inp-label">TC KİMLİK NO (11 Hane)</label>
-                            <input type="text" id="edit-tckn" value="${valTckn}" maxlength="11" placeholder="TCKN Giriniz" class="inp-field" ${disabledAttr}>
-                        </div>
-                    </div>
-
-                    <div id="edit-company-inputs" style="display:${isCompany ? "block" : "none"};">
-                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                             <div class="inp-row">
-                                <label class="inp-label">VERGİ DAİRESİ</label>
-                                <input type="text" id="edit-tax-office" value="${valTaxOffice}" placeholder="Daire Adı" class="inp-field" ${disabledAttr}>
-                            </div>
-                            <div class="inp-row">
-                                <label class="inp-label">VERGİ NO</label>
-                                <input type="text" id="edit-tax-no" value="${valTaxNo}" placeholder="Vergi No" class="inp-field" ${disabledAttr}>
-                            </div>
-                         </div>
+                     <div class="inp-row">
+                        <label class="inp-label">${isCompany ? "VERGİ DAİRESİ / NO" : "TC KİMLİK NO"}</label>
+                        <input type="text" id="edit-tax" value="${valTax}" placeholder="${isCompany ? "Daire / No" : "11 Haneli TCKN"}" class="inp-field" ${disabledAttr}>
                     </div>
 
                     <div class="inp-row">
@@ -3122,11 +3025,10 @@ ${css}
 
                 <div class="p-card" style="padding:20px;">
                     <div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
-                        <h4 style="margin:0;">Belge Yükleme (KYC)</h4>
+                        <h4 style="margin:0;">Belge Yükleme</h4>
                     </div>
                     <p style="font-size:11px; color:#666; margin-bottom:15px;">
-                        <i id="kyc-hint-icon" class="fas fa-info-circle"></i>
-                        <span id="kyc-hint-text">${isCompany ? "Kurumsal hesaplar için Vergi Levhası zorunludur." : "Ödeme alabilmek için Kimlik Ön/Arka yüzünü yüklemelisiniz."}</span>
+                        ${isCompany ? "Kurumsal hesaplar için Vergi Levhası zorunludur." : "Ödeme alabilmek için Kimlik Ön/Arka yüzünü yüklemelisiniz."}
                     </p>
                     
                     ${this.renderKycSection(pData, isCompany)} 
@@ -3180,56 +3082,31 @@ ${css}
         `;
     },
 
-    // --- PROFİL KAYDETME FONKSİYONU (DÜZELTİLMİŞ & BİRLEŞTİRMELİ) ---
+    // --- PROFİL KAYDETME FONKSİYONU (GÜNCELLENMİŞ) ---
     saveProfile: async function () {
       const btn = event.target;
       const oldText = btn.innerHTML;
 
-      // 1. Verileri Al
-      const accType = document.querySelector(
-        'input[name="editAccType"]:checked',
-      ).value;
+      // 1. Validasyon
       const phone = document.getElementById("edit-phone").value;
+      const tax = document.getElementById("edit-tax").value;
       const bankName = document.getElementById("edit-bank-name").value;
       const iban = document.getElementById("edit-iban").value;
 
-      // 2. Temel Validasyon
       if (!phone || phone.length < 10)
-        return alert("Geçerli bir telefon numarası giriniz.");
-      if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 15)
-        return alert("Geçerli bir TR IBAN giriniz.");
-
-      let tcknVal = "";
-      let taxInfoVal = "";
-
-      // 3. Hesap Türüne Göre Validasyon ve Birleştirme
-      if (accType === "individual") {
-        tcknVal = document.getElementById("edit-tckn").value;
-        if (!tcknVal || tcknVal.length !== 11)
-          return alert("11 haneli TC Kimlik No giriniz.");
-      } else {
-        // Kurumsal ise Daire ve No'yu alıp birleştir
-        const taxOffice = document.getElementById("edit-tax-office").value;
-        const taxNo = document.getElementById("edit-tax-no").value;
-
-        if (!taxOffice || !taxNo)
-          return alert("Vergi Dairesi ve Vergi Numarası zorunludur.");
-
-        // 🔥 KRİTİK: Birleştirip gönderiyoruz (Firestore yapısına uygun)
-        taxInfoVal = `${taxOffice} - ${taxNo}`;
-      }
-
-      if (
-        !confirm(
-          "⚠️ DİKKAT: Bilgilerinizi kaydettikten sonra güvenlik nedeniyle profiliniz 30 gün boyunca düzenlemeye kapatılacaktır. Onaylıyor musunuz?",
-        )
-      )
-        return;
+        return alert("Lütfen geçerli bir telefon numarası giriniz.");
+      if (!tax || tax.length < 5)
+        return alert("Lütfen TCKN veya Vergi Numarasını giriniz.");
+      if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 10)
+        return alert("Lütfen geçerli bir TR IBAN giriniz.");
 
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
       btn.disabled = true;
 
-      // Banka bilgisini birleştir (Ad - IBAN)
+      var pData = window.PartnerData || {};
+      var isCompany = pData.accountType === "company";
+
+      // Banka bilgisini birleştir
       const fullBankInfo = `${bankName} - ${iban.toUpperCase()}`;
 
       const payload = {
@@ -3237,9 +3114,8 @@ ${css}
         email: detectUser(),
         phone: phone,
         bankInfo: fullBankInfo,
-        accountType: accType,
-        tckn: tcknVal,
-        taxInfo: taxInfoVal, // "Daire - No" şeklinde gidecek
+        tckn: !isCompany ? tax : null,
+        taxInfo: isCompany ? tax : null,
       };
 
       try {
@@ -3342,56 +3218,6 @@ ${css}
         btn.innerText = oldText;
         btn.disabled = false;
       }
-    }, // --- 🎓 KOLEKSİYON EĞİTİM MODALI ---
-    showCollectionTutorial: function () {
-      // Bunu gördüğünü kaydet ki bir daha sormasın (Progress Bar ilerlesin)
-      localStorage.setItem("mdm_coll_tutorial_seen", "true");
-
-      // Mevcut modalı kapatmadan üzerine açabiliriz veya temizleyebiliriz
-      // Şimdilik temiz bir modal açalım
-      let html = `
-        <div id="p-tutorial-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2147483660; display:flex; justify-content:center; align-items:center; padding:20px;">
-            <div style="background:white; width:100%; max-width:400px; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                
-                <div style="background:#8b5cf6; padding:20px; color:white; text-align:center;">
-                    <div style="font-size:40px; margin-bottom:10px;">🛍️</div>
-                    <h3 style="margin:0; font-size:18px;">Mağazanı Nasıl Doldurursun?</h3>
-                </div>
-
-                <div style="padding:25px;">
-                    <div style="display:flex; gap:15px; margin-bottom:20px;">
-                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">1</div>
-                        <div style="font-size:13px; color:#374151; line-height:1.4;">
-                            Sitemizdeki <b>herhangi bir ürüne</b> git. (Tişört, Pantolon vb.)
-                        </div>
-                    </div>
-
-                    <div style="display:flex; gap:15px; margin-bottom:20px;">
-                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">2</div>
-                        <div style="font-size:13px; color:#374151; line-height:1.4;">
-                            Sayfanın en üstünde çıkan siyah <b>Partner Çubuğu</b>'na bak.
-                        </div>
-                    </div>
-
-                    <div style="display:flex; gap:15px; margin-bottom:20px;">
-                        <div style="background:#f3f4f6; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#374151;">3</div>
-                        <div style="font-size:13px; color:#374151; line-height:1.4;">
-                            <span style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">+ Koleksiyona Ekle</span> butonuna bas.
-                        </div>
-                    </div>
-                    
-                    <div style="text-align:center; background:#eff6ff; padding:10px; border-radius:8px; border:1px dashed #3b82f6; font-size:11px; color:#1e40af; margin-bottom:20px;">
-                        Bu ürünler "Mağazam" sekmesine otomatik eklenir ve linkini paylaştığında bu ürünler en üstte görünür.
-                    </div>
-
-                    <button onclick="document.getElementById('p-tutorial-modal').remove(); PartnerApp.loadTab('home');" class="p-btn" style="background:#1e293b; color:white; width:100%;">
-                        Anladım, Teşekkürler 👍
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-      document.body.insertAdjacentHTML("beforeend", html);
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -4840,5 +4666,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v14*/
+  /*sistem güncellendi v10*/
 })();
