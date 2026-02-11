@@ -2934,7 +2934,7 @@ ${css}
           `✅ Link Kopyalandı!\n\nKaynak: ${source.toUpperCase()}\n\nBunu ${source} üzerinde paylaşabilirsin.`,
         );
       });
-    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON - BANKA & SÜRE KONTROLLÜ) ---
+    }, // --- 👤 PROFİL & KYC YÖNETİMİ (AKILLI VERSİYON - FİNAL) ---
     renderProfile: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Profil yükleniyor...</div>';
@@ -2959,7 +2959,6 @@ ${css}
       // KYC ve Şirket Durumu
       let kycStatus = pData.kycStatus || "none";
       let isCompany = pData.accountType === "company";
-      let accountLabel = isCompany ? "🏢 KURUMSAL HESAP" : "👤 BİREYSEL HESAP";
 
       // 30 Gün Kilidi Kontrolü
       let lastUpdate = pData.lastProfileUpdate || 0;
@@ -2972,7 +2971,7 @@ ${css}
       let valPhone = pData.phone || "";
       let fullBankInfo = pData.bank_info || "";
 
-      // Banka Adı ve IBAN Ayrıştırma (Örn: "Garanti - TR..." ise ayır)
+      // Banka Adı ve IBAN Ayrıştırma
       let selectedBank = "Garanti";
       let valIban = fullBankInfo;
 
@@ -2982,18 +2981,30 @@ ${css}
         valIban = parts[1];
       }
 
-      let valTax = isCompany ? pData.taxInfo || "" : pData.tckn || "";
+      // Vergi Bilgilerini Ayrıştır (Vergi Dairesi / No)
+      let valTckn = pData.tckn || "";
+      let valTaxOffice = "";
+      let valTaxNo = "";
 
-      // Kilit Mesajı
+      if (isCompany && pData.taxInfo) {
+        if (pData.taxInfo.includes(" / ")) {
+          let tParts = pData.taxInfo.split(" / ");
+          valTaxOffice = tParts[0];
+          valTaxNo = tParts[1];
+        } else {
+          valTaxNo = pData.taxInfo;
+        }
+      }
+
+      // Kilit Mesajı ve Input Durumu
       let lockMsg = isLocked
         ? `<div style="background:#fff7ed; color:#c2410c; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #fdba74;">
                  <i class="fas fa-lock"></i> Bilgilerinizi güvenlik nedeniyle <b>${remainingDays} gün</b> sonra güncelleyebilirsiniz.
-               </div>`
+           </div>`
         : `<div style="background:#f0fdf4; color:#15803d; padding:10px; font-size:11px; border-radius:6px; margin-bottom:15px; border:1px solid #bbf7d0;">
-                 <i class="fas fa-lock-open"></i> Bilgileriniz güncellenebilir durumda.
-               </div>`;
+                 <i class="fas fa-lock-open"></i> Bilgileriniz güncellenebilir durumda. (Değişiklik yaparsanız 30 gün kilitlenir)
+           </div>`;
 
-      // Input Durumu
       let disabledAttr = isLocked
         ? 'disabled style="background:#f3f4f6; color:#9ca3af;"'
         : "";
@@ -3022,11 +3033,9 @@ ${css}
       container.innerHTML =
         style +
         `
-            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">${accountLabel}</h3>
-                    <p style="margin:0; font-size:12px; color:#64748b;">Kişisel ve yasal bilgileriniz.</p>
-                </div>
+            <div style="background:#fff; border-left:4px solid #3b82f6; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                <h3 style="margin:0; font-size:16px; color:#1e293b;">Profil Ayarları</h3>
+                <p style="margin:0; font-size:12px; color:#64748b;">Kişisel, yasal ve ödeme bilgilerinizi buradan yönetebilirsiniz.</p>
             </div>
 
             <div class="profile-grid">
@@ -3034,6 +3043,20 @@ ${css}
                     <h4 style="margin:0 0 15px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Kimlik & İletişim</h4>
                     
                     ${lockMsg}
+
+                    <div class="inp-row" style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                         <label class="inp-label" style="margin-bottom:8px;">HESAP TÜRÜ</label>
+                         <div style="display:flex; gap:15px;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:12px; font-weight:bold;">
+                                <input type="radio" name="editAccType" value="individual" ${!isCompany ? "checked" : ""} ${disabledAttr} onchange="PartnerApp.toggleProfileTaxInput(false)"> 
+                                Bireysel
+                            </label>
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size:12px; font-weight:bold;">
+                                <input type="radio" name="editAccType" value="company" ${isCompany ? "checked" : ""} ${disabledAttr} onchange="PartnerApp.toggleProfileTaxInput(true)"> 
+                                Kurumsal (Şirket)
+                            </label>
+                         </div>
+                    </div>
 
                     <div class="inp-row">
                         <label class="inp-label">AD SOYAD / ÜNVAN</label>
@@ -3050,9 +3073,24 @@ ${css}
                         <input type="text" id="edit-phone" value="${valPhone}" placeholder="0555..." class="inp-field" ${disabledAttr}>
                     </div>
 
-                     <div class="inp-row">
-                        <label class="inp-label">${isCompany ? "VERGİ DAİRESİ / NO" : "TC KİMLİK NO"}</label>
-                        <input type="text" id="edit-tax" value="${valTax}" placeholder="${isCompany ? "Daire / No" : "11 Haneli TCKN"}" class="inp-field" ${disabledAttr}>
+                    <div id="edit-individual-inputs" style="display:${isCompany ? "none" : "block"};">
+                         <div class="inp-row">
+                            <label class="inp-label">TC KİMLİK NO (11 Hane)</label>
+                            <input type="text" id="edit-tckn" value="${valTckn}" maxlength="11" placeholder="TCKN Giriniz" class="inp-field" ${disabledAttr}>
+                        </div>
+                    </div>
+
+                    <div id="edit-company-inputs" style="display:${isCompany ? "block" : "none"};">
+                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                             <div class="inp-row">
+                                <label class="inp-label">VERGİ DAİRESİ</label>
+                                <input type="text" id="edit-tax-office" value="${valTaxOffice}" placeholder="Daire Adı" class="inp-field" ${disabledAttr}>
+                            </div>
+                            <div class="inp-row">
+                                <label class="inp-label">VERGİ NO</label>
+                                <input type="text" id="edit-tax-no" value="${valTaxNo}" placeholder="Vergi No" class="inp-field" ${disabledAttr}>
+                            </div>
+                         </div>
                     </div>
 
                     <div class="inp-row">
@@ -3078,10 +3116,11 @@ ${css}
 
                 <div class="p-card" style="padding:20px;">
                     <div style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
-                        <h4 style="margin:0;">Belge Yükleme</h4>
+                        <h4 style="margin:0;">Belge Yükleme (KYC)</h4>
                     </div>
                     <p style="font-size:11px; color:#666; margin-bottom:15px;">
-                        ${isCompany ? "Kurumsal hesaplar için Vergi Levhası zorunludur." : "Ödeme alabilmek için Kimlik Ön/Arka yüzünü yüklemelisiniz."}
+                        <i id="kyc-hint-icon" class="fas fa-info-circle"></i>
+                        <span id="kyc-hint-text">${isCompany ? "Kurumsal hesaplar için Vergi Levhası zorunludur." : "Ödeme alabilmek için Kimlik Ön/Arka yüzünü yüklemelisiniz."}</span>
                     </p>
                     
                     ${this.renderKycSection(pData, isCompany)} 
@@ -3135,29 +3174,49 @@ ${css}
         `;
     },
 
-    // --- PROFİL KAYDETME FONKSİYONU (GÜNCELLENMİŞ) ---
+    // --- PROFİL KAYDETME FONKSİYONU (YENİLENMİŞ) ---
     saveProfile: async function () {
       const btn = event.target;
       const oldText = btn.innerHTML;
 
-      // 1. Validasyon
+      // 1. Verileri Al
+      const accType = document.querySelector(
+        'input[name="editAccType"]:checked',
+      ).value;
       const phone = document.getElementById("edit-phone").value;
-      const tax = document.getElementById("edit-tax").value;
       const bankName = document.getElementById("edit-bank-name").value;
       const iban = document.getElementById("edit-iban").value;
 
+      // 2. Validasyon
       if (!phone || phone.length < 10)
-        return alert("Lütfen geçerli bir telefon numarası giriniz.");
-      if (!tax || tax.length < 5)
-        return alert("Lütfen TCKN veya Vergi Numarasını giriniz.");
-      if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 10)
-        return alert("Lütfen geçerli bir TR IBAN giriniz.");
+        return alert("Geçerli bir telefon numarası giriniz.");
+      if (!iban || !iban.toUpperCase().startsWith("TR") || iban.length < 15)
+        return alert("Geçerli bir TR IBAN giriniz.");
+
+      let tcknVal = "";
+      let taxInfoVal = "";
+
+      if (accType === "individual") {
+        tcknVal = document.getElementById("edit-tckn").value;
+        if (!tcknVal || tcknVal.length !== 11)
+          return alert("11 haneli TC Kimlik No giriniz.");
+      } else {
+        const taxOffice = document.getElementById("edit-tax-office").value;
+        const taxNo = document.getElementById("edit-tax-no").value;
+        if (!taxOffice || !taxNo)
+          return alert("Vergi Dairesi ve Vergi Numarası zorunludur.");
+        taxInfoVal = `${taxOffice} / ${taxNo}`;
+      }
+
+      if (
+        !confirm(
+          "⚠️ DİKKAT: Bilgilerinizi kaydettikten sonra güvenlik nedeniyle profiliniz 30 gün boyunca düzenlemeye kapatılacaktır. Onaylıyor musunuz?",
+        )
+      )
+        return;
 
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
       btn.disabled = true;
-
-      var pData = window.PartnerData || {};
-      var isCompany = pData.accountType === "company";
 
       // Banka bilgisini birleştir
       const fullBankInfo = `${bankName} - ${iban.toUpperCase()}`;
@@ -3167,8 +3226,9 @@ ${css}
         email: detectUser(),
         phone: phone,
         bankInfo: fullBankInfo,
-        tckn: !isCompany ? tax : null,
-        taxInfo: isCompany ? tax : null,
+        accountType: accType, // 🔥 YENİ
+        tckn: tcknVal,
+        taxInfo: taxInfoVal,
       };
 
       try {
@@ -4769,5 +4829,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v12*/
+  /*sistem güncellendi v13*/
 })();
