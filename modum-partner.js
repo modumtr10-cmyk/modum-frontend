@@ -745,30 +745,29 @@ ${css}
         // Eğer henüz hiç tıklama almamışsa (Yeni Ortak) bu rehberi göster
         let onboardingHTML = "";
 
-        // --- 🚀 AKILLI ONBOARDING (TRENDYOL MODELİ - GAMIFIED) ---
+        // --- 🚀 AKILLI ONBOARDING (DÜZELTİLMİŞ) ---
         if (tClicks === 0 || currentRev === 0) {
           // 1. Durumları Kontrol Et
-          var step1_Approve = true; // Zaten içerideyse onaylıdır
+          var step1_Approve = true;
           var step2_Bank = pData.bank_info && pData.bank_info.length > 5;
           var step3_Kyc =
             pData.kycStatus === "verified" || pData.kycStatus === "pending";
-          // Koleksiyon oluşturdu mu? (LocalStorage'dan kontrol edelim veya tıklama varsa var sayalım)
           var step4_Coll =
             localStorage.getItem("mdm_coll_tutorial_seen") === "true" ||
             tClicks > 0;
           var step5_Click = tClicks > 0;
 
-          // 2. İlerleme Puanı Hesapla (Her adım 20 Puan)
-          var progress = 20; // Başlangıç (Onay)
-          if (step2_Bank) progress += 20;
-          if (step3_Kyc) progress += 20;
-          if (step4_Coll) progress += 20;
-          if (step5_Click) progress += 20;
+          // 2. İlerleme Puanı Hesapla (DEĞİŞKEN ADI DÜZELTİLDİ: setupProgress)
+          var setupProgress = 20; // Başlangıç
+          if (step2_Bank) setupProgress += 20;
+          if (step3_Kyc) setupProgress += 20;
+          if (step4_Coll) setupProgress += 20;
+          if (step5_Click) setupProgress += 20;
 
           // Renk ve Mesaj Ayarları
-          var progColor = progress === 100 ? "#10b981" : "#3b82f6";
+          var setupColor = setupProgress === 100 ? "#10b981" : "#3b82f6";
           var welcomeMsg =
-            progress === 100
+            setupProgress === 100
               ? "🎉 Harikasın! Artık tam donanımlı bir partnersin."
               : "👋 Hoş geldin! Tam kazanmaya başlamak için şu adımları tamamla:";
 
@@ -779,13 +778,13 @@ ${css}
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <div>
                         <h3 style="margin:0; color:#1e293b; font-size:16px;">${welcomeMsg}</h3>
-                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Kurulum: <b>%${progress} Tamamlandı</b></div>
+                        <div style="font-size:12px; color:#64748b; margin-top:5px;">Kurulum: <b>%${setupProgress} Tamamlandı</b></div>
                     </div>
-                    <div style="font-size:24px;">${progress === 100 ? "🏆" : "🚀"}</div>
+                    <div style="font-size:24px;">${setupProgress === 100 ? "🏆" : "🚀"}</div>
                 </div>
 
                 <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; margin-bottom:20px; overflow:hidden;">
-                    <div style="width:${progress}%; height:100%; background:${progColor}; transition:width 1s ease;"></div>
+                    <div style="width:${setupProgress}%; height:100%; background:${setupColor}; transition:width 1s ease;"></div>
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:10px;">
@@ -822,7 +821,7 @@ ${css}
                         <div style="flex:1; font-size:13px; color:${step4_Coll ? "#64748b" : "#1e293b"}; ${step4_Coll ? "text-decoration:line-through;" : "font-weight:bold;"}">
                             İlk Koleksiyonunu Oluştur
                         </div>
-                        ${!step4_Coll ? `<button onclick="PartnerApp.showCollectionTutorial()" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#8b5cf6; color:white; border:none;">NASIL YAPILIR?</button>` : ""}
+                        ${!step4_Coll ? `<button onclick="PartnerApp.showCollectionTutorial()" class="p-btn" style="width:auto; padding:5px 15px; font-size:11px; background:#8b5cf6; color:white; border:none;">NASIL?</button>` : ""}
                     </div>
 
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -4770,5 +4769,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v11*/
+  /*sistem güncellendi v12*/
 })();
