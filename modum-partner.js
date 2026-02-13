@@ -981,6 +981,101 @@ ${css}
         }
         // -----------------------------------------------------
 
+        // --- 🔥 YENİ: CANLI AKIŞ BANDI (TICKER) ---
+        // Backend'den veriyi çek (Bunu renderHome'un başındaki fetch kısmına da ekleyebilirsin ama hızlıca buraya gömüyoruz)
+        let liveFeedHtml = "";
+        try {
+          const feedRes = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ islem: "get_live_feed", email: email }),
+          }).then((r) => r.json());
+
+          if (feedRes.success && feedRes.feed.length > 0) {
+            let items = feedRes.feed
+              .map(
+                (f) => `
+                        <div class="ticker-item">
+                            <span class="t-icon">${f.icon}</span>
+                            <span class="t-text">${f.text}</span>
+                            <span class="t-time">${f.time}</span>
+                        </div>
+                    `,
+              )
+              .join("");
+
+            // İçeriği iki kere çoğalt ki sonsuz döngü kesintisiz olsun
+            items += items;
+
+            liveFeedHtml = `
+                    <style>
+                        .ticker-wrap {
+                            width: 100%;
+                            overflow: hidden;
+                            background: #fff;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                            height: 40px;
+                            position: relative;
+                            display: flex;
+                            align-items: center;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                        }
+                        .ticker-title {
+                            background: #3b82f6;
+                            color: white;
+                            font-size: 10px;
+                            font-weight: bold;
+                            padding: 0 10px;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            z-index: 2;
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            border-radius: 7px 0 0 7px;
+                            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                        }
+                        .ticker-content {
+                            display: flex;
+                            animation: ticker-scroll 20s linear infinite;
+                            padding-left: 100px; /* Başlık kadar boşluk */
+                        }
+                        .ticker-item {
+                            display: flex;
+                            align-items: center;
+                            white-space: nowrap;
+                            padding-right: 30px;
+                            font-size: 12px;
+                            color: #334155;
+                        }
+                        .t-icon { margin-right: 5px; font-size: 14px; }
+                        .t-text { font-weight: 500; margin-right: 5px; }
+                        .t-time { font-size: 10px; color: #94a3b8; background: #f1f5f9; padding: 2px 5px; border-radius: 4px; }
+                        
+                        @keyframes ticker-scroll {
+                            0% { transform: translateX(0); }
+                            100% { transform: translateX(-50%); }
+                        }
+                        
+                        /* Hoverda dursun */
+                        .ticker-wrap:hover .ticker-content { animation-play-state: paused; }
+                    </style>
+                    <div class="ticker-wrap">
+                        <div class="ticker-title"><i class="fas fa-bolt" style="margin-right:5px;"></i> CANLI</div>
+                        <div class="ticker-content">
+                            ${items}
+                        </div>
+                    </div>
+                    `;
+          }
+        } catch (err) {
+          console.log("Feed error", err);
+        }
+        // -------------------------------------------
+
         // --- HTML ÇIKTISI ---
         container.innerHTML = `
           ${onboardingHTML} <div class="p-card" style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; border:none; padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
@@ -1007,7 +1102,7 @@ ${css}
 </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+          ${liveFeedHtml}<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
               <div class="p-card" style="padding:15px; text-align:center; margin:0; box-shadow:none; border:1px solid #e2e8f0;">
                   <div class="p-stat-val" style="font-size:18px; color:#334155;">${tClicks}</div>
                   <div class="p-stat-lbl" style="font-size:10px;">TIK</div>
@@ -4670,5 +4765,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v4*/
+  /*sistem güncellendi v5*/
 })();
