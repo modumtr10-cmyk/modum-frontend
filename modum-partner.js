@@ -127,10 +127,10 @@
       itemsHtml += `
             <div style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:1px solid #f1f5f9; display:flex; flex-direction:column; transition:transform 0.2s;">
                 <a href="${p.url}?ref=${refCode}" target="_blank" style="text-decoration:none; color:inherit; flex:1;">
-                    <div style="position:relative; padding-top:100%; overflow:hidden;">
-                        <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
-                        ${p.stock < 5 ? '<span style="position:absolute; bottom:5px; left:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px;">Son Ürünler</span>' : ""}
-                    </div>
+                    <div style="position:relative; padding-top:150%; overflow:hidden; background:#fff;"> 
+    <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:5px;">
+    ${p.stock < 5 ? '<span style="position:absolute; bottom:5px; left:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px;">Son Ürünler</span>' : ""}
+</div>
                     <div style="padding:10px 10px 0;">
                         <div style="font-size:12px; color:#334155; margin-bottom:5px; height:32px; overflow:hidden; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
                         
@@ -4564,57 +4564,6 @@ ${css}
 
     doc.save(`Modum_Makbuz_${transaction.date}.pdf`);
   };
-  // ============================================================
-  // 🛍️ PARTNER MAĞAZA SAYFASI (LANDING PAGE MODU)
-  // ============================================================
-  async function initPartnerStorePage() {
-    // 1. Doğru sayfada mıyız kontrol et
-    // Faprika'da oluşturduğun sayfanın linki içinde "partner-magaza" geçiyor mu?
-    if (!window.location.href.includes("partner-magaza")) return;
-
-    console.log("🏪 Partner Mağaza Sayfası Tespit Edildi!");
-
-    // 2. Kök elementi bul
-    const root = document.getElementById("mdm-partner-store-root");
-    if (!root) return; // Sayfada bizim div yoksa dur.
-
-    // 3. URL'den Ref Kodunu Al (?ref=...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get("ref");
-
-    if (!refCode) {
-      root.innerHTML = `<div style="text-align:center; padding:50px; color:#666;"><h3>⚠️ Mağaza Bulunamadı</h3><p>Lütfen geçerli bir partner linki ile geliniz.</p><a href="/" class="mdm-btn btn-store" style="display:inline-block; margin-top:10px;">Ana Sayfaya Dön</a></div>`;
-      return;
-    }
-
-    // 4. Verileri Çek (Public Collection + Partner Bilgisi)
-    try {
-      // API'den partnerin koleksiyonunu ve bilgilerini iste
-      // (API tarafında get_public_collection zaten partner adını dönüyor,
-      //  buna profil fotosu ve bio da eklersen harika olur.)
-      const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          islem: "get_public_collection",
-          refCode: refCode,
-        }),
-      }).then((r) => r.json());
-
-      if (res.success) {
-        // Referans kodunu tarayıcıya kaydet (Satış olursa bu kişiye yazsın)
-        localStorage.setItem("mdm_affiliate_ref", refCode);
-
-        // Sayfayı Çiz
-        renderFullPageStore(root, res, refCode);
-      } else {
-        root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>😔 Üzgünüz</h3><p>${res.message}</p></div>`;
-      }
-    } catch (e) {
-      console.error(e);
-      root.innerHTML = `<div style="text-align:center; padding:50px;"><h3>Hata</h3><p>Bağlantı sorunu oluştu.</p></div>`;
-    }
-  }
 
   // --- TAM SAYFA TASARIM ÇİZİCİ (TRENDYOL STİLİ) ---
   function renderFullPageStore(container, data, refCode) {
@@ -4705,13 +4654,6 @@ ${css}
     container.innerHTML = html;
   }
 
-  // Sayfa yüklendiğinde veya DOM değiştiğinde çalıştır
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPartnerStorePage);
-  } else {
-    initPartnerStorePage();
-  }
-
   // --- SAYFA AÇILINCA ÇALIŞTIR ---
   // Mevcut initPartnerSystem fonksiyonunun EN ALTINA veya window.onload içine:
   // setTimeout(renderApplicationPage, 500);
@@ -4727,5 +4669,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v1*/
+  /*sistem güncellendi v2*/
 })();
