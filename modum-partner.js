@@ -2507,19 +2507,58 @@ ${css}
 
           let gridHtml = "";
           data.list.forEach((p) => {
-            // 1. REF LİNKİNİ OLUŞTURUYORUZ (Artık soluk olmayacak çünkü aşağıda kullanacağız)
+            // 1. REF LİNKİNİ OLUŞTURUYORUZ
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
-
-            // Ürün verisini güvenli bir şekilde string'e çevir
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
+            // --- 🔥 YENİ: KAZANÇ HESAPLAMA MOTORU ---
+            // Partnerin verilerini al
+            let baseRate = parseFloat(pData.commission_rate || 10);
+            let specialRates = pData.special_rates || {};
+
+            // Ürünün kategorisine bak (Backend'den artık geliyor)
+            let prodCat = p.category || "Genel";
+            let appliedRate = baseRate;
+            let isSpecial = false;
+
+            // Eğer bu kategoride özel oran varsa ve baz orandan yüksekse
+            if (
+              specialRates[prodCat] &&
+              parseFloat(specialRates[prodCat]) > baseRate
+            ) {
+              appliedRate = parseFloat(specialRates[prodCat]);
+              isSpecial = true;
+            }
+
+            // Tahmini TL Kazancı Hesapla (Fiyattaki 'TL' yi temizle)
+            let cleanPrice =
+              parseFloat(
+                p.price
+                  .toString()
+                  .replace(/[^0-9.,]/g, "")
+                  .replace(",", "."),
+              ) || 0;
+            let potentialEarn = (cleanPrice * appliedRate) / 100;
+
+            // Etiket HTML'i (Eğer özel oransa Alevli Göster)
+            let badgeHtml = "";
+            if (isSpecial) {
+              badgeHtml = `
+            <div style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:10px; padding:4px 8px; border-radius:4px; font-weight:bold; box-shadow:0 4px 10px rgba(245, 158, 11, 0.4); z-index:2;">
+                🔥 %${appliedRate} KAZANÇ
+            </div>
+        `;
+            }
+            // ----------------------------------------
+
             gridHtml += `
-    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%;">
+    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #f1f5f9"}; position:relative;">
         
-        <div class="showcase-img-box" style="background: #fff;">
+        ${badgeHtml} <div class="showcase-img-box" style="background: #fff;">
             <img src="${p.image}" class="showcase-img" style="width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
-            <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:10px; padding:3px 8px; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+            
+            <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.8;">
                 Fırsat
             </div>
         </div>
@@ -2530,7 +2569,14 @@ ${css}
             </div>
             
             <div style="margin-top:auto;">
-                <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>
+                <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:10px;">
+                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>
+                    
+                    <div style="text-align:right;">
+                        <div style="font-size:9px; color:#94a3b8;">Senin Kazancın</div>
+                        <div style="font-weight:bold; color:${isSpecial ? "#d97706" : "#3b82f6"}; font-size:12px;">+${potentialEarn.toFixed(2)} TL</div>
+                    </div>
+                </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
                     <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:10px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
@@ -2542,7 +2588,7 @@ ${css}
                 </div>
                 
                 <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:8px; margin-top:0;">
-                     <i class="fas fa-external-link-alt"></i> Ürüne Git
+                      <i class="fas fa-external-link-alt"></i> Ürüne Git
                 </a>
 
             </div>
@@ -4827,5 +4873,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v6*/
+  /*sistem güncellendi v7*/
 })();
