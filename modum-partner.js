@@ -2506,32 +2506,49 @@ ${css}
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
 
           let gridHtml = "";
+          // --- ♻️ GÜNCELLENMİŞ KAZANÇ HESAPLAMA BLOĞU (Bunu Kopyala) ---
           data.list.forEach((p) => {
-            // 1. REF LİNKİNİ OLUŞTURUYORUZ
+            // 1. Link Hazırlığı
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-            // --- 🔥 YENİ: KAZANÇ HESAPLAMA MOTORU ---
-            // Partnerin verilerini al
+            // 2. Partner Verileri
             let baseRate = parseFloat(pData.commission_rate || 10);
             let specialRates = pData.special_rates || {};
 
-            // Ürünün kategorisine bak (Backend'den artık geliyor)
-            let prodCat = p.category || "Genel";
+            // Ürün Kategorisi (Veri yoksa başlığa bakarak tahmin etmeye çalışsın - YEDEK PLAN)
+            let prodCat = (p.category || p.title || "Genel").toLowerCase();
+
             let appliedRate = baseRate;
             let isSpecial = false;
+            let matchReason = ""; // Hangi kelimeden yakaladığını görmek için
 
-            // Eğer bu kategoride özel oran varsa ve baz orandan yüksekse
-            if (
-              specialRates[prodCat] &&
-              parseFloat(specialRates[prodCat]) > baseRate
-            ) {
-              appliedRate = parseFloat(specialRates[prodCat]);
-              isSpecial = true;
+            // 🔥 AKILLI EŞLEŞTİRME DÖNGÜSÜ
+            // Tanımlı tüm özel oranları tek tek kontrol et
+            Object.keys(specialRates).forEach((key) => {
+              let rateKey = key.toLowerCase(); // Örn: "kadın sandalet"
+              let rateVal = parseFloat(specialRates[key]);
+
+              // Eğer ürünün kategorisinde veya başlığında bu kelime geçiyorsa (Örn: "Sandalet")
+              if (prodCat.includes(rateKey)) {
+                // Ve bu oran, şu anki orandan yüksekse
+                if (rateVal > appliedRate) {
+                  appliedRate = rateVal;
+                  isSpecial = true;
+                  matchReason = key;
+                }
+              }
+            });
+
+            // KONSOLA YAZDIR (Hatayı görmek için F12'de bakabilirsin)
+            if (isSpecial) {
+              console.log(
+                `🔥 Eşleşme Bulundu! Ürün: ${p.title} -> Kural: ${matchReason} -> Oran: %${appliedRate}`,
+              );
             }
 
-            // Tahmini TL Kazancı Hesapla (Fiyattaki 'TL' yi temizle)
+            // Tahmini Kazanç Hesabı
             let cleanPrice =
               parseFloat(
                 p.price
@@ -2541,7 +2558,7 @@ ${css}
               ) || 0;
             let potentialEarn = (cleanPrice * appliedRate) / 100;
 
-            // Etiket HTML'i (Eğer özel oransa Alevli Göster)
+            // Etiket HTML'i
             let badgeHtml = "";
             if (isSpecial) {
               badgeHtml = `
@@ -4873,5 +4890,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v7*/
+  /*sistem güncellendi v8*/
 })();
