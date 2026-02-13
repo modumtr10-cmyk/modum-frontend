@@ -92,7 +92,16 @@
         }).then((r) => r.json());
 
         if (res.success) {
-          renderVirtualShop(res.partnerName, res.products, collectionRef);
+          // renderVirtualShop yerine yeni tasarımı çağırıyoruz:
+          renderFullPageStore(
+            document.body,
+            {
+              // Container olarak body gönderiyoruz
+              partnerName: res.partnerName,
+              products: res.products,
+            },
+            collectionRef,
+          );
         }
       } catch (e) {
         console.log("Koleksiyon yüklenemedi:", e);
@@ -4038,10 +4047,21 @@ ${css}
                   </select>
               </div>
               <div class="inp-group">
-                  <label>Ortalama Story İzlenmen</label>
-                  <input type="number" id="app_views" placeholder="Örn: 1500">
-                  <div style="font-size:10px; color:#ef4444; margin-top:2px;">* Bot kontrolü için önemlidir.</div>
-              </div>
+    <label>Son Story İzlenme (Ekran Görüntüsü)</label>
+    
+    <input type="file" id="app_views_img" accept="image/*" onchange="PartnerApp.previewStoryProof(this)" style="font-size:12px;">
+    
+    <div id="story-proof-preview" style="display:none; margin-top:10px; border:1px dashed #cbd5e1; padding:5px; border-radius:6px; background:#fff;">
+        <img id="img-proof-view" src="" style="width:100%; max-height:200px; object-fit:contain; border-radius:4px;">
+        <div style="font-size:10px; color:#16a34a; text-align:center; margin-top:5px;">✅ Kanıt Yüklendi</div>
+    </div>
+    
+    <input type="hidden" id="app_views_base64">
+    
+    <div style="font-size:10px; color:#64748b; margin-top:4px;">
+        * Instagram istatistik ekranının görüntüsünü yükleyin.
+    </div>
+</div>
           </div>
 
           <div class="inp-group">
@@ -4064,24 +4084,66 @@ ${css}
           <button onclick="validateStep1()" class="btn-next">DEVAM ET &rarr;</button>
       </div>
     `;
+  }; // --- RESİM İŞLEYİCİ (MODUM PARTNER JS İÇİNE EKLE) ---
+  window.PartnerApp.previewStoryProof = function (input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        // 1. Önizlemeyi göster
+        document.getElementById("img-proof-view").src = e.target.result;
+        document.getElementById("story-proof-preview").style.display = "block";
+
+        // 2. Resmi Küçült (Canvas ile) - Sunucuyu patlatmamak için şart!
+        var img = new Image();
+        img.onload = function () {
+          var canvas = document.createElement("canvas");
+          var ctx = canvas.getContext("2d");
+
+          // Boyutları ayarla (Max 800px genişlik)
+          var MAX_WIDTH = 800;
+          var scale = MAX_WIDTH / img.width;
+          if (scale > 1) scale = 1; // Zaten küçükse büyütme
+
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Sıkıştırılmış veriyi gizli kutuya at
+          var dataUrl = canvas.toDataURL("image/jpeg", 0.7); // %70 Kalite
+          document.getElementById("app_views_base64").value = dataUrl;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
   };
 
   window.validateStep1 = function () {
     const handle = document.getElementById("app_handle").value;
-    const views = document.getElementById("app_views").value;
     const strategy = document.getElementById("app_strategy").value;
 
+    // 🔥 DEĞİŞEN KISIM: Resmi kontrol et
+    const proofImg = document.getElementById("app_views_base64").value;
+
     if (handle.length < 3) return alert("Lütfen kullanıcı adını gir.");
-    if (!views || views < 50)
-      return alert("Lütfen gerçekçi bir izlenme sayısı giriniz.");
     if (strategy.length < 10) return alert("Lütfen stratejini kısaca anlat.");
+
+    // Resim zorunluluğu
+    if (!proofImg || proofImg.length < 100)
+      return alert(
+        "Lütfen story izlenme kanıtını (ekran görüntüsü) yükleyiniz.",
+      );
 
     window.appData.social = {
       platform: document.getElementById("app_platform").value,
       handle: handle,
       followers: document.getElementById("app_followers").value,
-      // 🔥 YENİ VERİLER:
-      avg_story_views: views,
+
+      // 🔥 YENİ: Artık sayı yerine resmi kaydediyoruz
+      avg_story_views: "Görsel Kanıtlı",
+      story_proof_img: proofImg, // Resmi buraya koyduk
+
       category: document.getElementById("app_category").value,
       strategy: strategy,
     };
@@ -4765,5 +4827,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v5*/
+  /*sistem güncellendi v6*/
 })();
