@@ -167,7 +167,7 @@
             </div>
 
             <div style="max-width:1000px; margin: -30px auto 0; padding:0 10px 50px; position:relative; z-index:10;">
-                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; @media(min-width:768px){grid-template-columns: repeat(4, 1fr); gap:15px;}">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; @media(min-width:768px){grid-template-columns: repeat(5, 1fr); gap:15px;}">
                     ${itemsHtml}
                 </div>
             </div>
@@ -2458,7 +2458,7 @@ ${css}
       } catch (e) {
         container.innerHTML = "Hata: " + e.message;
       }
-    }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ - GÜNCELLENMİŞ PAYLAŞIMLI) ---
+    }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ - FİNAL DÜZELTİLMİŞ) ---
     renderMyCollection: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Koleksiyonun yükleniyor...</div>';
@@ -2485,7 +2485,7 @@ ${css}
                     <div style="background:white; padding:20px; border-radius:12px; border-left:4px solid #3b82f6; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:20px;">
                         <h3 style="margin:0; color:#1e293b;">🛍️ Benim Sanal Mağazam</h3>
                         <p style="font-size:13px; color:#64748b; margin:5px 0 15px;">
-                            Sitede gezerken "Koleksiyona Ekle" dediğin ürünler burada listelenir.(Linkler 30 Gün Geçerlidir)
+                            Sitede gezerken "Koleksiyona Ekle" dediğin ürünler burada listelenir. (Linkler 30 Gün Geçerlidir)
                         </p>
                         
                         <div style="display:flex; gap:10px; background:#eff6ff; padding:10px; border-radius:8px; border:1px solid #dbeafe; align-items:center;">
@@ -2494,7 +2494,6 @@ ${css}
                             <button onclick="PartnerApp.openShareMenu('${collectionLink}', true)" class="p-btn" style="width:auto; padding:8px 20px; font-size:12px; background:#3b82f6; color:white; border:none; display:flex; align-items:center; gap:5px;">
                                 <i class="fas fa-share-alt"></i> Paylaş
                             </button>
-
                         </div>
                     </div>
 
@@ -2513,7 +2512,8 @@ ${css}
             return;
           }
 
-          let grid = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">`;
+          // Grid Başlangıcı
+          let gridHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">`;
 
           products.forEach((p) => {
             // Ürün Datasını string olarak sakla (Silmek için)
@@ -2527,10 +2527,11 @@ ${css}
               }),
             );
 
-            grid += `
+            // 🔥 DÜZELTİLMİŞ KART YAPISI (DİKEY GÖRSEL)
+            gridHtml += `
                         <div style="background:white; border-radius:8px; overflow:hidden; border:1px solid #e2e8f0; position:relative;">
-                            <div style="height:150px; overflow:hidden; position:relative;">
-                                <img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:relative; padding-top:150%; overflow:hidden; background:#fff;">
+                                <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:4px;">
                                 <button onclick="PartnerApp.removeProductFromPanel('${pSafe}', this)" style="position:absolute; top:5px; right:5px; background:rgba(239,68,68,0.9); color:white; border:none; width:24px; height:24px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
                             </div>
                             <div style="padding:10px;">
@@ -2542,8 +2543,8 @@ ${css}
                       `;
           });
 
-          grid += `</div>`;
-          container.innerHTML += grid;
+          gridHtml += `</div>`;
+          container.innerHTML += gridHtml;
         } else {
           container.innerHTML = "Bir hata oluştu.";
         }
@@ -4669,5 +4670,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v3*/
+  /*sistem güncellendi v4*/
 })();
