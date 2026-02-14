@@ -506,6 +506,10 @@ ${css}
           <div class="p-nav-icon"><i class="fas fa-fire"></i></div>
           <span class="p-nav-text">Vitrin</span>
       </div>
+      <div class="p-nav-item" onclick="PartnerApp.loadTab('tasks', this)">
+    <div class="p-nav-icon"><i class="fas fa-bullseye"></i></div>
+    <span class="p-nav-text">GÖREVLER</span>
+</div>
       <div class="p-nav-item" onclick="PartnerApp.loadTab('my_collection', this)">
   <div class="p-nav-icon"><i class="fas fa-store"></i></div>
   <span class="p-nav-text">Mağazam</span>
@@ -660,6 +664,7 @@ ${css}
         if (tab === "marketing") this.renderMarketing(area);
         if (tab === "academy") this.renderAcademy(area);
         if (tab === "showcase") this.renderShowcase(area);
+        if (tab === "tasks") this.renderTasks(area);
         if (tab === "my_collection") this.renderMyCollection(area);
         if (tab === "profile") this.renderProfile(area);
       }, 300);
@@ -3442,6 +3447,86 @@ ${css}
         btn.innerText = oldText;
         btn.disabled = false;
       }
+    }, // --- 🚀 GÖREVLER VE HEDEFLER SEKMESİ ---
+    renderTasks: async function (container) {
+      container.innerHTML =
+        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Hedefler yükleniyor...</div>';
+      var email = detectUser();
+
+      try {
+        const res = await fetch("https://api-hjen5442oq-uc.a.run.app", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ islem: "get_my_tasks", email: email }),
+        }).then((r) => r.json());
+
+        if (res.success) {
+          container.innerHTML = `
+                    <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                        <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎯 Görevler ve Bonuslar</h3>
+                        <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                            Bu hedefleri tamamla, ekstra nakit ödüller kazan! İlerlemen her satışta otomatik güncellenir.
+                        </p>
+                    </div>
+                `;
+
+          if (res.list.length === 0) {
+            container.innerHTML += `<div style="text-align:center; padding:40px; color:#999;">Şu an aktif bir görev yok. Takipte kal!</div>`;
+            return;
+          }
+
+          let gridHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:15px;">`;
+
+          res.list.forEach((t) => {
+            // Renk ve İkon Belirleme
+            let isDone = t.isCompleted;
+            let barColor = isDone ? "#10b981" : "#3b82f6";
+            let btnHtml = "";
+            let statusIcon = isDone ? "🏆" : "🔥";
+
+            // Tamamlandıysa ödül rozeti
+            if (isDone) {
+              btnHtml = `<div style="width:100%; text-align:center; background:#dcfce7; color:#166534; padding:10px; border-radius:6px; font-weight:bold; font-size:12px;">✅ ÖDÜL KAZANILDI</div>`;
+            } else {
+              btnHtml = `<div style="width:100%; text-align:right; font-size:11px; color:#64748b;">Hedef: <b>${t.target}</b> / Senin: <b>${t.current}</b></div>`;
+            }
+
+            gridHtml += `
+                        <div class="p-card" style="padding:20px; border:1px solid ${isDone ? "#bbf7d0" : "#e2e8f0"}; position:relative; overflow:hidden;">
+                            ${isDone ? '<div style="position:absolute; top:-10px; right:-10px; font-size:80px; opacity:0.1; color:#10b981;">✔</div>' : ""}
+                            
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <div style="font-size:10px; background:#f1f5f9; padding:4px 8px; border-radius:20px; color:#64748b;">
+                                    ⏳ ${t.remaining}
+                                </div>
+                                <div style="font-weight:bold; color:#f59e0b; font-size:12px;">
+                                    🎁 +${t.rewardValue} TL
+                                </div>
+                            </div>
+
+                            <h4 style="margin:0 0 5px 0; color:#1e293b; font-size:15px;">${statusIcon} ${t.title}</h4>
+                            <p style="margin:0 0 15px 0; color:#64748b; font-size:12px;">${t.description}</p>
+
+                            <div style="margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
+                                    <span style="font-weight:bold; color:${barColor};">%${t.percent}</span>
+                                </div>
+                                <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; overflow:hidden;">
+                                    <div style="width:${t.percent}%; height:100%; background:${barColor}; transition:width 1s ease;"></div>
+                                </div>
+                            </div>
+                            
+                            ${btnHtml}
+                        </div>
+                    `;
+          });
+
+          gridHtml += `</div>`;
+          container.innerHTML += gridHtml;
+        }
+      } catch (e) {
+        container.innerHTML = "Hata oluştu: " + e.message;
+      }
     },
   };
   // --- 🚀 SİTE-ÜSTÜ AKILLI KAZANÇ VE İNDİRİM ÇUBUĞU (V4.1 - HTML UYUMLU) ---
@@ -4885,5 +4970,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v10*/
+  /*sistem güncellendi v11*/
 })();
