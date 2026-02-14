@@ -2587,12 +2587,7 @@ ${css}
             
             <div style="margin-top:auto;">
                 <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:10px;">
-                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>
-                    
-                    <div style="text-align:right;">
-                        <div style="font-size:9px; color:#94a3b8;">Senin Kazancın</div>
-                        <div style="font-weight:bold; color:${isSpecial ? "#d97706" : "#3b82f6"}; font-size:12px;">+${potentialEarn.toFixed(2)} TL</div>
-                    </div>
+                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>                    
                 </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
@@ -3515,35 +3510,6 @@ ${css}
         }
       }
     }
-    // --- 🔥 2. KATEGORİ ALGILAMA & ORAN SEÇİMİ ---
-    let appliedRate = baseRate;
-    let rateSource = "Standart";
-
-    if (isProductPage) {
-        // Sayfanın kategorisini bulmaya çalış (Breadcrumb okuma)
-        let categoryText = "";
-        
-        // Faprika Breadcrumb yapısını tara
-        const breadcrumb = document.querySelector('.breadcrumb') || document.querySelector('.breadcrumbs') || document.querySelector('#breadcrumb');
-        if(breadcrumb) {
-            categoryText = breadcrumb.innerText.toLowerCase(); 
-        } 
-        // Yedek: Ürün başlığını da ekle (Sneaker kelimesi başlıkta geçiyorsa yakalasın)
-        if(document.title) categoryText += " " + document.title.toLowerCase();
-
-        // Özel oranları kontrol et
-        Object.keys(specialRates).forEach(key => {
-            let k = key.toLowerCase();
-            if(categoryText.includes(k)) {
-                let sRate = parseFloat(specialRates[key]);
-                // Eğer özel oran standarttan yüksekse uygula
-                if(sRate > appliedRate) {
-                    appliedRate = sRate;
-                    rateSource = `Özel (${key})`;
-                }
-            }
-        });
-    }
 
     // --- 🔥 FİNANSAL HESAPLAMA MOTORU (DÜZELTİLDİ) ---
     let statsHtml = "";
@@ -3554,7 +3520,7 @@ ${css}
       let discountedPrice = productPrice - discountAmount;
 
       // 2. Ham Komisyonu Bul (Brüt Taban)
-      let baseEarnings = discountedPrice * (appliedRate / 100);
+      let baseEarnings = discountedPrice * (myCommissionRate / 100);
 
       // 3. Hesap Türüne Göre Gösterilecek Rakamı ve Metni Seç
       let displayAmount = 0;
@@ -4919,5 +4885,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v9*/
+  /*sistem güncellendi v10*/
 })();
