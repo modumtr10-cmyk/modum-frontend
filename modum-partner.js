@@ -301,13 +301,40 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
-/* --- 1. ANA KAPLAYICI (Overlay) --- */
-.p-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:2147483647; backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; font-family:'Inter', sans-serif; }
+/* --- 1. ANA KAPLAYICI (Buzlu Cam Efekti) --- */
+.p-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.4); /* Daha şeffaf siyah */
+    z-index: 2147483647;
+    backdrop-filter: blur(0px); /* Başlangıçta net */
+    animation: fadeInBlur 0.4s forwards; /* Bulanıklaşma animasyonu */
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Inter', sans-serif;
+}
 
-/* --- 2. UYGULAMA KUTUSU --- */
-.p-app { width:100%; height:100%; background:#f1f5f9; position:relative; display:flex; flex-direction:row; overflow:hidden; }
-@media (min-width: 769px) { 
-  .p-app { width:900px; height:85vh; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); } 
+/* --- 2. UYGULAMA KUTUSU (Uçarak Gelme Efekti) --- */
+.p-app {
+    width: 100%; height: 100%; background: #f1f5f9;
+    position: relative; display: flex; flex-direction: row; overflow: hidden;
+    opacity: 0; transform: scale(0.9) translateY(20px); /* Aşağıdan ve küçük başla */
+    animation: popUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; /* Havalı yaylanma */
+    animation-delay: 0.1s; /* Arka plan karardıktan hemen sonra gel */
+}
+
+/* --- 3. ANİMASYON TANIMLARI --- */
+@keyframes fadeInBlur {
+    to { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); }
+}
+@keyframes popUp {
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (min-width: 769px) {
+    .p-app {
+        width: 900px; height: 85vh;
+        border-radius: 20px; /* Daha yuvarlak köşeler */
+        box-shadow: 0 40px 80px -15px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1); /* Derinlik gölgesi */
+    }
 }
 
 /* --- 3. ORTAK SOL MENÜ (Hem Mobil Hem PC) --- */
@@ -5007,5 +5034,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v12*/
+  /*sistem güncellendi v13*/
 })();
