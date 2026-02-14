@@ -3515,6 +3515,35 @@ ${css}
         }
       }
     }
+    // --- 🔥 2. KATEGORİ ALGILAMA & ORAN SEÇİMİ ---
+    let appliedRate = baseRate;
+    let rateSource = "Standart";
+
+    if (isProductPage) {
+        // Sayfanın kategorisini bulmaya çalış (Breadcrumb okuma)
+        let categoryText = "";
+        
+        // Faprika Breadcrumb yapısını tara
+        const breadcrumb = document.querySelector('.breadcrumb') || document.querySelector('.breadcrumbs') || document.querySelector('#breadcrumb');
+        if(breadcrumb) {
+            categoryText = breadcrumb.innerText.toLowerCase(); 
+        } 
+        // Yedek: Ürün başlığını da ekle (Sneaker kelimesi başlıkta geçiyorsa yakalasın)
+        if(document.title) categoryText += " " + document.title.toLowerCase();
+
+        // Özel oranları kontrol et
+        Object.keys(specialRates).forEach(key => {
+            let k = key.toLowerCase();
+            if(categoryText.includes(k)) {
+                let sRate = parseFloat(specialRates[key]);
+                // Eğer özel oran standarttan yüksekse uygula
+                if(sRate > appliedRate) {
+                    appliedRate = sRate;
+                    rateSource = `Özel (${key})`;
+                }
+            }
+        });
+    }
 
     // --- 🔥 FİNANSAL HESAPLAMA MOTORU (DÜZELTİLDİ) ---
     let statsHtml = "";
@@ -3525,7 +3554,7 @@ ${css}
       let discountedPrice = productPrice - discountAmount;
 
       // 2. Ham Komisyonu Bul (Brüt Taban)
-      let baseEarnings = discountedPrice * (myCommissionRate / 100);
+      let baseEarnings = discountedPrice * (appliedRate / 100);
 
       // 3. Hesap Türüne Göre Gösterilecek Rakamı ve Metni Seç
       let displayAmount = 0;
@@ -4890,5 +4919,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v8*/
+  /*sistem güncellendi v9*/
 })();
