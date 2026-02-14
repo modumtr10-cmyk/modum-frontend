@@ -3447,7 +3447,7 @@ ${css}
         btn.innerText = oldText;
         btn.disabled = false;
       }
-    }, // --- 🚀 GÖREVLER VE HEDEFLER SEKMESİ ---
+    }, // --- 🚀 GÖREVLER VE HEDEFLER SEKMESİ (V2 - HAVALI TASARIM) ---
     renderTasks: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Hedefler yükleniyor...</div>';
@@ -3461,71 +3461,108 @@ ${css}
         }).then((r) => r.json());
 
         if (res.success) {
+          // Şık Başlık Alanı
           container.innerHTML = `
-                    <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-                        <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🎯 Görevler ve Bonuslar</h3>
-                        <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-                            Bu hedefleri tamamla, ekstra nakit ödüller kazan! İlerlemen her satışta otomatik güncellenir.
+                    <div style="background:linear-gradient(135deg, #0f172a, #1e293b); color:white; padding:25px; border-radius:16px; margin-bottom:25px; position:relative; overflow:hidden; box-shadow:0 10px 30px rgba(15, 23, 42, 0.4);">
+                        <div style="position:absolute; top:-20px; right:-20px; font-size:100px; opacity:0.1;">🎯</div>
+                        <h3 style="margin:0 0 5px 0; font-size:20px;">Görev Merkezi</h3>
+                        <p style="margin:0; font-size:13px; opacity:0.8; max-width:80%;">
+                            Hedefleri tamamla, bonusları kap! Kazancını katla.
                         </p>
                     </div>
                 `;
 
           if (res.list.length === 0) {
-            container.innerHTML += `<div style="text-align:center; padding:40px; color:#999;">Şu an aktif bir görev yok. Takipte kal!</div>`;
+            container.innerHTML += `
+                        <div style="text-align:center; padding:50px; background:white; border-radius:16px; border:1px dashed #cbd5e1;">
+                            <div style="font-size:40px; margin-bottom:10px; opacity:0.5;">💤</div>
+                            <div style="color:#64748b; font-weight:bold;">Şu an aktif görev yok</div>
+                            <div style="font-size:12px; color:#94a3b8;">Yeni görevler eklendiğinde burada görünecek.</div>
+                        </div>`;
             return;
           }
 
-          let gridHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:15px;">`;
+          let gridHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">`;
 
           res.list.forEach((t) => {
-            // Renk ve İkon Belirleme
             let isDone = t.isCompleted;
-            let barColor = isDone ? "#10b981" : "#3b82f6";
-            let btnHtml = "";
-            let statusIcon = isDone ? "🏆" : "🔥";
 
-            // Tamamlandıysa ödül rozeti
+            // Renk Paleti (Gradyanlar)
+            let bgStyle = isDone
+              ? "background:linear-gradient(135deg, #059669, #10b981);" // Yeşil (Tamamlandı)
+              : "background:white;";
+
+            let titleColor = isDone ? "white" : "#1e293b";
+            let descColor = isDone ? "rgba(255,255,255,0.9)" : "#64748b";
+            let barBg = isDone ? "rgba(255,255,255,0.3)" : "#f1f5f9";
+            let barFill = isDone
+              ? "white"
+              : "linear-gradient(90deg, #3b82f6, #8b5cf6)";
+
+            // İkon Seçimi
+            let typeIcon = t.type === "revenue" ? "💰" : "📦";
+
+            // Buton / Etiket
+            let footerContent = "";
             if (isDone) {
-              btnHtml = `<div style="width:100%; text-align:center; background:#dcfce7; color:#166534; padding:10px; border-radius:6px; font-weight:bold; font-size:12px;">✅ ÖDÜL KAZANILDI</div>`;
+              footerContent = `
+                            <div style="margin-top:15px; background:rgba(255,255,255,0.2); padding:10px; border-radius:8px; text-align:center; color:white; font-weight:bold; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <i class="fas fa-check-circle"></i> ÖDÜL CÜZDANDA
+                            </div>
+                        `;
             } else {
-              btnHtml = `<div style="width:100%; text-align:right; font-size:11px; color:#64748b;">Hedef: <b>${t.target}</b> / Senin: <b>${t.current}</b></div>`;
+              footerContent = `
+                            <div style="margin-top:15px; display:flex; justify-content:space-between; font-size:11px; color:${descColor};">
+                                <span>İlerleme: <b>${t.current} / ${t.target}</b></span>
+                                <span>Kalan: <b>${(t.target - t.current).toFixed(0)}</b></span>
+                            </div>
+                            <div style="width:100%; height:8px; background:${barBg}; border-radius:10px; overflow:hidden; margin-top:5px;">
+                                <div style="width:${t.percent}%; height:100%; background:${barFill}; transition:width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius:10px;"></div>
+                            </div>
+                        `;
             }
 
             gridHtml += `
-                        <div class="p-card" style="padding:20px; border:1px solid ${isDone ? "#bbf7d0" : "#e2e8f0"}; position:relative; overflow:hidden;">
-                            ${isDone ? '<div style="position:absolute; top:-10px; right:-10px; font-size:80px; opacity:0.1; color:#10b981;">✔</div>' : ""}
+                        <div class="p-card" style="${bgStyle} padding:20px; border-radius:16px; border:1px solid rgba(0,0,0,0.05); box-shadow:0 4px 6px rgba(0,0,0,0.02); position:relative; overflow:hidden; transition:transform 0.2s;">
                             
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <div style="font-size:10px; background:#f1f5f9; padding:4px 8px; border-radius:20px; color:#64748b;">
-                                    ⏳ ${t.remaining}
+                            ${
+                              !isDone
+                                ? `<div style="position:absolute; top:15px; right:15px; background:#fef3c7; color:#d97706; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:bold; display:flex; align-items:center; gap:4px;">
+                                <i class="fas fa-clock"></i> ${t.remaining}
+                            </div>`
+                                : ""
+                            }
+
+                            <div style="display:flex; align-items:center; gap:15px; margin-bottom:10px;">
+                                <div style="width:50px; height:50px; background:${isDone ? "rgba(255,255,255,0.2)" : "#eff6ff"}; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                    ${typeIcon}
                                 </div>
-                                <div style="font-weight:bold; color:#f59e0b; font-size:12px;">
-                                    🎁 +${t.rewardValue} TL
+                                <div>
+                                    <h4 style="margin:0; color:${titleColor}; font-size:16px;">${t.title}</h4>
+                                    <div style="font-size:12px; font-weight:bold; color:${isDone ? "white" : "#f59e0b"}; margin-top:2px;">
+                                        🎁 Ödül: ${t.rewardValue} TL
+                                    </div>
                                 </div>
                             </div>
 
-                            <h4 style="margin:0 0 5px 0; color:#1e293b; font-size:15px;">${statusIcon} ${t.title}</h4>
-                            <p style="margin:0 0 15px 0; color:#64748b; font-size:12px;">${t.description}</p>
+                            <p style="margin:0; font-size:13px; color:${descColor}; line-height:1.4; min-height:40px;">
+                                ${t.description}
+                            </p>
 
-                            <div style="margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
-                                    <span style="font-weight:bold; color:${barColor};">%${t.percent}</span>
-                                </div>
-                                <div style="width:100%; height:8px; background:#f1f5f9; border-radius:10px; overflow:hidden;">
-                                    <div style="width:${t.percent}%; height:100%; background:${barColor}; transition:width 1s ease;"></div>
-                                </div>
-                            </div>
-                            
-                            ${btnHtml}
+                            ${footerContent}
                         </div>
                     `;
           });
 
           gridHtml += `</div>`;
+
+          // Mobil uyumu için padding
+          gridHtml += `<div style="height:20px;"></div>`;
+
           container.innerHTML += gridHtml;
         }
       } catch (e) {
-        container.innerHTML = "Hata oluştu: " + e.message;
+        container.innerHTML = "Hata: " + e.message;
       }
     },
   };
@@ -4970,5 +5007,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v11*/
+  /*sistem güncellendi v12*/
 })();
