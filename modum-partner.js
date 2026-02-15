@@ -2515,7 +2515,7 @@ ${css}
                         /* BUTON GRUBU (3'lü Yapı) */
                         .actions {
                             display: grid; 
-                            grid-template-columns: 1fr 1fr 1fr; /* 3 Eşit Parça */
+                            grid-template-columns: 1fr 1fr; /* 3 Eşit Parça */
                             gap: 6px; 
                             margin-bottom: 8px;
                         }
@@ -4997,5 +4997,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v21*/
+  /*sistem güncellendi v22*/
 })();
