@@ -1687,10 +1687,15 @@ ${css}
       document.body.removeChild(link);
     },
 
-    // --- CÜZDAN & GEÇMİŞ (DEKONT BUTONLU FİNAL HALİ) ---
+    // --- CÜZDAN & GEÇMİŞ (DİJİTAL BANKACILIK ARAYÜZÜ v5.0) ---
     renderWallet: async function (container) {
-      container.innerHTML =
-        '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Cüzdan yükleniyor...</div>';
+      // Yükleniyor Ekranı
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:400px; color:#64748b;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:40px; color:#3b82f6; margin-bottom:15px;"></i>
+            <div style="font-weight:600;">Finansal verileriniz şifrelenerek getiriliyor...</div>
+        </div>`;
+
       var email = detectUser();
       if (!email)
         return (container.innerHTML =
@@ -1707,7 +1712,82 @@ ${css}
         });
         const data = await res.json();
 
-        // --- 🔥 HAKEDİŞ TAKVİMİ HTML'İ HAZIRLA ---
+        // --- GLOBAL VERİLERİ HAZIRLA ---
+        let pStats = window.PartnerData || {};
+        let safeBalance = parseFloat(pStats.balance || 0);
+        let pendingVal = parseFloat(pStats.pending_balance || 0);
+        let accType = pStats.accountType || "individual";
+
+        // --- CSS STİLLERİ (BANKA TASARIMI) ---
+        const css = `
+        <style>
+            /* Kart Grid Yapısı */
+            .fin-hero-grid {
+                display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;
+            }
+            /* Kredi Kartı Görünümü */
+            .fin-card {
+                position: relative; border-radius: 20px; padding: 25px; color: white; overflow: hidden;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease;
+                display: flex; flex-direction: column; justify-content: space-between; min-height: 160px;
+            }
+            .fin-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+            
+            /* Yeşil Kart (Aktif Bakiye) */
+            .fin-card.available {
+                background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            }
+            /* Sarı Kart (Bekleyen) */
+            .fin-card.pending {
+                background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+                box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+            }
+
+            .fin-card-bg-icon { position: absolute; right: -20px; bottom: -20px; font-size: 120px; opacity: 0.1; transform: rotate(-10deg); }
+            .fin-chip { width: 40px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px; position: relative; }
+            .fin-chip::after { content:''; position: absolute; top:50%; left:0; width:100%; height:1px; background:rgba(255,255,255,0.3); }
+            
+            .fin-label { font-size: 11px; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; font-weight: 600; }
+            .fin-amount { font-size: 32px; font-weight: 800; margin: 5px 0; letter-spacing: -1px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+            .fin-status { font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; backdrop-filter: blur(5px); width: fit-content;}
+
+            /* İşlem Geçmişi */
+            .fin-history-container { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+            .fin-history-header { padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+            .fin-history-title { font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+            
+            .fin-item { 
+                padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; 
+                cursor: pointer; transition: background 0.2s; 
+            }
+            .fin-item:hover { background: #f8fafc; }
+            .fin-item:last-child { border-bottom: none; }
+            
+            .fin-icon-box { 
+                width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+                font-size: 20px; margin-right: 15px; flex-shrink: 0;
+            }
+            .icon-in { background: #ecfdf5; color: #10b981; }
+            .icon-out { background: #fff1f2; color: #ef4444; }
+            .icon-wait { background: #fffbeb; color: #f59e0b; }
+
+            .fin-detail-box { display: none; background: #f8fafc; padding: 20px; border-top: 1px solid #e2e8f0; animation: slideDown 0.2s ease-out; }
+            @keyframes slideDown { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+
+            /* Action Buttons */
+            .fin-btn { border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+            .fin-btn-primary { background: #1e293b; color: white; }
+            .fin-btn-primary:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+            
+            /* Responsive */
+            @media (max-width: 768px) {
+                .fin-amount { font-size: 26px; }
+            }
+        </style>
+        `;
+
+        // --- 🔥 HAKEDİŞ TAKVİMİ (SIDEBAR GİBİ) ---
         let calendarHTML = "";
         if (data.calendar && data.calendar.length > 0) {
           let rows = "";
@@ -1715,98 +1795,82 @@ ${css}
             rows += `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="background:#fffbeb; color:#d97706; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; border:1px solid #fcd34d;">
-                            📅
+                        <div style="background:#fffbeb; color:#d97706; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; border:1px solid #fcd34d;">
+                            ${day.date.split(".")[0]}
                         </div>
-                        <div>
-                            <div style="font-size:13px; color:#1e293b; font-weight:700;">${day.date}</div>
-                            <div style="font-size:10px; color:#64748b;">${day.count} adet satışın vadesi doluyor</div>
+                        <div style="line-height:1.2;">
+                            <div style="font-size:12px; color:#1e293b; font-weight:700;">${day.date}</div>
+                            <div style="font-size:10px; color:#64748b;">${day.count} işlem serbest kalıyor</div>
                         </div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:14px; font-weight:800; color:#059669;">+${day.amount} ₺</div>
-                        <div style="font-size:9px; color:#94a3b8;">Tahmini</div>
+                        <div style="font-size:13px; font-weight:800; color:#059669;">+${day.amount} ₺</div>
                     </div>
                 </div>`;
           });
 
           calendarHTML = `
-            <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding:20px; margin-bottom:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                <h4 style="margin:0 0 15px 0; color:#334155; font-size:14px; display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-calendar-alt" style="color:#f59e0b;"></i> Yaklaşan Hakedişler
-                </h4>
-                <div style="background:#f8fafc; border-radius:8px; padding:0 15px; border:1px solid #f1f5f9;">
+            <div style="background:white; border-radius:16px; border:1px solid #e2e8f0; padding:20px; margin-bottom:30px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                    <div style="background:#fff7ed; padding:8px; border-radius:8px; color:#c2410c;"><i class="fas fa-hourglass-half"></i></div>
+                    <h4 style="margin:0; color:#1e293b; font-size:14px;">Yaklaşan Ödemeler</h4>
+                </div>
+                <div style="background:#fcfcfc; border-radius:12px; padding:0 15px; border:1px solid #f1f5f9;">
                     ${rows}
                 </div>
-                <div style="margin-top:10px; font-size:10px; color:#64748b; text-align:center;">
-                    * Bu tutarlar iade süresi dolduğunda otomatik olarak "Çekilebilir Bakiye"nize eklenecektir.
-                </div>
             </div>`;
-        } else {
-          // Takvim boşsa, motive edici boş durum gösterelim (opsiyonel)
-          // Şimdilik boş bırakıyoruz ki yer kaplamasın.
         }
 
+        // --- İŞLEM GEÇMİŞİ LİSTESİ ---
         let historyHTML = "";
         if (data.success && data.list.length > 0) {
           data.list.forEach((tx) => {
-            // --- 1. DEĞERLERİ HAZIRLA ---
+            // Değerler
             let val = parseFloat(tx.commission || tx.amount || 0);
             if (isNaN(val)) val = 0;
+            let amountText = `${val.toLocaleString()} ₺`;
 
-            let icon = "🛒";
-            let color = "#10b981";
+            // Renk ve İkon Mantığı
+            let iconClass = "icon-in";
+            let iconSymbol = "fa-arrow-down";
+            let amountColor = "#10b981";
             let sign = "+";
-            let desc = tx.desc;
+            let txTitle = tx.desc;
 
-            // --- 2. TİP KONTROLÜ ---
             if (tx.type === "payout_request") {
-              icon = "💸";
-              color = "#ef4444";
-              sign = "-";
-              if (!desc || desc === "Para Çekme Talebi") desc = "Ödeme Alındı";
+              iconClass = "icon-out";
+              iconSymbol = "fa-arrow-up";
+              amountColor = "#1e293b"; // Nötr renk (Ödeme alındı)
+              sign = "";
+              if (!txTitle || txTitle === "Para Çekme Talebi")
+                txTitle = "Banka Transferi";
             }
 
-            // --- 3. İADE KONTROLÜ ---
-            let isRefunded = tx.status === "refunded";
-            let statusBadge = "";
-            let amountText = `${sign}${val.toLocaleString()} ₺`;
-
-            if (isRefunded) {
-              color = "#94a3b8";
-              amountText = `<span style="text-decoration:line-through;">${amountText}</span> <span style="color:red; font-size:10px;">(İADE)</span>`;
-              statusBadge =
-                '<span style="background:#fee2e2; color:red; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">İADE EDİLDİ</span>';
-              icon = "↩️";
+            if (tx.status === "refunded") {
+              iconClass = "icon-out";
+              iconSymbol = "fa-undo";
+              amountColor = "#94a3b8"; // Gri
+              amountText = `<span style="text-decoration:line-through;">${amountText}</span>`;
+              txTitle = "İADE / İPTAL";
             }
 
-            // --- 4. DEKONT BUTONU ---
+            // Dekont / PDF Butonları
             let receiptBtn = "";
             if (tx.receiptUrl && tx.receiptUrl.length > 5) {
-              receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block; margin-top:2px; font-size:10px; background:#eff6ff; color:#3b82f6; padding:2px 6px; border-radius:4px; text-decoration:none; font-weight:bold; border:1px solid #dbeafe;">📄 Dekont</a>`;
+              receiptBtn = `<a href="${tx.receiptUrl}" target="_blank" onclick="event.stopPropagation()" class="fin-btn" style="background:#eff6ff; color:#3b82f6; border:1px solid #dbeafe; display:inline-flex;">📄 Dekont</a>`;
             }
-            // --- 🔥 YENİ: MAKBUZ BUTONU ---
-            // Sadece güvenli veri gönderiyoruz, tırnak hatalarını önlemek için encode ediyoruz
             let safeTx = encodeURIComponent(JSON.stringify(tx));
-            let pdfBtn = `<button onclick="PartnerApp.downloadReceiptPDF(JSON.parse(decodeURIComponent('${safeTx}'))); event.stopPropagation();" style="display:inline-block; margin-top:2px; margin-left:3px; font-size:10px; background:#f0fdf4; color:#15803d; padding:2px 6px; border-radius:4px; border:1px solid #bbf7d0; cursor:pointer;">🧾 Makbuz</button>`;
+            let pdfBtn = `<button onclick="PartnerApp.downloadReceiptPDF(JSON.parse(decodeURIComponent('${safeTx}'))); event.stopPropagation();" class="fin-btn" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; display:inline-flex;">🧾 Makbuz</button>`;
 
-            // --- 🔥 5. KAYNAK ETİKETİ (YENİ EKLENDİ) ---
+            // Detaylar (HTML İnşaası - Eski Fonksiyonelliği Koru)
+            // 1. Kaynak Etiketi
             let sourceBadge = "";
-            // Backend'den 'sourceTag' alanı geliyorsa ve 'direct' değilse göster
-            if (tx.soldItems && tx.soldItems.includes("🏷️")) {
-              // Eski versiyonlarda sourceTag yoksa diye manuel parse denemesi (Gerekmeyebilir ama garanti olsun)
-            }
-
-            // Backend'den tx.sourceTag gelmesini bekliyoruz (Controller'da eklemiştik)
-            // Eğer backend henüz göndermiyorsa, geçici olarak boş kalır.
             if (tx.sourceTag && tx.sourceTag !== "direct") {
               sourceBadge = `<span style="background:#f3e8ff; color:#7c3aed; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:5px; border:1px solid #ddd6fe;">🏷️ ${tx.sourceTag}</span>`;
             }
 
-            // --- 6. ÜRÜN LİSTESİ (YENİ SİSTEM) ---
+            // 2. Ürün Detayı
             let productsHTML = "";
-
-            // A) EĞER YENİ SİSTEM VERİSİ VARSA (TABLO YAP)
             if (
               tx.itemsDetail &&
               Array.isArray(tx.itemsDetail) &&
@@ -1818,261 +1882,165 @@ ${css}
                   item.status === "refunded"
                     ? '<span style="color:red; font-size:9px;">(İADE)</span>'
                     : '<span style="color:green; font-size:9px;">✔</span>';
-
                 let itemStyle =
                   item.status === "refunded"
                     ? "text-decoration:line-through; color:#999;"
                     : "color:#333;";
-
-                rows += `
-                        <tr>
-                            <td style="border-bottom:1px dashed #eee; padding:3px; ${itemStyle} font-size:10px;">${item.qty}x ${item.name}</td>
-                            <td style="border-bottom:1px dashed #eee; padding:3px; text-align:right; font-size:10px;">${parseFloat(item.unitPrice).toLocaleString()}₺</td>
-                            <td style="border-bottom:1px dashed #eee; padding:3px; text-align:right;">${itemStatus}</td>
-                        </tr>
-                    `;
+                rows += `<tr>
+                            <td style="border-bottom:1px dashed #eee; padding:5px 0; ${itemStyle} font-size:11px;">${item.qty}x ${item.name}</td>
+                            <td style="border-bottom:1px dashed #eee; padding:5px 0; text-align:right; font-size:11px;">${parseFloat(item.unitPrice).toLocaleString()}₺</td>
+                            <td style="border-bottom:1px dashed #eee; padding:5px 0; text-align:right;">${itemStatus}</td>
+                        </tr>`;
               });
-
-              productsHTML = `
-                    <div style="margin-top:10px; background:white; padding:5px; border-radius:6px; border:1px solid #e2e8f0;">
-                        <div style="font-size:9px; font-weight:bold; color:#64748b; margin-bottom:3px; padding-left:3px;">📦 SEPET DETAYI:</div>
-                        <table style="width:100%; border-collapse:collapse;">${rows}</table>
-                    </div>
-                `;
+              productsHTML = `<div style="margin-top:10px; background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;"><table style="width:100%; border-collapse:collapse;">${rows}</table></div>`;
             }
-            // B) ESKİ SİSTEM VERİSİ VARSA (DÜZ YAZI YAP - BACKWARD COMPATIBILITY)
-            else {
-              let rawProd =
-                tx.soldItemsList && tx.soldItemsList.length > 0
-                  ? tx.soldItemsList.join(", ")
-                  : tx.soldItems || "";
 
-              if (rawProd && !rawProd.includes("%")) {
-                productsHTML = `<div style="margin-top:10px; background:white; padding:8px; border-radius:6px; border:1px dashed #cbd5e1;">
-                          <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">📦 ÜRÜNLER:</div>
-                          <div style="font-size:11px; color:#334155;">${rawProd}</div>
-                     </div>`;
-              } else if (tx.type === "sale_commission") {
-                productsHTML = `<div style="font-size:10px; color:#ccc; margin-top:5px;">Ürün detayı yok</div>`;
-              }
-            }
-            // --- 💰 AKILLI FİNANSAL DÖKÜM ---
+            // 3. Vergi Detayı
             let financeDetailHTML = "";
-
-            // Backend'den vergi verisi gelmişse (Yeni sistem kaydıysa)
             if (tx.taxAmount && parseFloat(tx.taxAmount) !== 0) {
-              let brutTutar = parseFloat(tx.commissionAmount || 0);
-              let kesinti = parseFloat(tx.taxAmount || 0);
-              let netYatan = parseFloat(tx.netPayout || 0);
-
-              // Backend'den gelen etiket: "Stopaj (-%20)" veya "KDV (+%20)"
-              let vergiAdi = tx.taxType || "Vergi/Kesinti";
-
-              // --- ŞİRKET Mİ BİREYSEL Mİ RENGİ ---
-              // Eğer KDV ise (Para ekleniyorsa) YEŞİL olsun
-              // Eğer Stopaj ise (Para kesiliyorsa) KIRMIZI olsun
-              let isKDV = vergiAdi.includes("KDV");
-              let taxColor = isKDV ? "#059669" : "#dc2626";
-              let taxSign = isKDV ? "+" : "-"; // KDV ise +, Stopaj ise - işareti
-
+              let isKDV = (tx.taxType || "").includes("KDV");
               financeDetailHTML = `
-                <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase; border-bottom:1px solid #eee; padding-bottom:3px;">
-                        📊 Detaylı Hesap Dökümü
+                <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span>Komisyon:</span><b>${parseFloat(tx.commissionAmount).toFixed(2)} ₺</b></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:${isKDV ? "#059669" : "#dc2626"}"><span>${tx.taxType}:</span><b>${isKDV ? "+" : "-"}${Math.abs(tx.taxAmount).toFixed(2)} ₺</b></div>
+                    <div style="border-top:1px solid #ddd; margin-top:3px; padding-top:3px; display:flex; justify-content:space-between; font-weight:800;"><span>NET:</span><span>${parseFloat(tx.netPayout).toFixed(2)} ₺</span></div>
+                </div>`;
+            }
+
+            // 4. Timeline ve Maturity
+            let timelineHTML =
+              tx.type === "sale_commission"
+                ? generateTimelineHTML(tx.date, tx.status)
+                : "";
+
+            // Maturity (Vade) Kartı
+            let maturityHTML = "";
+            if (tx.status === "pending_maturity" && tx.maturityDateStr) {
+              // Basit Vade Hesaplama
+              let parts = tx.maturityDateStr.split(".");
+              let target = new Date(parts[2], parts[1] - 1, parts[0]);
+              let daysLeft = Math.ceil(
+                (target - new Date()) / (1000 * 60 * 60 * 24),
+              );
+              maturityHTML = `<div style="margin-top:15px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fcd34d; font-size:12px; color:#b45309; display:flex; gap:10px; align-items:center;">
+                    <i class="fas fa-hourglass-half"></i> <b>Serbest Kalmasına: ${daysLeft} Gün</b>
+                 </div>`;
+            }
+
+            // --- HTML Item Oluştur ---
+            historyHTML += `
+                <div>
+                    <div class="fin-item" onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
+                        <div style="display:flex; align-items:center;">
+                            <div class="fin-icon-box ${iconClass}"><i class="fas ${iconSymbol}"></i></div>
+                            <div>
+                                <div style="font-weight:600; color:#1e293b; font-size:14px;">${txTitle} ${sourceBadge}</div>
+                                <div style="font-size:11px; color:#94a3b8;">${tx.date} • #${tx.id.substring(0, 6)}</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:700; color:${amountColor}; font-size:15px;">${sign}${amountText}</div>
+                            <div style="font-size:10px; color:${tx.status === "paid" ? "#10b981" : "#f59e0b"}">${tx.status === "paid" ? "Tamamlandı" : tx.status.toUpperCase()}</div>
+                        </div>
                     </div>
                     
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px; color:#334155;">
-                        <span>Komisyon Tutarı:</span>
-                        <span style="font-weight:bold;">${brutTutar.toFixed(2)} ₺</span>
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; color:${taxColor};">
-                        <span>${vergiAdi}:</span>
-                        <span style="font-weight:bold;">${taxSign}${Math.abs(kesinti).toFixed(2)} ₺</span>
-                    </div>
-
-                    <div style="border-top:1px solid #cbd5e1; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; font-size:12px; font-weight:800; color:#0f172a;">
-                        <span>${isKDV ? "Fatura Tutarı (KDV Dahil):" : "Hesaba Yatacak (Net):"}</span>
-                        <span>${netYatan.toFixed(2)} ₺</span>
+                    <div class="fin-detail-box">
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            ${receiptBtn} ${pdfBtn}
+                        </div>
+                        ${timelineHTML}
+                        ${maturityHTML}
+                        ${productsHTML}
+                        ${financeDetailHTML}
                     </div>
                 </div>
-                `;
-            }
-            // Timeline
-            let timelineHTML = "";
-            if (tx.type === "sale_commission") {
-              timelineHTML = generateTimelineHTML(tx.date, tx.status);
-            }
-            // 🔥 YENİ: VADE TARİHİ KARTI (Sadece Bekleyen Satışlar İçin)
-            let maturityHTML = "";
-            // --- 🔥 GELİŞMİŞ GERİ SAYIM SAYACI ---
-            if (tx.status === "pending_maturity" && tx.maturityDateStr) {
-              // 1. Tarihi Parse Et (TR formatı: Gün.Ay.Yıl)
-              let parts = tx.maturityDateStr.split(".");
-              let targetDate = new Date(
-                parts[2],
-                parts[1] - 1,
-                parts[0],
-                23,
-                59,
-                0,
-              ); // O günün gecesi
-              let now = new Date();
-
-              // 2. Kalan Zamanı Hesapla
-              let diffMs = targetDate - now;
-              let days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-              let hours = Math.floor(
-                (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-              );
-
-              let timeText = "";
-              let timeColor = "#d97706"; // Turuncu
-
-              if (diffMs < 0) {
-                timeText = "✅ İşlem Sırasında (Bugün)";
-                timeColor = "#10b981"; // Yeşil
-              } else {
-                timeText = `⏳ ${days} Gün ${hours} Saat Kaldı`;
-              }
-
-              maturityHTML = `
-    <div style="margin-top:15px; background:#fffbeb; padding:10px; border-radius:6px; border:1px solid #fcd34d; display:flex; align-items:center; gap:10px;">
-        <div style="font-size:20px;">⏱️</div>
-        <div>
-            <div style="font-size:10px; color:#b45309; font-weight:bold;">SERBEST KALMA SÜRESİ</div>
-            <div style="font-size:14px; color:${timeColor}; font-weight:800;">${timeText}</div>
-            <div style="font-size:10px; color:#b45309; opacity:0.8;">Hedef Tarih: ${tx.maturityDateStr}</div>
-        </div>
-    </div>`;
-            }
-
-            // --- 7. KART HTML OLUŞTUR ---
-            historyHTML += `
-        <div class="p-card" style="padding:0; margin-bottom:10px; overflow:hidden; border:${isRefunded ? "1px solid #fee2e2" : "1px solid #e2e8f0"}">
-            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:${isRefunded ? "#fff1f2" : "white"};" 
-                  onclick="var el = this.nextElementSibling; el.style.display = el.style.display === 'none' ? 'block' : 'none';">
-                
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="background:#f1f5f9; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">${icon}</div>
-                    <div>
-                        <div style="font-weight:bold; font-size:13px; color:#334155;">
-                            ${desc} ${statusBadge} ${sourceBadge} </div>
-                        <div style="font-size:10px; color:#94a3b8;">${tx.date}</div>
-                    </div>
-                </div>
-                
-                <div style="text-align:right;">
-    <div style="font-weight:bold; color:${color}; font-size:14px;">${amountText}</div>
-    ${receiptBtn} ${pdfBtn}  <div style="font-size:9px; color:#94a3b8; margin-top:2px;">▼ Detay</div>
-</div>
-                </div>
-                
-                <div style="display:none; background:#f8fafc; padding:15px; border-top:1px solid #e2e8f0;">
-    ${timelineHTML}
-    ${maturityHTML}
-
-                    <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:10px;"></div>
-
-                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                        <span style="color:#64748b">İşlem ID:</span>
-                        <span style="font-family:monospace; color:#334155;">#${tx.id.substring(0, 6)}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
-                        <span style="color:#64748b">Durum:</span>
-                        <span style="font-weight:bold;">${tx.status === "paid" ? "ÖDENDİ ✅" : tx.status.toUpperCase()}</span>
-                    </div>
-                    ${productsHTML}
-                    ${financeDetailHTML}
-                </div>
-            </div>`;
+            `;
           });
         } else {
-          historyHTML =
-            '<div style="text-align:center; padding:20px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>';
+          historyHTML = `<div style="text-align:center; padding:40px; color:#94a3b8;">Henüz işlem geçmişi yok.</div>`;
         }
 
-        // --- BURASI GÜNCELLENDİ (ÖDEME İSTE BUTONU KALKTI, BEKLEYEN EKLENDİ) ---
-
-        // Önce partner verisinin yüklü olduğundan emin olalım
-        let pStats = window.PartnerData || {};
-
-        // Eğer API'den gelen veriyi kullanmak istersen (daha güncel):
-        // Ancak 'res' değişkeni sadece 'get_partner_history' çağrısının sonucudur, 'stats' içermez.
-        // Bu yüzden window.PartnerData'yı kullanmak daha güvenlidir.
-
-        let safeBalance = parseFloat(pStats.balance || 0);
-        let pendingVal = parseFloat(pStats.pending_balance || 0);
-        // --- 🔥 YENİ EKLENECEK KISIM (KARAR MEKANİZMASI) ---
-        let accType = pStats.accountType || "individual";
+        // --- AKSİYON ALANI (FATURA / BİLGİ) ---
         let actionArea = "";
-
-        // Eğer Kurumsal ise ve Bakiye 500 TL üzerindeyse -> FATURA İSTE
         if (accType === "company" && safeBalance >= 500) {
           actionArea = `
-            <div style="background:#fff7ed; border:1px dashed #f97316; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
-                <div style="font-size:24px;">📄</div>
-                <div style="flex:1;">
-                    <div style="font-weight:bold; color:#9a3412; font-size:12px;">FATURA YÜKLEMENİZ GEREKİYOR</div>
-                    <div style="font-size:11px; color:#c2410c;">Ödemenizi alabilmek için <b>${safeBalance.toLocaleString("tr-TR")} TL + KDV</b> tutarında faturanızı yükleyiniz.</div>
+            <div style="background:#fff7ed; border:1px dashed #f97316; padding:15px; border-radius:12px; margin-bottom:30px; display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div style="background:#ffedd5; color:#c2410c; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">📄</div>
+                    <div>
+                        <div style="font-weight:bold; color:#9a3412; font-size:13px;">FATURA YÜKLEMENİZ GEREKİYOR</div>
+                        <div style="font-size:11px; color:#c2410c;">Ödeme için <b>${safeBalance.toLocaleString("tr-TR")} TL + KDV</b> fatura yükleyin.</div>
+                    </div>
                 </div>
-                <button onclick="PartnerApp.uploadInvoice()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#ea580c; color:white; border:none;">
-                    Yükle
-                </button> 
-            </div>
-          `;
-        }
-        // Eğer Bireysel ise veya Kurumsal ama limiti geçmemişse -> BİLGİ VER
-        else {
+                <button onclick="PartnerApp.uploadInvoice()" class="fin-btn fin-btn-primary" style="background:#ea580c;">Yükle</button> 
+            </div>`;
+        } else {
           actionArea = `
-            <div style="background:#ecfdf5; border:1px dashed #10b981; padding:12px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center;">
-                <div style="font-size:20px;">🗓️</div>
+            <div style="background:#ecfdf5; border:1px dashed #10b981; padding:15px; border-radius:12px; margin-bottom:30px; display:flex; align-items:center; gap:15px;">
+                <div style="background:#d1fae5; color:#047857; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">🗓️</div>
                 <div>
-                    <div style="font-weight:bold; color:#065f46; font-size:12px;">HAFTALIK ÖDEME GÜNÜ</div>
-                    <div style="font-size:11px; color:#047857;">Çekilebilir bakiyeniz 500 TL üzerindeyse her <b style="text-decoration:underline;">Çarşamba</b> günü otomatik olarak IBAN'ınıza yatırılır.</div>
+                    <div style="font-weight:bold; color:#065f46; font-size:13px;">HAFTALIK ÖDEME GÜNÜ: ÇARŞAMBA</div>
+                    <div style="font-size:11px; color:#047857;">Bakiyeniz 500 TL üzerindeyse otomatik yatırılır.</div>
                 </div>
-            </div>
-          `;
+            </div>`;
         }
 
-        // 🔥 YENİ BAŞLIK EKLENDİ
+        // --- HTML ÇIKTISI (RENDER) ---
         container.innerHTML = `
-  <div style="background:#fff; border-left:4px solid #10b981; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-      <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">💰 Cüzdan ve Ödemeler</h3>
-      <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-          Kazançlarınız satış onaylandıktan 14 gün sonra (iade süresi bitince) çekilebilir bakiyeye aktarılır.
-      </p>
-  </div>
+        ${css}
+        
+        <div style="animation: fadeInApp 0.5s ease-out;">
+            <h3 style="margin:0 0 20px 0; color:#1e293b; font-size:18px;">Finans Merkezi</h3>
 
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
-      <div class="p-card" style="text-align:center; padding:20px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; box-shadow:0 10px 20px rgba(16, 185, 129, 0.2); margin:0;">
-          <div style="font-size:10px; opacity:0.9; font-weight:bold;">ÇEKİLEBİLİR BAKİYE</div>
-          <div class="p-stat-val" style="color:white; font-size:28px; margin:5px 0;">${safeBalance.toLocaleString("tr-TR")} ₺</div> 
-          <div style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; display:inline-block;">Otomatik Ödenir</div>
-      </div>
+            <div class="fin-hero-grid">
+                <div class="fin-card available">
+                    <i class="fas fa-wallet fin-card-bg-icon"></i>
+                    <div>
+                        <div class="fin-chip"></div>
+                        <div class="fin-label">ÇEKİLEBİLİR BAKİYE</div>
+                        <div class="fin-amount p-stat-val" style="color:white;">${safeBalance.toLocaleString("tr-TR")} ₺</div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="fin-status"><div style="width:6px; height:6px; background:#4ade80; border-radius:50%;"></div> Aktif</div>
+                        <div style="font-size:24px; opacity:0.8;"><i class="fab fa-cc-visa"></i></div>
+                    </div>
+                </div>
 
-      <div class="p-card" style="text-align:center; padding:20px; background:#fffbeb; border:1px solid #fcd34d; color:#b45309; margin:0;">
-          <div style="font-size:10px; opacity:0.8; font-weight:bold;">14 GÜN BEKLEYEN</div>
-          <div class="p-stat-val" style="color:#d97706; font-size:28px; margin:5px 0;">${pendingVal.toLocaleString("tr-TR")} ₺</div> 
-          <div style="font-size:10px; color:#d97706; opacity:0.8;">İade süresi dolunca aktarılır</div>
-      </div>
-  </div>
-  ${calendarHTML}
-  
-  ${actionArea}
-  
-  <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0;">
-      <h4 style="margin:0; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Hesap Hareketleri</h4>
-      <button onclick="PartnerApp.downloadPDFStatement()" class="p-btn" style="width:auto; padding:6px 12px; font-size:11px; background:#1e293b; color:white; border:none;">
-          <i class="fas fa-file-pdf"></i> Ekstre İndir (PDF)
-      </button>      
-  </div>    
-  ${historyHTML}
-`;
-        // Son olarak güncel bakiyeyi tekrar çekip ekrana basalım (Garanti olsun)
+                <div class="fin-card pending">
+                    <i class="fas fa-hourglass-half fin-card-bg-icon"></i>
+                    <div>
+                        <div class="fin-chip"></div>
+                        <div class="fin-label">14 GÜN BEKLEYEN</div>
+                        <div class="fin-amount p-stat-val" style="color:white;">${pendingVal.toLocaleString("tr-TR")} ₺</div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="fin-status"><div style="width:6px; height:6px; background:white; border-radius:50%;"></div> Bloke</div>
+                        <div style="font-size:12px; opacity:0.9;">İade süresi dolunca aktarılır</div>
+                    </div>
+                </div>
+            </div>
+
+            ${actionArea}
+            ${calendarHTML}
+
+            <div class="fin-history-container">
+                <div class="fin-history-header">
+                    <div class="fin-history-title"><i class="fas fa-history" style="color:#64748b;"></i> Hesap Hareketleri</div>
+                    <button onclick="PartnerApp.downloadPDFStatement()" class="fin-btn fin-btn-primary">
+                        <i class="fas fa-file-pdf"></i> Ekstre İndir
+                    </button>
+                </div>
+                <div>
+                    ${historyHTML}
+                </div>
+            </div>
+        </div>
+        `;
+
+        // Bakiyeyi tekrar güncelle (Garanti olsun)
         PartnerApp.updateBalanceDisplay(container);
       } catch (e) {
-        container.innerHTML = "Hata: " + e.message;
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:red;">Veri yüklenirken hata oluştu: ${e.message}</div>`;
       }
     }, // --- FATURA YÜKLEME FONKSİYONU ---
     uploadInvoice: async function () {
@@ -4928,5 +4896,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v16*/
+  /*sistem güncellendi v17*/
 })();
