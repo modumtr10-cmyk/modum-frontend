@@ -2362,8 +2362,9 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (FİNAL CSS DÜZELTME v5.0 - ÇAKIŞMA SAVAR) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (SHADOW DOM - KARANTİNA MODU - KESİN ÇÖZÜM) ---
     renderShowcase: async function (container) {
+      // Yükleniyor...
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
 
@@ -2379,231 +2380,248 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 1. ÖZEL CSS STİLLERİ (FAPRIKA'YI EZEN STİLLER - !important KULLANILDI)
-          const showcaseStyle = `
-            <style>
-                /* Kapsayıcıyı izole et */
-                #mdm-showcase-wrapper {
-                    width: 100% !important;
-                    box-sizing: border-box !important;
-                    display: block !important;
-                }
+          // 1. Önce Container'ı Temizle
+          container.innerHTML = "";
 
-                /* GRID YAPISI */
-                #mdm-showcase-wrapper .mdm-grid {
-                    display: grid !important;
-                    grid-template-columns: repeat(2, 1fr) !important; /* Mobilde 2'li */
-                    gap: 15px !important;
-                    width: 100% !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    box-sizing: border-box !important;
-                }
+          // 2. SHADOW HOST OLUŞTUR (Karantina Kutusu)
+          const shadowHost = document.createElement("div");
+          shadowHost.style.width = "100%";
+          container.appendChild(shadowHost);
 
-                /* Masaüstü (992px ve üzeri) */
-                @media (min-width: 992px) {
-                    #mdm-showcase-wrapper .mdm-grid {
-                        grid-template-columns: repeat(3, 1fr) !important; /* Masaüstünde 3'lü */
-                        gap: 25px !important;
-                    }
-                }
+          // 3. SHADOW ROOT AÇ (Kapıları Kapat - Dışarıdan CSS Giremez!)
+          const shadow = shadowHost.attachShadow({ mode: "open" });
 
-                /* KART YAPISI */
-                #mdm-showcase-wrapper .mdm-card {
-                    background: white !important;
-                    border: 1px solid #e2e8f0 !important;
-                    border-radius: 12px !important;
-                    overflow: hidden !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    position: relative !important;
-                    height: auto !important;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
-                    transition: transform 0.2s !important;
-                }
-                
-                #mdm-showcase-wrapper .mdm-card:hover {
-                    transform: translateY(-5px) !important;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-                }
+          // 4. İÇERİK HTML'İ (FontAwesome Linki + ÖZEL CSS + HTML)
+          let gridItems = "";
 
-                /* RESİM KUTUSU (ASPECT RATIO KORUMASI) */
-                #mdm-showcase-wrapper .mdm-img-box {
-                    position: relative !important;
-                    width: 100% !important;
-                    padding-top: 130% !important; /* Dikey dikdörtgen oranı */
-                    background: #fff !important;
-                    overflow: hidden !important;
-                }
-
-                /* RESİMİN KENDİSİ (ÇAKIŞMAYI ÖNLEYEN KOD) */
-                #mdm-showcase-wrapper .mdm-img-real {
-                    position: absolute !important;
-                    top: 0 !important; 
-                    left: 0 !important;
-                    width: 100% !important; 
-                    height: 100% !important;
-                    object-fit: contain !important; /* Resmi kutuya sığdır, kesme */
-                    padding: 10px !important;
-                    margin: 0 !important;
-                    max-width: none !important; /* Faprika kısıtlamasını kaldır */
-                    max-height: none !important;
-                    display: block !important;
-                    border: none !important;
-                }
-
-                /* İÇERİK ALANI */
-                #mdm-showcase-wrapper .mdm-content {
-                    padding: 15px !important;
-                    flex: 1 !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    border-top: 1px solid #f1f5f9 !important;
-                    background: #fff !important;
-                }
-                
-                /* Başlıklar ve Metinler */
-                #mdm-showcase-wrapper .mdm-title {
-                    font-size: 13px !important;
-                    font-weight: 700 !important;
-                    color: #1e293b !important;
-                    margin-bottom: 8px !important;
-                    line-height: 1.4 !important;
-                    height: 38px !important;
-                    overflow: hidden !important;
-                    display: -webkit-box !important;
-                    -webkit-line-clamp: 2 !important;
-                    -webkit-box-orient: vertical !important;
-                }
-
-                #mdm-showcase-wrapper .mdm-price {
-                    font-size: 18px !important;
-                    font-weight: 900 !important;
-                    color: #10b981 !important;
-                }
-
-                #mdm-showcase-wrapper .mdm-btn-group {
-                     display: grid !important;
-                     grid-template-columns: 1fr 1fr !important;
-                     gap: 8px !important;
-                     margin-bottom: 8px !important;
-                }
-            </style>
-          `;
-
-          // 2. ÜST BİLGİ ALANI
-          container.innerHTML = `
-            ${showcaseStyle}
-            <div id="mdm-showcase-wrapper">
-                <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
-                    <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-                        Sistem her gece en çok satan ve popüler ürünleri analiz ederek buraya getirir. 
-                        Ne paylaşsam diye düşünme, buradan seç ve kazan!
-                    </p>
-                </div>
-
-                <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:20px; color:white; display:flex; align-items:center; justify-content:space-between;">
-                    <div>
-                        <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
-                        <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
-                    </div>
-                    <div style="font-size:24px;">🚀</div>
-                </div>
-                
-                <div class="mdm-grid">`;
-
-          let gridHtml = "";
-
-          // 3. ÜRÜN KARTLARINI OLUŞTURMA
           data.list.forEach((p) => {
             // Link Hazırlığı
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-            // Partner Verileri ve Oran Hesabı
+            // Oran Hesabı
             let baseRate = parseFloat(pData.commission_rate || 10);
             let specialRates = pData.special_rates || {};
             let prodCat = (p.category || p.title || "Genel").toLowerCase();
-
             let appliedRate = baseRate;
             let isSpecial = false;
 
-            // Özel Oran Kontrolü
             Object.keys(specialRates).forEach((key) => {
-              let rateKey = key.toLowerCase();
-              let rateVal = parseFloat(specialRates[key]);
-              if (prodCat.includes(rateKey)) {
-                if (rateVal > appliedRate) {
-                  appliedRate = rateVal;
-                  isSpecial = true;
-                }
+              if (
+                prodCat.includes(key.toLowerCase()) &&
+                parseFloat(specialRates[key]) > appliedRate
+              ) {
+                appliedRate = parseFloat(specialRates[key]);
+                isSpecial = true;
               }
             });
 
-            // Özel Kazanç Rozeti
-            let badgeHtml = "";
-            if (isSpecial) {
-              badgeHtml = `
-                <div style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:10px; padding:4px 8px; border-radius:4px; font-weight:bold; box-shadow:0 4px 10px rgba(245, 158, 11, 0.4); z-index:2;">
-                    🔥 %${appliedRate} KAZANÇ
-                </div>
-              `;
-            }
+            // Rozet
+            let badgeHtml = isSpecial
+              ? `<div class="badge-special">🔥 %${appliedRate} KAZANÇ</div>`
+              : "";
 
-            // Kart HTML'i
-            gridHtml += `
-            <div class="mdm-card" style="${isSpecial ? "border: 2px solid #f59e0b !important;" : ""}">
-                
-                ${badgeHtml}
-                
-                <div class="mdm-img-box">
-                    <img src="${p.image}" class="mdm-img-real" loading="lazy">
-                    <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.9;">
-                        Fırsat
-                    </div>
-                </div>
-
-                <div class="mdm-content">
-                    <div class="mdm-title">
-                        ${p.title}
-                    </div>
-                    
-                    <div style="margin-top:auto;">
-                        <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:12px;">
-                            <div class="mdm-price">${p.price}</div>                     
+            // Kart HTML
+            gridItems += `
+                        <div class="card ${isSpecial ? "special-border" : ""}">
+                            ${badgeHtml}
+                            <div class="img-box">
+                                <img src="${p.image}" alt="${p.title}">
+                                <div class="firsat-badge">Fırsat</div>
+                            </div>
+                            <div class="content">
+                                <div class="title">${p.title}</div>
+                                <div class="price-area">
+                                    <div class="price">${p.price}</div>
+                                </div>
+                                <div class="actions">
+                                    <button class="btn btn-light" onclick="this.getRootNode().host.parentNode.closest('.p-app').querySelector('.p-nav-item[onclick*=\\'links\\']').click()">
+                                        🔗 Link
+                                    </button>
+                                    <button class="btn btn-blue" onclick="window.PartnerApp.openStoryEditor('${safeProductData}')">
+                                        🎨 Story
+                                    </button>
+                                </div>
+                                <a href="${shareLink}" target="_blank" class="btn-full">
+                                    ↗️ Ürüne Git
+                                </a>
+                            </div>
                         </div>
-                        
-                        <div class="mdm-btn-group">
-                            <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
-                                <i class="fas fa-link"></i> Link
-                            </button>
-                            <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
-                                <i class="fas fa-paint-brush"></i> Story
-                            </button>
-                        </div>
-                        
-                        <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:12px; width:100%; text-decoration:none; padding:10px; margin-top:0;">
-                              <i class="fas fa-external-link-alt"></i> Ürüne Git
-                        </a>
-
-                    </div>
-                </div>
-            </div>`;
+                    `;
           });
 
-          container.innerHTML += gridHtml + `</div></div>`; // Grid'i ve Wrapper'ı kapat
+          // 5. TÜM PAKETİ SHADOW İÇİNE GÖM
+          shadow.innerHTML = `
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    
+                    <style>
+                        /* BU CSS'LER SADECE BU KUTU İÇİNDE GEÇERLİDİR - FAPRIKA BOZAMAZ */
+                        :host {
+                            display: block;
+                            font-family: 'Inter', sans-serif, system-ui, -apple-system;
+                        }
+                        * { box-sizing: border-box; }
 
-          // Alt bilgi
-          container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
-                <i class="fas fa-sync"></i> Liste her gece 00:00'da yenilenir.
-            </div>`;
+                        .header-box {
+                            background: #fff;
+                            border-left: 4px solid #f59e0b;
+                            padding: 15px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                            margin-bottom: 20px;
+                        }
+                        .header-title { margin: 0 0 5px 0; font-size: 16px; color: #1e293b; font-weight: bold; }
+                        .header-desc { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+
+                        .top-banner {
+                            background: linear-gradient(to right, #f59e0b, #d97706);
+                            padding: 15px;
+                            border-radius: 12px;
+                            margin-bottom: 20px;
+                            color: white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                        }
+
+                        /* --- GRID YAPISI (TELEFONDA 2, MASAÜSTÜNDE 3) --- */
+                        .grid-container {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr); /* Mobil: 2 Sütun */
+                            gap: 12px;
+                            width: 100%;
+                        }
+
+                        /* MASAÜSTÜ AYARI (900px üstü) */
+                        @media (min-width: 900px) {
+                            .grid-container {
+                                grid-template-columns: repeat(3, 1fr); /* PC: 3 Sütun */
+                                gap: 20px;
+                            }
+                        }
+
+                        .card {
+                            background: white;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 12px;
+                            overflow: hidden;
+                            display: flex;
+                            flex-direction: column;
+                            position: relative;
+                            transition: transform 0.2s;
+                            height: 100%;
+                        }
+                        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+                        .special-border { border: 2px solid #f59e0b; }
+
+                        /* Resim Kutusu - Oran Sabitleme */
+                        .img-box {
+                            position: relative;
+                            width: 100%;
+                            padding-top: 125%; /* 4:5 Oranı (Dikey Dikdörtgen) */
+                            background: white;
+                            overflow: hidden;
+                        }
+
+                        .img-box img {
+                            position: absolute;
+                            top: 0; left: 0;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: contain; /* Resmi kutuya sığdır, kesme */
+                            padding: 10px;
+                        }
+
+                        .firsat-badge {
+                            position: absolute; top: 8px; right: 8px;
+                            background: #ef4444; color: white;
+                            font-size: 10px; padding: 2px 6px;
+                            border-radius: 4px; font-weight: bold;
+                        }
+                        
+                        .badge-special {
+                            position: absolute; top: 8px; left: 8px;
+                            background: linear-gradient(135deg, #f59e0b, #d97706);
+                            color: white; font-size: 10px; padding: 4px 8px;
+                            border-radius: 4px; font-weight: bold; z-index: 2;
+                        }
+
+                        .content {
+                            padding: 12px;
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            border-top: 1px solid #f1f5f9;
+                        }
+
+                        .title {
+                            font-size: 13px; font-weight: 600; color: #334155;
+                            margin-bottom: 5px; line-height: 1.3;
+                            height: 34px; overflow: hidden;
+                            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+                        }
+
+                        .price-area { margin-top: auto; margin-bottom: 10px; }
+                        .price { font-size: 16px; font-weight: 800; color: #10b981; }
+
+                        .actions {
+                            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+                        }
+
+                        .btn {
+                            border: none; padding: 8px; border-radius: 6px;
+                            font-size: 11px; font-weight: 600; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center; gap: 5px;
+                            transition: background 0.2s;
+                        }
+                        .btn-light { background: #f1f5f9; color: #334155; }
+                        .btn-light:hover { background: #e2e8f0; }
+                        
+                        .btn-blue { background: #3b82f6; color: white; }
+                        .btn-blue:hover { background: #2563eb; }
+                        
+                        .btn-full {
+                            background: #1e293b; color: white;
+                            text-decoration: none; padding: 10px;
+                            border-radius: 6px; font-size: 12px;
+                            font-weight: bold; text-align: center;
+                            display: block;
+                            transition: background 0.2s;
+                        }
+                        .btn-full:hover { background: #0f172a; }
+                    </style>
+
+                    <div class="header-box">
+                        <h3 class="header-title">🔥 Günün Vitrini</h3>
+                        <p class="header-desc">
+                            Sistem her gece en çok satan ürünleri analiz ederek buraya getirir. 
+                            Ne paylaşsam diye düşünme, buradan seç ve kazan!
+                        </p>
+                    </div>
+                    
+                    <div class="top-banner">
+                         <div>
+                            <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
+                            <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
+                        </div>
+                        <div style="font-size:24px;">🚀</div>
+                    </div>
+
+                    <div class="grid-container">
+                        ${gridItems}
+                    </div>
+                    
+                    <div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
+                        Liste her gece 00:00'da yenilenir.
+                    </div>
+                `;
         } else {
           container.innerHTML = `<div style="text-align:center; padding:20px; color:#999;">Bugün için vitrin oluşturulamadı.</div>`;
         }
       } catch (e) {
         container.innerHTML = "Hata: " + e.message;
+        console.error(e);
       }
     }, // --- 🛍️ MAĞAZAM (KOLEKSİYON YÖNETİMİ - FİNAL DÜZELTİLMİŞ) ---
     renderMyCollection: async function (container) {
@@ -4987,5 +5005,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v19*/
+  /*sistem güncellendi v20*/
 })();
