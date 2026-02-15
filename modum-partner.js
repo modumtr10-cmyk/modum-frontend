@@ -2362,9 +2362,8 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (SHADOW DOM - KARANTİNA MODU - KESİN ÇÖZÜM) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (FİNAL v7.0 - Link Fix & Koleksiyon Butonu) ---
     renderShowcase: async function (container) {
-      // Yükleniyor...
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
 
@@ -2380,25 +2379,21 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 1. Önce Container'ı Temizle
           container.innerHTML = "";
 
-          // 2. SHADOW HOST OLUŞTUR (Karantina Kutusu)
+          // SHADOW DOM (Karantina)
           const shadowHost = document.createElement("div");
           shadowHost.style.width = "100%";
           container.appendChild(shadowHost);
-
-          // 3. SHADOW ROOT AÇ (Kapıları Kapat - Dışarıdan CSS Giremez!)
           const shadow = shadowHost.attachShadow({ mode: "open" });
 
-          // 4. İÇERİK HTML'İ (FontAwesome Linki + ÖZEL CSS + HTML)
           let gridItems = "";
 
           data.list.forEach((p) => {
             // Link Hazırlığı
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
-            let safeProductData = encodeURIComponent(JSON.stringify(p));
+            let safeProductData = encodeURIComponent(JSON.stringify(p)); // Tüm veriyi paketle
 
             // Oran Hesabı
             let baseRate = parseFloat(pData.commission_rate || 10);
@@ -2417,12 +2412,11 @@ ${css}
               }
             });
 
-            // Rozet
             let badgeHtml = isSpecial
               ? `<div class="badge-special">🔥 %${appliedRate} KAZANÇ</div>`
               : "";
 
-            // Kart HTML
+            // --- HTML YAPISI (3 Butonlu) ---
             gridItems += `
                         <div class="card ${isSpecial ? "special-border" : ""}">
                             ${badgeHtml}
@@ -2435,14 +2429,19 @@ ${css}
                                 <div class="price-area">
                                     <div class="price">${p.price}</div>
                                 </div>
+                                
                                 <div class="actions">
-                                    <button class="btn btn-light" onclick="this.getRootNode().host.parentNode.closest('.p-app').querySelector('.p-nav-item[onclick*=\\'links\\']').click()">
+                                    <button class="btn btn-light" onclick="window.PartnerApp.openShareMenu('${p.url}', false)">
                                         🔗 Link
+                                    </button>
+                                    <button class="btn btn-light" onclick="window.PartnerApp.addFromShowcase('${safeProductData}', this)">
+                                        ➕ Ekle
                                     </button>
                                     <button class="btn btn-blue" onclick="window.PartnerApp.openStoryEditor('${safeProductData}')">
                                         🎨 Story
                                     </button>
                                 </div>
+
                                 <a href="${shareLink}" target="_blank" class="btn-full">
                                     ↗️ Ürüne Git
                                 </a>
@@ -2451,95 +2450,49 @@ ${css}
                     `;
           });
 
-          // 5. TÜM PAKETİ SHADOW İÇİNE GÖM
           shadow.innerHTML = `
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-                    
                     <style>
-                        /* BU CSS'LER SADECE BU KUTU İÇİNDE GEÇERLİDİR - FAPRIKA BOZAMAZ */
-                        :host {
-                            display: block;
-                            font-family: 'Inter', sans-serif, system-ui, -apple-system;
-                        }
+                        :host { display: block; font-family: 'Inter', sans-serif, system-ui; }
                         * { box-sizing: border-box; }
 
                         .header-box {
-                            background: #fff;
-                            border-left: 4px solid #f59e0b;
-                            padding: 15px;
-                            border-radius: 8px;
-                            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                            margin-bottom: 20px;
+                            background: #fff; border-left: 4px solid #f59e0b; padding: 15px;
+                            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;
                         }
                         .header-title { margin: 0 0 5px 0; font-size: 16px; color: #1e293b; font-weight: bold; }
                         .header-desc { margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; }
 
-                        .top-banner {
-                            background: linear-gradient(to right, #f59e0b, #d97706);
-                            padding: 15px;
-                            border-radius: 12px;
-                            margin-bottom: 20px;
-                            color: white;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                        }
-
-                        /* --- GRID YAPISI (TELEFONDA 2, MASAÜSTÜNDE 3) --- */
                         .grid-container {
                             display: grid;
-                            grid-template-columns: repeat(2, 1fr); /* Mobil: 2 Sütun */
-                            gap: 12px;
-                            width: 100%;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 12px; width: 100%;
                         }
-
-                        /* MASAÜSTÜ AYARI (900px üstü) */
                         @media (min-width: 900px) {
-                            .grid-container {
-                                grid-template-columns: repeat(3, 1fr); /* PC: 3 Sütun */
-                                gap: 20px;
-                            }
+                            .grid-container { grid-template-columns: repeat(3, 1fr); gap: 20px; }
                         }
 
                         .card {
-                            background: white;
-                            border: 1px solid #e2e8f0;
-                            border-radius: 12px;
-                            overflow: hidden;
-                            display: flex;
-                            flex-direction: column;
-                            position: relative;
-                            transition: transform 0.2s;
-                            height: 100%;
+                            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+                            overflow: hidden; display: flex; flex-direction: column; position: relative;
+                            transition: transform 0.2s; height: 100%;
                         }
                         .card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
                         .special-border { border: 2px solid #f59e0b; }
 
-                        /* Resim Kutusu - Oran Sabitleme */
                         .img-box {
-                            position: relative;
-                            width: 100%;
-                            padding-top: 125%; /* 4:5 Oranı (Dikey Dikdörtgen) */
-                            background: white;
-                            overflow: hidden;
+                            position: relative; width: 100%; padding-top: 125%;
+                            background: white; overflow: hidden;
                         }
-
                         .img-box img {
-                            position: absolute;
-                            top: 0; left: 0;
-                            width: 100%;
-                            height: 100%;
-                            object-fit: contain; /* Resmi kutuya sığdır, kesme */
-                            padding: 10px;
+                            position: absolute; top: 0; left: 0; width: 100% !important;
+                            height: 100% !important; object-fit: contain; padding: 10px;
+                            max-width: none; max-height: none;
                         }
-
                         .firsat-badge {
-                            position: absolute; top: 8px; right: 8px;
-                            background: #ef4444; color: white;
-                            font-size: 10px; padding: 2px 6px;
-                            border-radius: 4px; font-weight: bold;
+                            position: absolute; top: 8px; right: 8px; background: #ef4444; color: white;
+                            font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;
                         }
-                        
                         .badge-special {
                             position: absolute; top: 8px; left: 8px;
                             background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -2548,45 +2501,41 @@ ${css}
                         }
 
                         .content {
-                            padding: 12px;
-                            flex: 1;
-                            display: flex;
-                            flex-direction: column;
+                            padding: 12px; flex: 1; display: flex; flex-direction: column;
                             border-top: 1px solid #f1f5f9;
                         }
-
                         .title {
-                            font-size: 13px; font-weight: 600; color: #334155;
-                            margin-bottom: 5px; line-height: 1.3;
-                            height: 34px; overflow: hidden;
+                            font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;
+                            line-height: 1.3; height: 34px; overflow: hidden;
                             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
                         }
-
                         .price-area { margin-top: auto; margin-bottom: 10px; }
                         .price { font-size: 16px; font-weight: 800; color: #10b981; }
 
+                        /* BUTON GRUBU (3'lü Yapı) */
                         .actions {
-                            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+                            display: grid; 
+                            grid-template-columns: 1fr 1fr 1fr; /* 3 Eşit Parça */
+                            gap: 6px; 
+                            margin-bottom: 8px;
                         }
 
                         .btn {
-                            border: none; padding: 8px; border-radius: 6px;
+                            border: none; padding: 8px 4px; border-radius: 6px;
                             font-size: 11px; font-weight: 600; cursor: pointer;
-                            display: flex; align-items: center; justify-content: center; gap: 5px;
-                            transition: background 0.2s;
+                            display: flex; align-items: center; justify-content: center; gap: 4px;
+                            white-space: nowrap;
                         }
-                        .btn-light { background: #f1f5f9; color: #334155; }
+                        .btn-light { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
                         .btn-light:hover { background: #e2e8f0; }
                         
                         .btn-blue { background: #3b82f6; color: white; }
                         .btn-blue:hover { background: #2563eb; }
                         
                         .btn-full {
-                            background: #1e293b; color: white;
-                            text-decoration: none; padding: 10px;
-                            border-radius: 6px; font-size: 12px;
-                            font-weight: bold; text-align: center;
-                            display: block;
+                            background: #1e293b; color: white; text-decoration: none;
+                            padding: 10px; border-radius: 6px; font-size: 12px;
+                            font-weight: bold; text-align: center; display: block;
                             transition: background 0.2s;
                         }
                         .btn-full:hover { background: #0f172a; }
@@ -2595,17 +2544,8 @@ ${css}
                     <div class="header-box">
                         <h3 class="header-title">🔥 Günün Vitrini</h3>
                         <p class="header-desc">
-                            Sistem her gece en çok satan ürünleri analiz ederek buraya getirir. 
-                            Ne paylaşsam diye düşünme, buradan seç ve kazan!
+                            Sistem her gece en çok satan ürünleri buraya getirir. Seç, paylaş ve kazan!
                         </p>
-                    </div>
-                    
-                    <div class="top-banner">
-                         <div>
-                            <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
-                            <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
-                        </div>
-                        <div style="font-size:24px;">🚀</div>
                     </div>
 
                     <div class="grid-container">
@@ -3561,6 +3501,58 @@ ${css}
         }
       } catch (e) {
         container.innerHTML = "Hata: " + e.message;
+      }
+    }, // --- 🔥 VİTRİNDEN KOLEKSİYONA EKLEME (ÖZEL FONKSİYON) ---
+    addFromShowcase: async function (productStr, btnEl) {
+      // Butonu Kilitle
+      const oldHtml = btnEl.innerHTML;
+      btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btnEl.disabled = true;
+
+      try {
+        const product = JSON.parse(decodeURIComponent(productStr));
+        const email = detectUser();
+
+        // Backend'e Gönder
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            islem: "toggle_collection_product",
+            email: email,
+            product: product,
+          }),
+        }).then((r) => r.json());
+
+        if (res.success) {
+          if (res.action === "added") {
+            btnEl.style.background = "#10b981"; // Yeşil
+            btnEl.style.color = "white";
+            btnEl.innerHTML = '<i class="fas fa-check"></i> Eklendi';
+            alert("✅ Ürün mağazana eklendi!");
+          } else {
+            btnEl.style.background = "#f1f5f9"; // Gri
+            btnEl.style.color = "#334155";
+            btnEl.innerHTML = '<i class="fas fa-plus"></i> Ekle';
+            alert("🗑️ Ürün mağazandan çıkarıldı.");
+          }
+        } else {
+          alert("Hata: " + res.message);
+          btnEl.innerHTML = oldHtml;
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Bağlantı hatası.");
+        btnEl.innerHTML = oldHtml;
+      } finally {
+        btnEl.disabled = false;
+        // 2 saniye sonra butonu eski haline getir (Sürekli yeşil kalmasın)
+        setTimeout(() => {
+          if (btnEl.innerText.includes("Eklendi")) {
+            btnEl.innerHTML = '<i class="fas fa-minus"></i> Çıkar';
+            btnEl.style.background = "#ef4444";
+          }
+        }, 2000);
       }
     },
   };
@@ -5005,5 +4997,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v20*/
+  /*sistem güncellendi v21*/
 })();
