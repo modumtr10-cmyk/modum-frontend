@@ -2362,7 +2362,7 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (MASAÜSTÜ 3'LÜ GRID DÜZELTİLMİŞ) ---
     renderShowcase: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
@@ -2379,8 +2379,69 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
+          // 1. ÖZEL CSS STİLLERİ (Responsive Grid İçin)
+          // Bu stil bloğu masaüstünde 3'lü, mobilde 2'li yapıyı sağlar.
+          const showcaseStyle = `
+            <style>
+                .showcase-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr); /* Mobilde 2'li */
+                    gap: 12px;
+                }
+                /* Masaüstü (992px ve üzeri) için ayar */
+                @media (min-width: 992px) {
+                    .showcase-grid {
+                        grid-template-columns: repeat(3, 1fr); /* Masaüstünde 3'lü */
+                        gap: 20px;
+                    }
+                }
+                /* Kart Yapısı */
+                .showcase-card {
+                    background: white;
+                    border: 1px solid #f1f5f9;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                .showcase-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                }
+                /* Görsel Alanı */
+                .showcase-img-box {
+                    position: relative;
+                    padding-top: 125%; /* Görsel oranı (Biraz daha kısa tutuldu) */
+                    overflow: hidden;
+                    background: #fff;
+                }
+                .showcase-img {
+                    position: absolute;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    object-fit: contain;
+                    padding: 10px;
+                    box-sizing: border-box;
+                    transition: transform 0.3s;
+                }
+                .showcase-card:hover .showcase-img {
+                    transform: scale(1.05);
+                }
+                /* İçerik Alanı */
+                .showcase-content {
+                    padding: 15px;
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    border-top: 1px solid #f1f5f9;
+                }
+            </style>
+          `;
+
+          // 2. ÜST BİLGİ ALANI
           container.innerHTML = `
+            ${showcaseStyle}
             <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
                 <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
                 <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
@@ -2397,112 +2458,89 @@ ${css}
                 <div style="font-size:24px;">🚀</div>
             </div>
             
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
+            <div class="showcase-grid">`;
 
           let gridHtml = "";
-          // --- ♻️ GÜNCELLENMİŞ KAZANÇ HESAPLAMA BLOĞU (Bunu Kopyala) ---
+
+          // 3. ÜRÜN KARTLARINI OLUŞTURMA
           data.list.forEach((p) => {
-            // 1. Link Hazırlığı
+            // Link Hazırlığı
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-            // 2. Partner Verileri
+            // Partner Verileri ve Oran Hesabı
             let baseRate = parseFloat(pData.commission_rate || 10);
             let specialRates = pData.special_rates || {};
-
-            // Ürün Kategorisi (Veri yoksa başlığa bakarak tahmin etmeye çalışsın - YEDEK PLAN)
             let prodCat = (p.category || p.title || "Genel").toLowerCase();
 
             let appliedRate = baseRate;
             let isSpecial = false;
-            let matchReason = ""; // Hangi kelimeden yakaladığını görmek için
 
-            // 🔥 AKILLI EŞLEŞTİRME DÖNGÜSÜ
-            // Tanımlı tüm özel oranları tek tek kontrol et
+            // Özel Oran Kontrolü
             Object.keys(specialRates).forEach((key) => {
-              let rateKey = key.toLowerCase(); // Örn: "kadın sandalet"
+              let rateKey = key.toLowerCase();
               let rateVal = parseFloat(specialRates[key]);
-
-              // Eğer ürünün kategorisinde veya başlığında bu kelime geçiyorsa (Örn: "Sandalet")
               if (prodCat.includes(rateKey)) {
-                // Ve bu oran, şu anki orandan yüksekse
                 if (rateVal > appliedRate) {
                   appliedRate = rateVal;
                   isSpecial = true;
-                  matchReason = key;
                 }
               }
             });
 
-            // KONSOLA YAZDIR (Hatayı görmek için F12'de bakabilirsin)
-            if (isSpecial) {
-              console.log(
-                `🔥 Eşleşme Bulundu! Ürün: ${p.title} -> Kural: ${matchReason} -> Oran: %${appliedRate}`,
-              );
-            }
-
-            // Tahmini Kazanç Hesabı
-            let cleanPrice =
-              parseFloat(
-                p.price
-                  .toString()
-                  .replace(/[^0-9.,]/g, "")
-                  .replace(",", "."),
-              ) || 0;
-            let potentialEarn = (cleanPrice * appliedRate) / 100;
-
-            // Etiket HTML'i
+            // Özel Kazanç Rozeti
             let badgeHtml = "";
             if (isSpecial) {
               badgeHtml = `
-            <div style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:10px; padding:4px 8px; border-radius:4px; font-weight:bold; box-shadow:0 4px 10px rgba(245, 158, 11, 0.4); z-index:2;">
-                🔥 %${appliedRate} KAZANÇ
-            </div>
-        `;
+                <div style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:10px; padding:4px 8px; border-radius:4px; font-weight:bold; box-shadow:0 4px 10px rgba(245, 158, 11, 0.4); z-index:2;">
+                    🔥 %${appliedRate} KAZANÇ
+                </div>
+              `;
             }
-            // ----------------------------------------
 
+            // Kart HTML'i
             gridHtml += `
-    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #f1f5f9"}; position:relative;">
-        
-        ${badgeHtml} <div class="showcase-img-box" style="background: #fff;">
-            <img src="${p.image}" class="showcase-img" style="width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
-            
-            <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.8;">
-                Fırsat
-            </div>
-        </div>
-
-        <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff; border-top:1px solid #f1f5f9;">
-            <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                ${p.title}
-            </div>
-            
-            <div style="margin-top:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:10px;">
-                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>                    
-                </div>
+            <div class="showcase-card" style="${isSpecial ? "border: 2px solid #f59e0b;" : ""}">
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
-                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:10px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
-                        <i class="fas fa-link"></i> Link
-                    </button>
-                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:10px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
-                        <i class="fas fa-paint-brush"></i> Story
-                    </button>
-                </div>
+                ${badgeHtml}
                 
-                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:8px; margin-top:0;">
-                      <i class="fas fa-external-link-alt"></i> Ürüne Git
-                </a>
+                <div class="showcase-img-box">
+                    <img src="${p.image}" class="showcase-img" loading="lazy">
+                    <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.9;">
+                        Fırsat
+                    </div>
+                </div>
 
-            </div>
-        </div>
-    </div>`;
+                <div class="showcase-content">
+                    <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:36px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                        ${p.title}
+                    </div>
+                    
+                    <div style="margin-top:auto;">
+                        <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:12px;">
+                            <div style="color:#10b981; font-weight:900; font-size:18px;">${p.price}</div>                     
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                            <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
+                                <i class="fas fa-link"></i> Link
+                            </button>
+                            <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
+                                <i class="fas fa-paint-brush"></i> Story
+                            </button>
+                        </div>
+                        
+                        <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:12px; width:100%; text-decoration:none; padding:10px; margin-top:0;">
+                              <i class="fas fa-external-link-alt"></i> Ürüne Git
+                        </a>
+
+                    </div>
+                </div>
+            </div>`;
           });
 
-          container.innerHTML += gridHtml + `</div>`;
+          container.innerHTML += gridHtml + `</div>`; // Grid'i kapat
 
           // Alt bilgi
           container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
@@ -4896,5 +4934,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v17*/
+  /*sistem güncellendi v18*/
 })();
