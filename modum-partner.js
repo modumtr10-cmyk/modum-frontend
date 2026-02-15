@@ -2475,7 +2475,7 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (FİNAL DÜZELTME v5.0) ---
     renderShowcase: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
@@ -2492,7 +2492,7 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
+          // BAŞLIK ALANI
           container.innerHTML = `
             <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
                 <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
@@ -2510,10 +2510,11 @@ ${css}
                 <div style="font-size:24px;">🚀</div>
             </div>
             
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px;">`;
+          // 👆 BURASI ÖNEMLİ: Masaüstünde daha iyi görünmesi için grid yapısını (1fr 1fr) yerine esnek (minmax 200px) yaptım.
 
           let gridHtml = "";
-          // --- ♻️ GÜNCELLENMİŞ KAZANÇ HESAPLAMA BLOĞU (Bunu Kopyala) ---
+
           data.list.forEach((p) => {
             // 1. Link Hazırlığı
             let shareLink =
@@ -2524,46 +2525,24 @@ ${css}
             let baseRate = parseFloat(pData.commission_rate || 10);
             let specialRates = pData.special_rates || {};
 
-            // Ürün Kategorisi (Veri yoksa başlığa bakarak tahmin etmeye çalışsın - YEDEK PLAN)
+            // Ürün Kategorisi
             let prodCat = (p.category || p.title || "Genel").toLowerCase();
 
             let appliedRate = baseRate;
             let isSpecial = false;
-            let matchReason = ""; // Hangi kelimeden yakaladığını görmek için
 
             // 🔥 AKILLI EŞLEŞTİRME DÖNGÜSÜ
-            // Tanımlı tüm özel oranları tek tek kontrol et
             Object.keys(specialRates).forEach((key) => {
-              let rateKey = key.toLowerCase(); // Örn: "kadın sandalet"
+              let rateKey = key.toLowerCase();
               let rateVal = parseFloat(specialRates[key]);
 
-              // Eğer ürünün kategorisinde veya başlığında bu kelime geçiyorsa (Örn: "Sandalet")
               if (prodCat.includes(rateKey)) {
-                // Ve bu oran, şu anki orandan yüksekse
                 if (rateVal > appliedRate) {
                   appliedRate = rateVal;
                   isSpecial = true;
-                  matchReason = key;
                 }
               }
             });
-
-            // KONSOLA YAZDIR (Hatayı görmek için F12'de bakabilirsin)
-            if (isSpecial) {
-              console.log(
-                `🔥 Eşleşme Bulundu! Ürün: ${p.title} -> Kural: ${matchReason} -> Oran: %${appliedRate}`,
-              );
-            }
-
-            // Tahmini Kazanç Hesabı
-            let cleanPrice =
-              parseFloat(
-                p.price
-                  .toString()
-                  .replace(/[^0-9.,]/g, "")
-                  .replace(",", "."),
-              ) || 0;
-            let potentialEarn = (cleanPrice * appliedRate) / 100;
 
             // Etiket HTML'i
             let badgeHtml = "";
@@ -2574,43 +2553,46 @@ ${css}
             </div>
         `;
             }
-            // ----------------------------------------
 
+            // --- KART YAPISI (DÜZELTİLMİŞ) ---
             gridHtml += `
-    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; height:100%; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #f1f5f9"}; position:relative;">
+    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #e2e8f0"}; background:white; overflow:hidden; height:100%;">
         
-        ${badgeHtml} <div class="showcase-img-box" style="background: #fff;">
-            <img src="${p.image}" class="showcase-img" style="width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
+        ${badgeHtml} 
+        
+        <div class="showcase-img-box" style="background: #fff; position:relative; padding-top:100%;">
+            <img src="${p.image}" class="showcase-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
             
             <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.8;">
                 Fırsat
             </div>
         </div>
 
-        <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff; border-top:1px solid #f1f5f9;">
-            <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                ${p.title}
-            </div>
+        <div style="padding:12px; flex:1; display:flex; flex-direction:column; justify-content:space-between; border-top:1px solid #f1f5f9;">
             
-            <div style="margin-top:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:10px;">
-                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>                    
+            <div>
+                <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:5px; line-height:1.3; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                    ${p.title}
                 </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
-                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:10px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
+                <div style="color:#10b981; font-weight:900; font-size:16px; margin-bottom:10px;">${p.price}</div>                    
+            </div>
+            
+            <div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px; padding:8px; width:100%; justify-content:center;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
                         <i class="fas fa-link"></i> Link
                     </button>
-                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:10px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
+                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px; padding:8px; width:100%; justify-content:center;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
                         <i class="fas fa-paint-brush"></i> Story
                     </button>
                 </div>
                 
-                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:8px; margin-top:0;">
+                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:10px; display:flex; justify-content:center; align-items:center;">
                       <i class="fas fa-external-link-alt"></i> Ürüne Git
                 </a>
-
             </div>
+
         </div>
     </div>`;
           });
@@ -5009,5 +4991,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v14*/
+  /*sistem güncellendi v15*/
 })();
