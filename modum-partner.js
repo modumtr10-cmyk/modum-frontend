@@ -2362,7 +2362,7 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (MASAÜSTÜ 3'LÜ GRID DÜZELTİLMİŞ) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (FİNAL CSS DÜZELTME v5.0 - ÇAKIŞMA SAVAR) ---
     renderShowcase: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
@@ -2379,62 +2379,114 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 1. ÖZEL CSS STİLLERİ (Responsive Grid İçin)
-          // Bu stil bloğu masaüstünde 3'lü, mobilde 2'li yapıyı sağlar.
+          // 1. ÖZEL CSS STİLLERİ (FAPRIKA'YI EZEN STİLLER - !important KULLANILDI)
           const showcaseStyle = `
             <style>
-                .showcase-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr); /* Mobilde 2'li */
-                    gap: 12px;
+                /* Kapsayıcıyı izole et */
+                #mdm-showcase-wrapper {
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                    display: block !important;
                 }
-                /* Masaüstü (992px ve üzeri) için ayar */
+
+                /* GRID YAPISI */
+                #mdm-showcase-wrapper .mdm-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important; /* Mobilde 2'li */
+                    gap: 15px !important;
+                    width: 100% !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    box-sizing: border-box !important;
+                }
+
+                /* Masaüstü (992px ve üzeri) */
                 @media (min-width: 992px) {
-                    .showcase-grid {
-                        grid-template-columns: repeat(3, 1fr); /* Masaüstünde 3'lü */
-                        gap: 20px;
+                    #mdm-showcase-wrapper .mdm-grid {
+                        grid-template-columns: repeat(3, 1fr) !important; /* Masaüstünde 3'lü */
+                        gap: 25px !important;
                     }
                 }
-                /* Kart Yapısı */
-                .showcase-card {
-                    background: white;
-                    border: 1px solid #f1f5f9;
-                    border-radius: 12px;
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
-                    transition: transform 0.2s, box-shadow 0.2s;
+
+                /* KART YAPISI */
+                #mdm-showcase-wrapper .mdm-card {
+                    background: white !important;
+                    border: 1px solid #e2e8f0 !important;
+                    border-radius: 12px !important;
+                    overflow: hidden !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    position: relative !important;
+                    height: auto !important;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
+                    transition: transform 0.2s !important;
                 }
-                .showcase-card:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                
+                #mdm-showcase-wrapper .mdm-card:hover {
+                    transform: translateY(-5px) !important;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
                 }
-                /* Görsel Alanı */
-                .showcase-img-box {
-                    position: relative;
-                    padding-top: 125%; /* Görsel oranı (Biraz daha kısa tutuldu) */
-                    overflow: hidden;
-                    background: #fff;
+
+                /* RESİM KUTUSU (ASPECT RATIO KORUMASI) */
+                #mdm-showcase-wrapper .mdm-img-box {
+                    position: relative !important;
+                    width: 100% !important;
+                    padding-top: 130% !important; /* Dikey dikdörtgen oranı */
+                    background: #fff !important;
+                    overflow: hidden !important;
                 }
-                .showcase-img {
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    object-fit: contain;
-                    padding: 10px;
-                    box-sizing: border-box;
-                    transition: transform 0.3s;
+
+                /* RESİMİN KENDİSİ (ÇAKIŞMAYI ÖNLEYEN KOD) */
+                #mdm-showcase-wrapper .mdm-img-real {
+                    position: absolute !important;
+                    top: 0 !important; 
+                    left: 0 !important;
+                    width: 100% !important; 
+                    height: 100% !important;
+                    object-fit: contain !important; /* Resmi kutuya sığdır, kesme */
+                    padding: 10px !important;
+                    margin: 0 !important;
+                    max-width: none !important; /* Faprika kısıtlamasını kaldır */
+                    max-height: none !important;
+                    display: block !important;
+                    border: none !important;
                 }
-                .showcase-card:hover .showcase-img {
-                    transform: scale(1.05);
+
+                /* İÇERİK ALANI */
+                #mdm-showcase-wrapper .mdm-content {
+                    padding: 15px !important;
+                    flex: 1 !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    border-top: 1px solid #f1f5f9 !important;
+                    background: #fff !important;
                 }
-                /* İçerik Alanı */
-                .showcase-content {
-                    padding: 15px;
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    border-top: 1px solid #f1f5f9;
+                
+                /* Başlıklar ve Metinler */
+                #mdm-showcase-wrapper .mdm-title {
+                    font-size: 13px !important;
+                    font-weight: 700 !important;
+                    color: #1e293b !important;
+                    margin-bottom: 8px !important;
+                    line-height: 1.4 !important;
+                    height: 38px !important;
+                    overflow: hidden !important;
+                    display: -webkit-box !important;
+                    -webkit-line-clamp: 2 !important;
+                    -webkit-box-orient: vertical !important;
+                }
+
+                #mdm-showcase-wrapper .mdm-price {
+                    font-size: 18px !important;
+                    font-weight: 900 !important;
+                    color: #10b981 !important;
+                }
+
+                #mdm-showcase-wrapper .mdm-btn-group {
+                     display: grid !important;
+                     grid-template-columns: 1fr 1fr !important;
+                     gap: 8px !important;
+                     margin-bottom: 8px !important;
                 }
             </style>
           `;
@@ -2442,23 +2494,24 @@ ${css}
           // 2. ÜST BİLGİ ALANI
           container.innerHTML = `
             ${showcaseStyle}
-            <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
-                <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
-                <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-                    Sistem her gece en çok satan ve popüler ürünleri analiz ederek buraya getirir. 
-                    Ne paylaşsam diye düşünme, buradan seç ve kazan!
-                </p>
-            </div>
-
-            <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:15px; color:white; display:flex; align-items:center; justify-content:space-between;">
-                <div>
-                    <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
-                    <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
+            <div id="mdm-showcase-wrapper">
+                <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
+                    <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
+                    <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                        Sistem her gece en çok satan ve popüler ürünleri analiz ederek buraya getirir. 
+                        Ne paylaşsam diye düşünme, buradan seç ve kazan!
+                    </p>
                 </div>
-                <div style="font-size:24px;">🚀</div>
-            </div>
-            
-            <div class="showcase-grid">`;
+
+                <div style="background:linear-gradient(to right, #f59e0b, #d97706); padding:15px; border-radius:12px; margin-bottom:20px; color:white; display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <h3 style="margin:0; font-size:16px;">Bugünün Fırsatları</h3>
+                        <div style="font-size:11px; opacity:0.9;">Bu ürünler bugün çok satıyor!</div>
+                    </div>
+                    <div style="font-size:24px;">🚀</div>
+                </div>
+                
+                <div class="mdm-grid">`;
 
           let gridHtml = "";
 
@@ -2501,28 +2554,28 @@ ${css}
 
             // Kart HTML'i
             gridHtml += `
-            <div class="showcase-card" style="${isSpecial ? "border: 2px solid #f59e0b;" : ""}">
+            <div class="mdm-card" style="${isSpecial ? "border: 2px solid #f59e0b !important;" : ""}">
                 
                 ${badgeHtml}
                 
-                <div class="showcase-img-box">
-                    <img src="${p.image}" class="showcase-img" loading="lazy">
+                <div class="mdm-img-box">
+                    <img src="${p.image}" class="mdm-img-real" loading="lazy">
                     <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.9;">
                         Fırsat
                     </div>
                 </div>
 
-                <div class="showcase-content">
-                    <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:36px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                <div class="mdm-content">
+                    <div class="mdm-title">
                         ${p.title}
                     </div>
                     
                     <div style="margin-top:auto;">
                         <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:12px;">
-                            <div style="color:#10b981; font-weight:900; font-size:18px;">${p.price}</div>                     
+                            <div class="mdm-price">${p.price}</div>                     
                         </div>
                         
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                        <div class="mdm-btn-group">
                             <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
                                 <i class="fas fa-link"></i> Link
                             </button>
@@ -2540,7 +2593,7 @@ ${css}
             </div>`;
           });
 
-          container.innerHTML += gridHtml + `</div>`; // Grid'i kapat
+          container.innerHTML += gridHtml + `</div></div>`; // Grid'i ve Wrapper'ı kapat
 
           // Alt bilgi
           container.innerHTML += `<div style="text-align:center; margin-top:20px; font-size:11px; color:#94a3b8;">
@@ -4934,5 +4987,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v18*/
+  /*sistem güncellendi v19*/
 })();
