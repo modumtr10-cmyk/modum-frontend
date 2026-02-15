@@ -109,87 +109,6 @@
     }
   }
 
-  // --- HTML ÇİZİCİ (BEDEN GÖSTERİMLİ & YENİ SEKME MODU) ---
-  function renderVirtualShop(partnerName, products, refCode) {
-    if (!products || products.length === 0) return;
-
-    let itemsHtml = "";
-
-    products.forEach((p) => {
-      // --- BEDENLERİ HAZIRLA ---
-      let sizesHtml = "";
-      if (p.sizes && Array.isArray(p.sizes) && p.sizes.length > 0) {
-        // Sadece ilk 5 bedeni gösterelim, taşmasın
-        const showSizes = p.sizes.slice(0, 5);
-        sizesHtml = `<div style="display:flex; gap:3px; flex-wrap:wrap; margin-bottom:8px;">`;
-        showSizes.forEach((s) => {
-          sizesHtml += `<span style="font-size:10px; border:1px solid #cbd5e1; color:#64748b; padding:1px 4px; border-radius:3px;">${s}</span>`;
-        });
-        if (p.sizes.length > 5)
-          sizesHtml += `<span style="font-size:9px; color:#999;">+${p.sizes.length - 5}</span>`;
-        sizesHtml += `</div>`;
-      } else {
-        // Beden yoksa (Çanta vs.) boş geç
-        sizesHtml = `<div style="height:21px;"></div>`;
-      }
-
-      itemsHtml += `
-            <div style="background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:1px solid #f1f5f9; display:flex; flex-direction:column; transition:transform 0.2s;">
-                <a href="${p.url}?ref=${refCode}" target="_blank" style="text-decoration:none; color:inherit; flex:1;">
-                    <div style="position:relative; padding-top:150%; overflow:hidden; background:#fff;"> 
-    <img src="${p.image}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:5px;">
-    ${p.stock < 5 ? '<span style="position:absolute; bottom:5px; left:5px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px;">Son Ürünler</span>' : ""}
-</div>
-                    <div style="padding:10px 10px 0;">
-                        <div style="font-size:12px; color:#334155; margin-bottom:5px; height:32px; overflow:hidden; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${p.title}</div>
-                        
-                        ${sizesHtml}
-                        
-                        <div style="font-weight:900; color:#10b981; font-size:15px; margin-bottom:5px;">${p.price}</div>
-                    </div>
-                </a>
-                
-                <div style="padding:0 10px 15px;">
-                    <a href="${p.url}?ref=${refCode}" target="_blank" style="display:flex; align-items:center; justify-content:center; width:100%; padding:8px; background:#1e293b; color:white; border:none; border-radius:6px; font-weight:bold; font-size:12px; text-decoration:none; gap:5px;">
-                        <span>İncele & Al</span> <i class="fas fa-external-link-alt"></i>
-                    </a>
-                </div>
-            </div>
-         `;
-    });
-
-    // Eski modal varsa sil
-    let old = document.getElementById("mdm-virtual-shop");
-    if (old) old.remove();
-
-    const html = `
-        <div id="mdm-virtual-shop" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f8fafc; z-index:2147483647; overflow-y:auto; -webkit-overflow-scrolling:touch;">
-            
-            <div style="background:linear-gradient(135deg, #1e293b, #0f172a); color:white; padding:30px 20px 50px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
-                <button onclick="document.getElementById('mdm-virtual-shop').remove()" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.1); border:none; color:white; font-size:24px; cursor:pointer; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
-                
-                <div style="width:70px; height:70px; background:white; color:#333; font-size:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; border:4px solid rgba(255,255,255,0.2);">🛍️</div>
-                <h1 style="margin:0; font-size:20px; font-weight:800;">${partnerName}'in Seçtikleri</h1>
-                <p style="opacity:0.8; margin:5px 0 0; font-size:12px; max-width:400px; margin:5px auto;">
-                    Beğendiğin ürüne tıkla, numaranı seç ve sepete ekle. (Beğendiğiniz ürüne tıklayın. Ürün yeni sekmede açılır; koleksiyon sayfanız açık kalır. Dilediğinizde geri dönebilirsiniz.)
-                </p>
-            </div>
-
-            <div style="max-width:1000px; margin: -30px auto 0; padding:0 10px 50px; position:relative; z-index:10;">
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; @media(min-width:768px){grid-template-columns: repeat(5, 1fr); gap:15px;}">
-                    ${itemsHtml}
-                </div>
-            </div>
-
-            <div style="text-align:center; padding:20px; color:#94a3b8; font-size:11px;">
-                Güvenli Alışveriş • ModumNet Garantisiyle
-            </div>
-        </div>
-      `;
-
-    document.body.insertAdjacentHTML("beforeend", html);
-  }
-
   // Fonksiyonu çalıştır (Sayfa açılınca URL kontrolü yap)
   checkCustomerCollectionLink();
 
@@ -2475,7 +2394,7 @@ ${css}
           }
         },
       );
-    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (GÜNCELLENMİŞ) ---
+    }, // --- 🔥 VİTRİN / GÜNÜN FIRSATLARI (2'Lİ GRID FİX) ---
     renderShowcase: async function (container) {
       container.innerHTML =
         '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Günün ürünleri hazırlanıyor...</div>';
@@ -2492,13 +2411,12 @@ ${css}
         const data = await res.json();
 
         if (data.success && data.list.length > 0) {
-          // 🔥 YENİ BAŞLIK VE AÇIKLAMA EKLENDİ
+          // BAŞLIK VE AÇIKLAMA
           container.innerHTML = `
             <div style="background:#fff; border-left:4px solid #f59e0b; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:20px;">
                 <h3 style="margin:0 0 5px 0; font-size:16px; color:#1e293b;">🔥 Günün Vitrini</h3>
                 <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
-                    Sistem her gece en çok satan ve popüler ürünleri analiz ederek buraya getirir. 
-                    Ne paylaşsam diye düşünme, buradan seç ve kazan!
+                    Buradaki ürünler sistem tarafından seçilen "Çok Satanlar"dır. Paylaş, kazan!
                 </p>
             </div>
 
@@ -2510,107 +2428,80 @@ ${css}
                 <div style="font-size:24px;">🚀</div>
             </div>
             
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">`;
 
           let gridHtml = "";
-          // --- ♻️ GÜNCELLENMİŞ KAZANÇ HESAPLAMA BLOĞU (Bunu Kopyala) ---
+
           data.list.forEach((p) => {
-            // 1. Link Hazırlığı
+            // Linkler
             let shareLink =
               p.url + (p.url.includes("?") ? "&" : "?") + "ref=" + myRefCode;
             let safeProductData = encodeURIComponent(JSON.stringify(p));
 
-            // 2. Partner Verileri
+            // Partner Verileri & Özel Oran Kontrolü
             let baseRate = parseFloat(pData.commission_rate || 10);
             let specialRates = pData.special_rates || {};
-
-            // Ürün Kategorisi (Veri yoksa başlığa bakarak tahmin etmeye çalışsın - YEDEK PLAN)
             let prodCat = (p.category || p.title || "Genel").toLowerCase();
-
             let appliedRate = baseRate;
             let isSpecial = false;
-            let matchReason = ""; // Hangi kelimeden yakaladığını görmek için
 
-            // 🔥 AKILLI EŞLEŞTİRME DÖNGÜSÜ
-            // Tanımlı tüm özel oranları tek tek kontrol et
             Object.keys(specialRates).forEach((key) => {
-              let rateKey = key.toLowerCase(); // Örn: "kadın sandalet"
+              let rateKey = key.toLowerCase();
               let rateVal = parseFloat(specialRates[key]);
-
-              // Eğer ürünün kategorisinde veya başlığında bu kelime geçiyorsa (Örn: "Sandalet")
-              if (prodCat.includes(rateKey)) {
-                // Ve bu oran, şu anki orandan yüksekse
-                if (rateVal > appliedRate) {
-                  appliedRate = rateVal;
-                  isSpecial = true;
-                  matchReason = key;
-                }
+              if (prodCat.includes(rateKey) && rateVal > appliedRate) {
+                appliedRate = rateVal;
+                isSpecial = true;
               }
             });
 
-            // KONSOLA YAZDIR (Hatayı görmek için F12'de bakabilirsin)
-            if (isSpecial) {
-              console.log(
-                `🔥 Eşleşme Bulundu! Ürün: ${p.title} -> Kural: ${matchReason} -> Oran: %${appliedRate}`,
-              );
-            }
-
-            // Tahmini Kazanç Hesabı
-            let cleanPrice =
-              parseFloat(
-                p.price
-                  .toString()
-                  .replace(/[^0-9.,]/g, "")
-                  .replace(",", "."),
-              ) || 0;
-            let potentialEarn = (cleanPrice * appliedRate) / 100;
-
-            // Etiket HTML'i
+            // Etiket
             let badgeHtml = "";
             if (isSpecial) {
               badgeHtml = `
             <div style="position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #f59e0b, #d97706); color:white; font-size:10px; padding:4px 8px; border-radius:4px; font-weight:bold; box-shadow:0 4px 10px rgba(245, 158, 11, 0.4); z-index:2;">
                 🔥 %${appliedRate} KAZANÇ
-            </div>
-        `;
+            </div>`;
             }
-            // ----------------------------------------
 
+            // KART YAPISI
             gridHtml += `
-    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #f1f5f9"}; position:relative;">
+    <div class="p-card" style="padding:0; margin:0; display:flex; flex-direction:column; border:${isSpecial ? "2px solid #f59e0b" : "1px solid #e2e8f0"}; background:white; overflow:hidden; height:100%;">
         
-        ${badgeHtml} <div class="showcase-img-box" style="background: #fff;">
-            <img src="${p.image}" class="showcase-img" style="width:100%; height:100%; object-fit:contain; padding:10px; box-sizing:border-box;">
+        ${badgeHtml} 
+        
+        <div class="showcase-img-box" style="background: #fff; position:relative; padding-top:100%;">
+            <img src="${p.image}" class="showcase-img" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; padding:20px; box-sizing:border-box;">
             
             <div style="position:absolute; top:10px; right:10px; background:#ef4444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; opacity:0.8;">
                 Fırsat
             </div>
         </div>
 
-        <div style="padding:12px; flex:1; display:flex; flex-direction:column; background:#fff; border-top:1px solid #f1f5f9;">
-            <div style="font-weight:700; font-size:12px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                ${p.title}
-            </div>
+        <div style="padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; border-top:1px solid #f1f5f9;">
             
-            <div style="margin-top:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:10px;">
-                    <div style="color:#10b981; font-weight:900; font-size:16px;">${p.price}</div>                    
+            <div>
+                <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:5px; line-height:1.4; height:36px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                    ${p.title}
                 </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px;">
-                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:10px; padding:8px;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
+                <div style="color:#10b981; font-weight:900; font-size:18px; margin-bottom:15px;">${p.price}</div>                    
+            </div>
+            
+            <div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <button class="p-btn" style="background:#f1f5f9; color:#334155; font-size:11px; padding:10px; width:100%; justify-content:center;" onclick="PartnerApp.openQuickLink('${p.url}', '${myRefCode}')">
                         <i class="fas fa-link"></i> Link
                     </button>
-                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:10px; padding:8px;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
+                    <button class="p-btn" style="background:#3b82f6; color:white; font-size:11px; padding:10px; width:100%; justify-content:center;" onclick="PartnerApp.openStoryEditor('${safeProductData}')">
                         <i class="fas fa-paint-brush"></i> Story
                     </button>
                 </div>
                 
-                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:11px; width:100%; text-decoration:none; padding:8px; margin-top:0;">
+                <a href="${shareLink}" target="_blank" class="p-btn" style="background:#1e293b; color:white; font-size:12px; width:100%; text-decoration:none; padding:12px; display:flex; justify-content:center; align-items:center;">
                       <i class="fas fa-external-link-alt"></i> Ürüne Git
                 </a>
-
             </div>
+
         </div>
     </div>`;
           });
@@ -5009,5 +4900,5 @@ ${css}
     renderApplicationPage(); // Sayfa zaten yüklendiyse hemen çalıştır
   }
 
-  /*sistem güncellendi v16*/
+  /*sistem güncellendi v17*/
 })();
